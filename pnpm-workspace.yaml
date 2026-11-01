@@ -26,6 +26,7 @@ overrides:
   source-map-js@1: '^1.2.2'
   brace-expansion@1: '^1.1.21'
   markdown-it@14: '^14.3.3'
+  minimatch@3: '^11.0.3'
 
 patchedDependencies:
   '@cloudflare/vitest-plugin@1.4.4': patches/@cloudflare__vitest-plugin@1.4.4.patch
