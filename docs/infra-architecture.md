@@ -142,7 +142,8 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 | `RELEASE_APP_CLIENT_ID` (variable), `RELEASE_APP_PRIVATE_KEY` (secret) | Actions variable and secret | The release GitHub App, which pushes the version tag that triggers a deploy (Contents: write, this repo only) |
 | `PROJECT_STATUS_PAT` | Actions secret | Classic token with only the `project` scope, for the board sync; a GitHub App can't reach a board owned by a personal account |
 | `PROJECT_ID`, `PROJECT_STATUS_FIELD_ID`, `PROJECT_IN_PROGRESS_OPTION`, `PROJECT_IN_REVIEW_OPTION` | Actions variables | The board, its Status field and the two Status options the board sync sets; not confidential |
-| `TF_STATE_ACCESS_KEY_ID`, `TF_STATE_SECRET_ACCESS_KEY` | Actions secrets | R2 credentials for the state backend (created under R2 → Manage R2 API Tokens) |
+| `TF_STATE_READ_ACCESS_KEY_ID`, `TF_STATE_READ_SECRET_ACCESS_KEY` | Actions secrets | Read-only R2 credentials for the state backend, used by PR plans |
+| `TF_STATE_ACCESS_KEY_ID`, `TF_STATE_SECRET_ACCESS_KEY` | `infra` environment secrets | Read-write R2 credentials for the state backend (created under R2 → Manage R2 API Tokens) |
 | `CLOUDFLARE_ACCOUNT_ID` | Actions variable | Not confidential |
 | `SYNTHETIC_USER_EMAIL`, `SYNTHETIC_USER_PASSWORD` | Actions secrets | The synthetic check's account (`infra/README.md`) |
 | `ADMIN_EMAIL` | Actions secret | The one email the admin host's Access policy lets in (`infra/access.tf`) |

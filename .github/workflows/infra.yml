@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: infra-${{ github.event_name == 'pull_request' && github.ref || 'apply' }}
+  cancel-in-progress: false
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -23,8 +27,8 @@ jobs:
       run:
         working-directory: infra
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.TF_STATE_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_ACCESS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ github.event_name == 'pull_request' && secrets.TF_STATE_READ_ACCESS_KEY_ID || secrets.TF_STATE_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ github.event_name == 'pull_request' && secrets.TF_STATE_READ_SECRET_ACCESS_KEY || secrets.TF_STATE_SECRET_ACCESS_KEY }}
       CLOUDFLARE_API_TOKEN: ${{ github.event_name == 'pull_request' && secrets.CLOUDFLARE_INFRA_PLAN_TOKEN || secrets.CLOUDFLARE_INFRA_APPLY_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       TF_VAR_admin_email: ${{ secrets.ADMIN_EMAIL }}
@@ -33,11 +37,17 @@ jobs:
       TF_VAR_discord_monitoring_webhook: ${{ secrets.DISCORD_MONITORING_WEBHOOK }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: "~1.16"
 
+      - run: terraform fmt -check -recursive
+
       - run: terraform init
+
+      - run: terraform validate
 
       # #1075 -- apply runs unattended on every push to main, so the plan is
       # the only thing a human ever reads. Plan to a file on every event,
@@ -127,6 +137,8 @@ jobs:
       - name: Push generated config for a PR
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -139,7 +151,7 @@ jobs:
           BRANCH="ci/sync-generated-config-${{ github.run_id }}"
           git checkout -b "$BRANCH"
           git commit -m "chore: sync generated infra config"
-          git push origin "$BRANCH"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
 
           URL="${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1"
           echo "::warning::Generated config changed. Open a PR from $BRANCH, label it release: patch, and merge it: $URL"
