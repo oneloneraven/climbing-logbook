@@ -509,6 +509,7 @@ test("Exertion is visible for Send/Flash and hidden for Project/Check out/Archiv
 });
 
 test("Attempts stepper increments/decrements and cannot go below 0", async ({ page, owner }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await gotoLog(page, owner, { ...SEED, settings: { athleteMode: true, activeDiscipline: "boulder" } });
   await page.locator("#add-btn").click();
   await expect(page.locator("#entry-overlay")).toBeVisible();
