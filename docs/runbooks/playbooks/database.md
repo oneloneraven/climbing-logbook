@@ -14,4 +14,4 @@
   2. `npx wrangler d1 time-travel restore climbing-logbook --bookmark=<bookmark>`.
   3. Time Travel keeps 7 days on the current plan (30 on Workers Paid). Off-platform backups are #1068.
 - **One person's data:** Time Travel can't restore one account on its own. Until #1068's logical backups exist, restore to a copy is the only route: see #632.
-- **Demo accounts after a restore:** re-run `node scripts/seed-demo-accounts.mjs` against the restored database (#632).
+- **Demo accounts after a restore:** re-run `node scripts/seed-demo-accounts.mjs --remote` against the restored database (#632). Otherwise a release re-seeds them when its diff touches the seed (`deploy.yml`).

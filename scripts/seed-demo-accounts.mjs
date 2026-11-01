@@ -1,7 +1,7 @@
 // Seeds the three demo accounts with raw SQL: their names are reserved, so they can't sign up.
 // Tags cluster so the Strengths and Injury reports have a real signal. Fixed IDs, so safe to re-run.
 //   node scripts/seed-demo-accounts.mjs [--remote] [--env preview]
-import { applyMigrations, d1ExecuteBatch } from "./lib/dev-session.mjs";
+import { applyMigrations, d1ExecuteInChunks } from "./lib/dev-session.mjs";
 import { BOULDER_GRADES, DEFAULT_SCALE_BY_TYPE, LEAD_GRADES, SCALES } from "../shared/grade-data.js";
 import { DEMO_PERSONAS } from "../shared/demo-personas.js";
 import { PAIN_INJURY } from "../shared/health-consent.js";
@@ -210,13 +210,13 @@ function buildPersonaSql(persona) {
     `UPDATE entries SET sync_cursor = (SELECT COALESCE(MAX(sync_cursor), 0) + 1 FROM entries WHERE user_id = ${sqlStr(userId)}) WHERE id = ${sqlStr(entryIds[0])};`,
   );
 
-  return statements.join("\n");
+  return statements;
 }
 
 console.log("Applying migrations...");
 applyMigrations(d1Options);
 
 console.log(`Seeding ${DEMO_PERSONAS.map(persona => persona.username).join(", ")}...`);
-d1ExecuteBatch(DEMO_PERSONAS.map(buildPersonaSql).join("\n"), d1Options);
+d1ExecuteInChunks(DEMO_PERSONAS.flatMap(buildPersonaSql), d1Options);
 
 console.log("Done.");

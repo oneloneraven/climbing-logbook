@@ -38,6 +38,21 @@ export function d1Query(sql, { database = D1_DATABASE, remote, env } = {}) {
   return JSON.parse(output).at(-1).results;
 }
 
+const D1_CHUNK_CHARS = 50000;
+
+// Not --file: a remote import makes the database unavailable until it finishes, and this is for a database in use.
+export function d1ExecuteInChunks(statements, options) {
+  let chunk = "";
+  for (const statement of statements) {
+    if (chunk && chunk.length + statement.length > D1_CHUNK_CHARS) {
+      d1Execute(chunk, options);
+      chunk = "";
+    }
+    chunk += `${statement}\n`;
+  }
+  if (chunk) d1Execute(chunk, options);
+}
+
 // --file, not --command: a big batch is too long for one argument.
 export function d1ExecuteBatch(sql, { database = D1_DATABASE, remote, env } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "d1-batch-"));
