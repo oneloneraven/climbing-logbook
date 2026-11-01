@@ -37,13 +37,13 @@ function monthNodes(releases) {
 function betaIntro(hasReleases) {
   const intro = el("p");
   if (!hasReleases) {
-    intro.textContent = "Nothing in Check our beta yet that isn't on the main app.";
+    intro.textContent = "Nothing in Check our beta yet that isn't on the Main Channel.";
     return intro;
   }
   const link = el("a", "Check our beta");
   link.href = "/help/beta-channel/";
   intro.append(
-    "Released to Check our beta, not the main app yet. To get them now, join ",
+    "Released to Check our beta, not the Main Channel yet. To get them now, join ",
     link,
     ": in My Account, choose Check our beta.",
   );

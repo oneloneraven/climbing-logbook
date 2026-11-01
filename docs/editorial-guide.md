@@ -30,7 +30,7 @@ How Climbing Logbook's copy reads: help pages, app text, emails and the home pag
 | Say | Don't say | Notes |
 |---|---|---|
 | *Check our beta* | the beta, beta channel, beta features | The early-access channel. A designated term: italic in running text, and written in full so it can't be confused with climbing beta |
-| regular version | main site | The version at my.climbinglogbook.com, as opposed to *Check our beta*. "Main app" and "Main channel" remain on What's new and are still to be settled |
+| Main Channel | regular version, main app, main site | The version at my.climbinglogbook.com, as opposed to *Check our beta*. Title case, not italic |
 | Logbook Beta | | The name of the installed app for *Check our beta*. Keep as it is |
 | beta (lower case) | | Climbing beta: how a climb is done. Write "your beta", as "the beta" reads like the channel |
 | hardest move | crux | The hardest move/sequence field already asks for the crux, so don't ask people to mark one |

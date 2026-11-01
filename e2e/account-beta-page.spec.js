@@ -8,7 +8,7 @@ test("not enrolled: explains joining, and Join writes the setting and opens the 
 
   await expect(page.getByRole("heading", { name: "Check our beta", exact: true })).toBeVisible();
   await expect(page.locator("#beta-status")).toHaveText("You're not enrolled in Check our beta.");
-  await expect(page.locator("#beta-join")).toContainText("uses the same logbook as the regular version");
+  await expect(page.locator("#beta-join")).toContainText("uses the same logbook as the Main Channel");
   await expect(page.locator("#beta-leave")).toBeHidden();
   await expect(page.locator("#beta-queue-warning")).toBeHidden();
 
@@ -20,7 +20,7 @@ test("not enrolled: explains joining, and Join writes the setting and opens the 
   await page.waitForURL(`**/${owner.username}/log`);
 });
 
-test("enrolled: explains leaving, and Leave writes the setting and opens the regular version's log", async ({
+test("enrolled: explains leaving, and Leave writes the setting and opens the Main Channel's log", async ({
   page,
   owner,
 }) => {

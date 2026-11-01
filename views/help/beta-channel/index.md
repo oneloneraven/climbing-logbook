@@ -10,7 +10,7 @@ eleventyNavigation:
 
 *Check our beta* gives you early access to new features before they're released to everyone. They may have bugs.
 
-*Check our beta* uses your logbook, not a copy of it. Anything you add, change or delete there is real, and shows up in the regular version too.
+*Check our beta* uses your logbook, not a copy of it. Anything you add, change or delete there is real, and shows up in the Main Channel too.
 
 ## Joining Check our beta
 
@@ -24,12 +24,12 @@ Otherwise:
 
 You're taken to your log in *Check our beta*, at **beta.climbinglogbook.com**. Each device downloads your logbook the first time it opens *Check our beta*, so do that while you have a connection.
 
-## Getting back to the regular version
+## Getting back to the Main Channel
 
 While you're in *Check our beta*:
 
 - **Logging in at climbinglogbook.com takes you to *Check our beta*.**
-- **my.climbinglogbook.com always opens the regular version**, without the new features.
+- **my.climbinglogbook.com always opens the Main Channel**, without the new features.
 
 Use my.climbinglogbook.com when you want Climbing Logbook without the new features: for example, if a new feature isn't working for you and you need to log a climb, or to compare how something looks with and without a new feature. It's the same logbook either way.
 
@@ -51,12 +51,12 @@ The *Check our beta* page tells you if the version you're using has changes wait
 2. Choose **Check our beta**.
 3. Choose **Leave Check our beta**.
 
-You're taken back to your log in the regular version. From then on, Logbook Beta shows a message saying you're not in *Check our beta*, so you can uninstall it.
+You're taken back to your log in the Main Channel. From then on, Logbook Beta shows a message saying you're not in *Check our beta*, so you can uninstall it.
 
-Anything you created with features only in *Check our beta* stays in your logbook, but the regular version may not show it until those features are released.
+Anything you created with features only in *Check our beta* stays in your logbook, but the Main Channel may not show it until those features are released.
 
 ## Using both at once
 
-Having the regular version and *Check our beta* open at the same time works like using two devices: each keeps its own copy of your logbook on the device, and a change made in one appears in the other once it has synced.
+Having the Main Channel and *Check our beta* open at the same time works like using two devices: each keeps its own copy of your logbook on the device, and a change made in one appears in the other once it has synced.
 
 Related: [Installing the PWA](/help/install/), [Working offline](/help/working-offline/).
