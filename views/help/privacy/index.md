@@ -34,23 +34,23 @@ We use this to run the app for you, for the reasons below, and for nothing else.
 ## How long we keep it
 
 - **Email links**, for checking your email address or resetting your password, are deleted within a day of expiring.
-- **Your account and logbook** stay until you delete your account in My account, which removes them. Our backups drop them within 30 days.
+- **Your account and logbook** stay until you delete your account in My Account, which removes them. Our backups drop them within 30 days.
 
 ## Who can see your logbook
 
-You choose when you set up your account, and you can change it at any time. In My account, the **Public Logbook** setting controls whether anyone can view your logbook and map. Your Grade Pyramid, Injury insights and other Performance Insights are always private to you.
+You choose when you set up your account, and you can change it at any time. In My Account, the **Public Logbook** setting controls whether anyone can view your logbook and map. Your Grade Pyramid, Injury insights and other Performance Insights are always private to you.
 
 We only look at a logbook to investigate a report, misuse, or a problem you've asked us to help with, and every look is logged.
 
 <h2 id="health-data">Health information</h2>
 
-Health data is off until you agree to the Health Data Agreement in My account. Data protection law treats health information as sensitive, so we ask you first. The rest of Climbing Logbook works the same either way.
+Health data is off until you agree to the Health Data Agreement in My Account. Data protection law treats health information as sensitive, so we ask you first. The rest of Climbing Logbook works the same either way.
 
 - **What counts as health information:** pain and injuries, which phase of your menstrual cycle you're in (by phase only, never dates), and your energy and mood, when you choose to log them.
-- **What it's for:** finding patterns in your climbing performance, shown only in your own Performance insights.
+- **What it's for:** finding patterns in your climbing performance, shown only in your own Performance Insights.
 - **Who can turn it on:** you need to be 16 or over, or have your parent or guardian's agreement.
 - **Where it goes:** it's stored with the rest of your logbook. It's never shown on your public profile and is only used for your own reports. A site administrator can see it for support and moderation, and for nothing else.
-- **Turning it on and off:** go to My account, then *Health data*. Turning it off deletes all your health information. Your climbs and other performance insights data are unaffected.
+- **Turning it on and off:** go to My Account, then *Health data*. Turning it off deletes all your health information. Your climbs and other performance insights data are unaffected.
 - **How long we keep it:** until you turn it off or delete your account. After that, it's removed from our backups within 30 days.
 
 Your other devices remove their copy the next time they sync.
@@ -72,7 +72,7 @@ It's kept under your account. Someone else who logs in on the same browser can't
 
 **Logging out** removes the saved app pages, but keeps your logbook and any unsynced changes on the device, so nothing you logged offline is lost. They sync the next time you log in there.
 
-**To remove everything from a device,** go to My account and choose *Clear device data*. It logs you out. Nothing is deleted from your account, and your logbook syncs back the next time you log in on that device. If changes are still waiting to sync, a warning says so first, because clearing the device would lose them. Do this before handing a device back if you've used someone else's.
+**To remove everything from a device,** go to My Account and choose *Clear device data*. It logs you out. Nothing is deleted from your account, and your logbook syncs back the next time you log in on that device. If changes are still waiting to sync, a warning says so first, because clearing the device would lose them. Do this before handing a device back if you've used someone else's.
 
 You can also clear Climbing Logbook's site data in your browser's settings. Check first that the menu shows no *Offline* or *Syncing…* status, or changes that haven't synced will be lost.
 
@@ -100,17 +100,17 @@ They only use your data to provide their service to us. Some of them process dat
 
 You can:
 
-- **see and download your logbook**: My account, then *Import and export entries* (see [Import and export](/help/import-and-export/));
-- **correct it**: [edit any climb](/help/editing-an-entry/), or your details in My account;
-- **delete it**: My account, then *Delete account*. That deletes your account and everything in it;
-- **withdraw your health data agreement**: My account, then *Health data*;
+- **see and download your logbook**: My Account, then *Import and export entries* (see [Import and export](/help/import-and-export/));
+- **correct it**: [edit any climb](/help/editing-an-entry/), or your details in My Account;
+- **delete it**: My Account, then *Delete account*. That deletes your account and everything in it;
+- **withdraw your health data agreement**: My Account, then *Health data*;
 - **ask for anything else**, like a copy of everything we hold about you, or to restrict or object to how we use it: [contact us](/help/report-an-issue/).
 
 We reply as soon as we can, and within 28 days at most.
 
 ## Automated decisions
 
-We don't make automated decisions that have legal or similarly significant effects on you. Your Performance insights are only for your own information.
+We don't make automated decisions that have legal or similarly significant effects on you. Your Performance Insights are only for your own information.
 
 ## Complaints
 

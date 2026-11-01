@@ -174,7 +174,7 @@ export function createEmailSender(env, log) {
         paragraphs: [
           "2FA on your Climbing Logbook account will switch off on:",
           { strong: longDate(effectiveAt) },
-          "After that you'll log in with just your password, and you can set 2FA up again in My account.",
+          "After that you'll log in with just your password, and you can set 2FA up again in My Account.",
         ],
         action: { label: "This wasn't me: cancel it", url },
         note: "If you didn't ask for this, cancel it and change your password: someone knows it.",
@@ -193,7 +193,7 @@ export function createEmailSender(env, log) {
       return sendTemplated(to, "2FA is off", {
         paragraphs: [
           "The 7-day wait has ended, and 2FA is now off on your Climbing Logbook account. You'll log in with just your password.",
-          "To turn it back on, go to My account, then Account and authentication.",
+          "To turn it back on, go to My Account, then Account and authentication.",
         ],
         action: { label: "How 2FA works", url: helpUrl },
         note: "If you didn't ask for this, change your password straight away, then turn 2FA back on.",

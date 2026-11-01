@@ -69,13 +69,13 @@ test("tracking off: the injury page explains instead of showing a report, and th
   await expect(card).toHaveCount(1);
   await expect(card).toHaveAttribute("data-insight-tone", "neutral");
   await expect(card.locator("[data-insight-title]")).toHaveText("Health data is off");
-  await expect(card.getByRole("link", { name: "Turn it on in My account" })).toHaveAttribute(
+  await expect(card.getByRole("link", { name: "Turn it on in My Account" })).toHaveAttribute(
     "href",
     `/${owner.username}/account/health`,
   );
 
   await page.goto(owner.url("/performance"));
-  await expect(page.locator("#insight-injury")).toContainText("Agree to the Health Data Agreement in My account");
+  await expect(page.locator("#insight-injury")).toContainText("Agree to the Health Data Agreement in My Account");
 });
 
 test("a queued climb whose pain details are refused is saved without them, with a notice", async ({ page, owner }) => {

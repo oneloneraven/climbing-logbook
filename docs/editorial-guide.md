@@ -13,7 +13,7 @@ How Climbing Logbook's copy reads: help pages, app text, emails and the home pag
 ## Spelling and form
 
 - British English. Metric units.
-- Sentence case for headings, buttons and menu items.
+- Sentence case for headings, buttons and menu items, except designated terms, which keep their capitals.
 - Page titles are `Name – Climbing Logbook`.
 - No em dashes in new copy; use a comma, colon or full stop.
 
@@ -32,12 +32,12 @@ How Climbing Logbook's copy reads: help pages, app text, emails and the home pag
 | *Check our beta* | the beta, beta channel, beta features | The early-access channel. A designated term: italic in running text, and written in full so it can't be confused with climbing beta |
 | regular version | main site | The version at my.climbinglogbook.com, as opposed to *Check our beta*. "Main app" and "Main channel" remain on What's new and are still to be settled |
 | Logbook Beta | | The name of the installed app for *Check our beta*. Keep as it is |
-| beta (lower case, no "the" where you can avoid it) | | Climbing beta: how a climb is done. "Your beta" is clearer than "the beta" |
+| beta (lower case) | | Climbing beta: how a climb is done. Write "your beta", as "the beta" reads like the channel |
 | hardest move | crux | The hardest move/sequence field already asks for the crux, so don't ask people to mark one |
 | climb | | What someone logged, in running text |
 | entry | | The record of a climb, in names of actions and forms: **Delete entry**, Report this entry |
-| Performance insights | Grade Pyramid, as the umbrella | The whole group of reports. Grade Pyramid is one of them. Sentence case |
-| My account | My Account | |
+| Performance Insights | Grade Pyramid, as the umbrella | The whole group of reports, in title case. Grade Pyramid is one of them |
+| My Account | My account | Title case |
 | log in, sign up (verbs) | login, signup | "Sign-up" with a hyphen as a noun |
 | Two-Factor Authentication (2FA) | | In full the first time on a page, then 2FA |
 | Progressive Web App (PWA) | | In full the first time on a page, then PWA |

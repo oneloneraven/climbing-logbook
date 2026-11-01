@@ -46,7 +46,7 @@ test("on: the warning says what turning off deletes, and one button deletes it",
   expect(status).toMatchObject({ granted: false, entriesWithPain: 0 });
 });
 
-test("My account shows the card with its state and links to the page", async ({ page, owner }) => {
+test("My Account shows the card with its state and links to the page", async ({ page, owner }) => {
   await owner.settings({ athleteMode: true });
   await page.goto(owner.url("/account"));
   await expect(page.locator("#health-status")).toHaveText("Off");
@@ -81,7 +81,7 @@ test("offline: the buttons are disabled with a note, and come back with the conn
   await expect(page.locator("#health-offline-note")).toBeHidden();
 });
 
-test("My account hides the card when Athlete Mode is off and tracking was never turned on", async ({ page, owner }) => {
+test("My Account hides the card when Athlete Mode is off and tracking was never turned on", async ({ page, owner }) => {
   await page.goto(owner.url("/account"));
   await expect(page.locator("#beta-row")).toBeVisible();
   await expect(page.locator("#health-row")).toBeHidden();

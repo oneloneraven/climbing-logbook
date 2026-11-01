@@ -2,7 +2,7 @@ import { DEV_USER } from "../scripts/lib/dev-session.mjs";
 import { OWNED_ORIGIN, ownedRouteUrl } from "./owned-route-url.js";
 import { expect, test } from "./owner.js";
 
-test("renders the shared chrome, no discipline picker, and the My account link/username", async ({ page, owner }) => {
+test("renders the shared chrome, no discipline picker, and the My Account link/username", async ({ page, owner }) => {
   await page.goto(owner.url("/account"));
 
   await expect(page.locator("climbing-header [data-brand-name]")).toHaveText("Climbing Logbook");

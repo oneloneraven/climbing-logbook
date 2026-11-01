@@ -10,7 +10,7 @@ const IN_FORCE = "consents.superseded_at IS NULL AND consents.withdrawn_at IS NU
 
 export const CONSENT_REQUIRED = {
   error:
-    "Pain and injury details can't be saved until you've agreed to the Health Data Agreement. You can do that in My account.",
+    "Pain and injury details can't be saved until you've agreed to the Health Data Agreement. You can do that in My Account.",
   code: "HEALTH_CONSENT_REQUIRED",
 };
 

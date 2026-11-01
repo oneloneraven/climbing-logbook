@@ -70,12 +70,12 @@ const CONSENT_INSIGHT = {
   off: {
     title: "Health data is off",
     text: "Agree to the Health Data Agreement to log pain and injuries and see this report.",
-    label: "Turn it on in My account",
+    label: "Turn it on in My Account",
   },
   paused: {
     title: "Health data is paused",
     text: "Agree to the updated Health Data Agreement to see this report.",
-    label: "Read it in My account",
+    label: "Read it in My Account",
   },
 };
 

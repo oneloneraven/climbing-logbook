@@ -32,7 +32,7 @@ const serverState = async owner => ({
   entries: (await (await owner.api("GET", "entries")).json()).entries,
 });
 
-test("lists every location with its country, areas and climbs, and is linked from My account (#159)", async ({
+test("lists every location with its country, areas and climbs, and is linked from My Account (#159)", async ({
   page,
   owner,
 }) => {

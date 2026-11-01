@@ -17,7 +17,7 @@ async function expectStep(page, n, heading) {
   await expect(title(page)).toHaveText(heading);
 }
 
-test("My account's Take the tour card starts the tour on the demo logbook", async ({ page, owner }) => {
+test("My Account's Take the tour card starts the tour on the demo logbook", async ({ page, owner }) => {
   await startFromMyAccount(page, owner);
 
   await page.waitForURL("**/intermediatedemo/log?tour=1&**");
@@ -76,7 +76,7 @@ test("the same eleven steps for everyone, across the log, the combined view and 
   await next(page).tap();
   await page.waitForURL("**/intermediatedemo/log?tour=9&**");
   await expectStep(page, 9, "Performance Insights");
-  await expect(dialog(page)).toContainText("Turn on Athlete Mode in My account");
+  await expect(dialog(page)).toContainText("Turn on Athlete Mode in My Account");
   await expect(page.locator("#performance-tab")).toBeVisible();
 
   await next(page).tap();

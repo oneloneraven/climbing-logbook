@@ -45,7 +45,7 @@ function betaIntro(hasReleases) {
   intro.append(
     "Released to Check our beta, not the main app yet. To get them now, join ",
     link,
-    ": in My account, choose Check our beta.",
+    ": in My Account, choose Check our beta.",
   );
   return intro;
 }

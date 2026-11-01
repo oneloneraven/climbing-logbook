@@ -22,7 +22,7 @@ To get into your account, someone needs both. If someone finds out your password
 
 You'll need an authenticator app. We really like [Proton Authenticator](https://proton.me/authenticator) and [Ente Auth](https://ente.com/auth/), but you can use any authenticator app.
 
-1. Go to My account, then *Account and authentication*, and choose *Set up 2FA*.
+1. Go to My Account, then *Account and authentication*, and choose *Set up 2FA*.
 2. Enter your password.
 3. Scan the QR code with your authenticator app. If you can't scan it, type the setup key into the app instead.
 4. Enter the code the app shows, to check it's working.
@@ -51,7 +51,7 @@ Log in with your password, then choose *Lost your device and your backup codes?*
 
 The wait protects you. 2FA is there for the moment someone else has your password. If anyone with your password could switch it off straight away, it wouldn't protect you at all.
 
-With the wait, someone with your password would also need your email, and would have to go a whole week without you noticing. You'll get an email as soon as the wait starts, and you can cancel it from that email or from My account.
+With the wait, someone with your password would also need your email, and would have to go a whole week without you noticing. You'll get an email as soon as the wait starts, and you can cancel it from that email or from My Account.
 
 ### Why we can't switch it off for you
 
@@ -59,8 +59,8 @@ When someone asks us for help, all we can see is a message and an email address.
 
 ## Turning it off
 
-Go to My account, then *Account and authentication*, and choose *Turn off* under *Two-Factor Authentication (2FA)*. You'll need your password. After that you log in with just your password.
+Go to My Account, then *Account and authentication*, and choose *Turn off* under *Two-Factor Authentication (2FA)*. You'll need your password. After that you log in with just your password.
 
 ## New backup codes
 
-If you've used most of your backup codes, or think someone has seen them, choose *Get new backup codes* in My account. Your old codes stop working straight away.
+If you've used most of your backup codes, or think someone has seen them, choose *Get new backup codes* in My Account. Your old codes stop working straight away.

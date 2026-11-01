@@ -54,7 +54,7 @@ export function renderNotEnrolled(doc, { reason, joinUrl }) {
     renderBlockedPage(doc, {
       id: "beta-not-enrolled",
       heading: "Check our beta is for enrolled users",
-      text: "You're not enrolled in Check our beta. You can join from My account at my.climbinglogbook.com.",
+      text: "You're not enrolled in Check our beta. You can join from My Account at my.climbinglogbook.com.",
       link: { href: joinUrl, label: "Join Check our beta" },
     });
   }

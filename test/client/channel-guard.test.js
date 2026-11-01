@@ -81,7 +81,7 @@ describe("enrollmentAllowsBoot", () => {
     resolveFetch({ status: 200, ok: true, json: async () => ({ betaOptIn: true }) });
   });
 
-  it("cached not enrolled: shows the message, keeps the header, hides the page, links to My account on my.x", async () => {
+  it("cached not enrolled: shows the message, keeps the header, hides the page, links to My Account on my.x", async () => {
     const allowed = await enrollmentAllowsBoot({
       loc: betaLoc,
       storage: memoryStorage({ betaOptIn: false }),

@@ -322,7 +322,7 @@ async function passkeyLogIn(autofill) {
     if (autofill) return;
     if (isCancelled(err)) {
       infoEl.textContent =
-        "No passkey was used. If you haven't added one for Climbing Logbook yet, log in with your password, then add one in My account.";
+        "No passkey was used. If you haven't added one for Climbing Logbook yet, log in with your password, then add one in My Account.";
       infoEl.hidden = false;
       return;
     }

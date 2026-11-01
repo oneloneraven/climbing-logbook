@@ -92,7 +92,7 @@ test("a failed save shows the error, focused, and stays on the page", async ({ p
   expect(page.url()).toBe(before);
 });
 
-test("links to the full help page and back to My account", async ({ page, owner }) => {
+test("links to the full help page and back to My Account", async ({ page, owner }) => {
   await page.goto(owner.url("/account/beta"));
   await expect(page.getByRole("link", { name: "Read more about Check our beta" })).toHaveAttribute(
     "href",

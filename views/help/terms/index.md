@@ -16,13 +16,13 @@ Climbing Logbook is an independent project run from the UK. If anything here isn
 
 - Online privacy law means you need to be 13 or over to create an account. If you're under 13, ask a parent or guardian to set one up for you.
 - You're responsible for what happens on your account, so keep your password safe.
-- You can delete your account at any time from My account, along with everything in it.
+- You can delete your account at any time from My Account, along with everything in it.
 
 <h2 id="your-logbook">Your logbook</h2>
 
 What you log is yours. You give us permission to store it and to show it to you, and, if your logbook is public, to show it to anyone who visits it. That's all we use it for. We never sell it or use it for advertising (see [Privacy](/help/privacy/)).
 
-You choose who can see your logbook during setup, and can change it later in My account. If you make it public, anyone can see it, including people who don't have an account.
+You choose who can see your logbook during setup, and can change it later in My Account. If you make it public, anyone can see it, including people who don't have an account.
 
 <h2 id="what-we-stand-for">What we stand for</h2>
 
@@ -105,7 +105,7 @@ If you disagree with something we've done, or with how we handled a report, use 
 
 <h2 id="our-side">Our side of it</h2>
 
-- Climbing Logbook is free, and we provide it as it is. We work hard to keep your logbook safe, but we can't promise the app will always be available or free of bugs. Export your logbook from time to time (My account, Export).
+- Climbing Logbook is free, and we provide it as it is. We work hard to keep your logbook safe, but we can't promise the app will always be available or free of bugs. Export your logbook from time to time (My Account, Export).
 - We might change or stop parts of the app. If we ever close it, we'll give you as much notice as we can to export your logbook.
 - Climbing is dangerous. Grades, notes and logbooks are records, not safety advice.
 - Nothing here takes away your rights under consumer law.

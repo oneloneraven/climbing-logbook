@@ -203,7 +203,7 @@ describe("recovering without the device (#1436)", () => {
     expect(await (await recovery("start", token)).json()).toMatchObject({ state: "cancelled" });
   });
 
-  it("can be cancelled from My account, which also shows it's pending", async () => {
+  it("can be cancelled from My Account, which also shows it's pending", async () => {
     await turnOn();
     const { pending } = await signInWithPassword();
     await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: pending });

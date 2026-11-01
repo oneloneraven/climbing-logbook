@@ -27,7 +27,7 @@ async function logInWithPassword(page, context, owner) {
   await expect(page.locator("#code-form")).toBeVisible();
 }
 
-test("sets up 2FA from My account, then logging in asks for a code (#1436)", async ({ page, context, owner }) => {
+test("sets up 2FA from My Account, then logging in asks for a code (#1436)", async ({ page, context, owner }) => {
   const { secret } = await turnOnInPage(page, owner);
 
   await logInWithPassword(page, context, owner);

@@ -9,7 +9,7 @@ const REPORTS = [
   { path: "strengths", chart: null, picker: false },
 ];
 
-test("every Performance insights report has one layout: descriptions, pickers, chart, then insights (#1375)", async ({
+test("every Performance Insights report has one layout: descriptions, pickers, chart, then insights (#1375)", async ({
   page,
   owner,
 }) => {

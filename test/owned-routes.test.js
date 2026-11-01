@@ -182,7 +182,7 @@ describe("owned route authorization", () => {
     const res = await fetchOwnedRoute("accountshelluser", "account", { cookie });
     expect(res.status).toBe(200);
     const html = await res.text();
-    expect(html).toContain("My account");
+    expect(html).toContain("My Account");
     expect(html).toMatch(/src="\/-\/account-app\.js(\?v=\d+)?"/);
   });
 

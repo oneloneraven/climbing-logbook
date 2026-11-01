@@ -67,7 +67,7 @@
   {
     "version": "v2.97.0",
     "date": "2026-10-08",
-    "changes": ["You can delete your account from My account."]
+    "changes": ["You can delete your account from My Account."]
   },
   {
     "version": "v2.96.0",
@@ -102,7 +102,7 @@
   {
     "version": "v2.80.0",
     "date": "2026-10-04",
-    "changes": ["You can clear what Climbing Logbook keeps on a device, from My account."]
+    "changes": ["You can clear what Climbing Logbook keeps on a device, from My Account."]
   },
   {
     "version": "v2.79.0",
@@ -168,13 +168,13 @@
     "version": "v2.28.0",
     "date": "2026-08-31",
     "changes": [
-      "Performance insights: an injury log, strengths and weaknesses, volume and intensity over time, your onsight to redpoint gap, and effort over time."
+      "Performance Insights: an injury log, strengths and weaknesses, volume and intensity over time, your onsight to redpoint gap, and effort over time."
     ]
   },
   {
     "version": "v2.5.0",
     "date": "2026-08-20",
-    "changes": ["Export your logbook as CSV or JSON from My account."]
+    "changes": ["Export your logbook as CSV or JSON from My Account."]
   },
   {
     "version": "v2.4.0",

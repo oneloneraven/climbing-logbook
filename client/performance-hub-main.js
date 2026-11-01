@@ -59,8 +59,8 @@ const {
 const tilesEl = document.getElementById("insight-tiles");
 
 const INJURY_CONSENT_DESCRIPTION = {
-  off: "Agree to the Health Data Agreement in My account to use this.",
-  paused: "Paused until you agree to the updated Health Data Agreement in My account.",
+  off: "Agree to the Health Data Agreement in My Account to use this.",
+  paused: "Paused until you agree to the updated Health Data Agreement in My Account.",
 };
 
 function description(insight) {

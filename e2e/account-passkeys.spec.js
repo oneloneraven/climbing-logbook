@@ -45,7 +45,7 @@ async function logInWithPasskey(page, context, owner) {
   await page.waitForURL(`**/${owner.username}/log`);
 }
 
-test("adds a passkey from My account, then logs in with it (#1439)", async ({ page, context, owner }) => {
+test("adds a passkey from My Account, then logs in with it (#1439)", async ({ page, context, owner }) => {
   await withoutAutofill(page);
   await virtualAuthenticator(page);
   await addPasskey(page, owner);
@@ -148,7 +148,7 @@ test("cancelling the passkey prompt explains what to do, rather than saying noth
   await page.goto(`${OWNED_ORIGIN}/-/login/`);
   await page.locator("#passkey-login-btn").click();
   await expect(page.locator("#login-info")).toHaveText(
-    "No passkey was used. If you haven't added one for Climbing Logbook yet, log in with your password, then add one in My account.",
+    "No passkey was used. If you haven't added one for Climbing Logbook yet, log in with your password, then add one in My Account.",
   );
   await expect(page.locator("#login-error")).toBeHidden();
 });

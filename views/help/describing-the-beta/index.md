@@ -1,12 +1,12 @@
 ---
 layout: help-layout.njk
-title: Describing the beta – Climbing Logbook
+title: Describing your beta – Climbing Logbook
 eleventyNavigation:
-  key: Describing the beta
+  key: Describing your beta
   order: 6.5
 ---
 
-# Describing the beta
+# Describing your beta
 
 In Athlete Mode, the Performance page of the entry form asks for the hardest move or sequence on each climb. Write it the way you'd describe it to a friend, and Climbing Logbook works out what you mean.
 

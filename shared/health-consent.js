@@ -9,7 +9,7 @@ export const PAIN_INJURY_HISTORY = [
       "Pain and injury details are health information, which data protection law treats as sensitive. That's why this is off until you agree to it.",
       "Your health information is stored with the rest of your logbook. It's never shown on your public profile.",
       "The site administrator can see it, only for support and moderation.",
-      "You can turn it off at any time in My account. Turning it off deletes your pain and injury details.",
+      "You can turn it off at any time in My Account. Turning it off deletes your pain and injury details.",
     ],
     statement:
       "I'm 16 or over, or my parent or guardian agrees to this. I agree to Climbing Logbook storing and processing my pain and injury information as described above.",
@@ -27,7 +27,7 @@ export const PAIN_INJURY_HISTORY = [
       },
       {
         label: "What it's for",
-        text: "finding patterns in your climbing performance, shown only in your own Performance insights.",
+        text: "finding patterns in your climbing performance, shown only in your own Performance Insights.",
       },
       { label: "You choose what's logged", text: "nothing is recorded unless you log it yourself." },
       {
@@ -40,7 +40,7 @@ export const PAIN_INJURY_HISTORY = [
       },
       {
         label: "Withdrawing",
-        text: "you can withdraw at any time in My account. Withdrawing deletes all your health information from your logbook straight away, and from our backups within 30 days. Your climbs and other performance insights data are unaffected.",
+        text: "you can withdraw at any time in My Account. Withdrawing deletes all your health information from your logbook straight away, and from our backups within 30 days. Your climbs and other performance insights data are unaffected.",
       },
     ],
     statement:

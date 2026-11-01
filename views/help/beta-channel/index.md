@@ -14,11 +14,11 @@ eleventyNavigation:
 
 ## Joining Check our beta
 
-If you signed up with an invite code, you're already in *Check our beta*. You can leave at any time from the same page in My account.
+If you signed up with an invite code, you're already in *Check our beta*. You can leave at any time from the same page in My Account.
 
 Otherwise:
 
-1. Open the menu and go to **My account**.
+1. Open the menu and go to **My Account**.
 2. Choose **Check our beta**.
 3. Confirm that you understand what changes and what you need to do by hitting **Join Check our beta**.
 
@@ -47,7 +47,7 @@ The *Check our beta* page tells you if the version you're using has changes wait
 
 ## Leaving Check our beta
 
-1. Open the menu and go to **My account**.
+1. Open the menu and go to **My Account**.
 2. Choose **Check our beta**.
 3. Choose **Leave Check our beta**.
 

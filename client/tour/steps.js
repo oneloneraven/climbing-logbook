@@ -57,7 +57,7 @@ const STEPS = [
     page: "log",
     target: "#performance-tab",
     title: "Performance Insights",
-    body: "Reports built from your climbs, visible only to you. Turn on Athlete Mode in My account to get them.",
+    body: "Reports built from your climbs, visible only to you. Turn on Athlete Mode in My Account to get them.",
   },
   {
     page: "log",
