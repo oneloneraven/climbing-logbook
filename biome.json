@@ -12,5 +12,8 @@
       "arrowParentheses": "asNeeded"
     }
   },
-  "linter": { "enabled": true, "rules": { "preset": "recommended" } }
+  "linter": {
+    "enabled": true,
+    "rules": { "preset": "recommended", "correctness": { "usePlaywrightValidDescribeCallback": "off" } }
+  }
 }

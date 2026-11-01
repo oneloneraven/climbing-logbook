@@ -30,7 +30,7 @@
     "@11ty/eleventy": "3.1.7",
     "@11ty/eleventy-navigation": "^1.0.5",
     "@axe-core/playwright": "^4.14.0",
-    "@biomejs/biome": "^2.5.15",
+    "@biomejs/biome": "^2.6.4",
     "@cloudflare/vite-plugin": "^1.64.0",
     "@cloudflare/vitest-plugin": "^1.4.4",
     "@cloudflare/workers-types": "^5.20261016.1",
