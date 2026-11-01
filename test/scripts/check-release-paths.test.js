@@ -12,7 +12,7 @@ describe("checkReleasePaths", () => {
       ".github/workflows/test.yml",
       ".claude/settings.json",
       "test/scripts/check-release-paths.test.js",
-      "e2e/log.spec.js",
+      "e2e/areas.js",
       "scripts/seed-preview-data.mjs",
       "scripts/synthetic-check.mjs",
       ".gitignore",
@@ -24,40 +24,38 @@ describe("checkReleasePaths", () => {
   });
 
   it("names every file that can reach users", () => {
-    const changed = [
-      "docs/workflow.md",
-      "infra/dns.tf",
-      "migrations/0001_init.sql",
+    const reaching = [
+      "infra/access.tf",
+      "migrations/0001_better_auth_core.sql",
       "server/index.js",
-      "views/help/start.md",
-      "scripts/build.mjs",
+      "views/help/index.md",
+      "scripts/lib/build-version.mjs",
       "wrangler.jsonc",
     ];
-    expect(checkReleasePaths(changed, config).offending).toEqual([
-      "infra/dns.tf",
-      "migrations/0001_init.sql",
-      "server/index.js",
-      "views/help/start.md",
-      "scripts/build.mjs",
-      "wrangler.jsonc",
-    ]);
+    expect(checkReleasePaths(["docs/workflow.md", ...reaching], config).offending).toEqual(reaching);
   });
 
   it("limits a root-only pattern to the repository root", () => {
     expect(checkReleasePaths(["README.md"], config).ok).toBe(true);
-    expect(checkReleasePaths(["views/README.md"], config).ok).toBe(false);
+    expect(checkReleasePaths(["views/help/index.md"], config).ok).toBe(false);
   });
 
   it("matches a directory entry only as a prefix and a file entry only exactly", () => {
-    expect(checkReleasePaths(["docs-extra/a.txt", "biome.json.bak"], config).offending).toEqual([
-      "docs-extra/a.txt",
+    expect(checkReleasePaths(["docs-extra.txt", "biome.json.bak"], config).offending).toEqual([
+      "docs-extra.txt",
       "biome.json.bak",
     ]);
   });
 
   it("rejects a forbidden path even when an allowed entry covers it", () => {
-    const cfg = { noneAllowed: ["docs/"], noneForbidden: ["docs/generated/"] };
-    expect(checkReleasePaths(["docs/a.md", "docs/generated/b.md"], cfg).offending).toEqual(["docs/generated/b.md"]);
+    const cfg = { noneAllowed: ["docs/"], noneForbidden: ["docs/adr/"] };
+    expect(checkReleasePaths(["docs/workflow.md", "docs/adr/README.md"], cfg).offending).toEqual([
+      "docs/adr/README.md",
+    ]);
+  });
+
+  it("forbids infra and migrations outright", () => {
+    expect(config.noneForbidden).toEqual(["infra/", "migrations/"]);
   });
 
   it("accepts an empty change list", () => {
@@ -66,20 +64,19 @@ describe("checkReleasePaths", () => {
 });
 
 describe("check-release-paths CLI", () => {
-  const run = input =>
-    spawnSync("node", [".github/scripts/check-release-paths.mjs"], { input, encoding: "utf8" });
+  const run = input => spawnSync("node", [".github/scripts/check-release-paths.mjs"], { input, encoding: "utf8" });
 
   it("exits 0 and reports success when every file is allowed", () => {
-    const result = run("docs/a.md\n.github/workflows/x.yml\n");
+    const result = run("docs/workflow.md\n.github/workflows/test.yml\n");
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("never-reaches-users allowlist");
   });
 
   it("exits 1 and lists the offending files", () => {
-    const result = run("docs/a.md\ninfra/main.tf\n");
+    const result = run("docs/workflow.md\ninfra/access.tf\n");
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("::error::");
-    expect(result.stdout).toContain("infra/main.tf");
-    expect(result.stdout).not.toContain("docs/a.md");
+    expect(result.stdout).toContain("infra/access.tf");
+    expect(result.stdout).not.toContain("docs/workflow.md");
   });
 });
