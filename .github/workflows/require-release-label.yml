@@ -67,9 +67,9 @@ jobs:
             echo "Not release: none -- nothing to check."
             exit 0
           fi
-          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" \
-            --jq '.[] | .filename, (.previous_filename // empty)' \
-            | node .github/scripts/check-release-paths.mjs
+          files=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" \
+            --jq '.[] | .filename, (.previous_filename // empty)')
+          printf '%s\n' "$files" | env -u GH_TOKEN node .github/scripts/check-release-paths.mjs
 
       # #1504 -- Help > What's new is built from this section, via the release tag.
       - name: Verify a released PR has a What's new section
