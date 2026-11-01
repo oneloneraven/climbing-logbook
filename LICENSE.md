@@ -1,6 +1,6 @@
 # Climbing Logbook Noncommercial Licence 1.0.0
 
-Required Notice: Copyright Nix Crabtree (https://climbinglogbook.com)
+Required Notice: Copyright Ravendarque (https://climbinglogbook.com)
 
 ## Acceptance
 
