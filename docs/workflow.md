@@ -83,6 +83,11 @@ minute and 500 per hour.
 - Start each piece of work with `pnpm outdated` (or the stack's equivalent)
   and the open Dependabot alerts. Bring anything behind up to date in its own
   PR.
+- `@ravendarque` packages need a registry token locally. pnpm ignores tokens
+  in a project `.npmrc`, so put
+  `//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}` in `~/.npmrc` and export
+  `NODE_AUTH_TOKEN=$(gh auth token)` in your shell profile. A token with
+  `read:packages` is enough.
 - Default to the latest stable version. A breaking bump gets its own issue
   first, never applied blindly or skipped silently.
 - Judge a pre-release version by whether the vendor ships it as their
