@@ -18,11 +18,8 @@ test("lists beta-only releases under Beta channel and the rest under Main channe
   const list = page.locator("#whats-new-list");
 
   await expect(list.getByRole("heading", { level: 2 })).toHaveText(["Check our beta", "Main Channel"]);
-  const [beta, main] = await list.evaluate(el => {
-    const text = el.textContent;
-    const at = text.indexOf("Main Channel");
-    return [text.slice(0, at), text.slice(at)];
-  });
+  const beta = await page.locator("#whats-new-beta").textContent();
+  const main = await page.locator("#whats-new-main").textContent();
   expect(beta).toContain("A beta-only change.");
   expect(beta).toContain("Check our beta");
   expect(main).toContain("A change on the Main Channel.");
