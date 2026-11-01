@@ -139,7 +139,7 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 | `CLOUDFLARE_PREVIEW_TOKEN`, `CLOUDFLARE_INFRA_PLAN_TOKEN` | Actions secrets | Previews; Terraform plan on PRs (permissions below) |
 | `CLOUDFLARE_DEPLOY_TOKEN` | `production` environment secret | Deploy and promote |
 | `CLOUDFLARE_INFRA_APPLY_TOKEN` | `infra` environment secret | Terraform apply and the state bootstrap |
-| `RELEASE_APP_CLIENT_ID` (variable), `RELEASE_APP_PRIVATE_KEY` (secret) | Actions variable and secret | The release GitHub App, which pushes the version tag that triggers a deploy (Contents: write, this repo only) |
+| `RELEASE_APP_CLIENT_ID` (variable), `RELEASE_APP_PRIVATE_KEY` (secret) | Actions variable and secret | The release GitHub App, which pushes the version tag that triggers a deploy (Contents and Workflows: write, this repo only) |
 | `PROJECT_STATUS_PAT` | Actions secret | Classic token with only the `project` scope, for the board sync; a GitHub App can't reach a board owned by a personal account |
 | `PROJECT_ID`, `PROJECT_STATUS_FIELD_ID`, `PROJECT_IN_PROGRESS_OPTION`, `PROJECT_IN_REVIEW_OPTION` | Actions variables | The board, its Status field and the two Status options the board sync sets; not confidential |
 | `TF_STATE_READ_ACCESS_KEY_ID`, `TF_STATE_READ_SECRET_ACCESS_KEY` | Actions secrets | Read-only R2 credentials for the state backend, used by PR plans |

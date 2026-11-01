@@ -142,7 +142,7 @@ interacts with branch protection on `main` — tags aren't covered by it.
 The tag goes on the merged PR's own merge commit, not the tip of `main`, so two PRs merged moments apart each get their own tag (#1509). Every merged PR's run tags each released PR since the latest tag, oldest first, so a run that GitHub cancels while it waits (the `release` concurrency group keeps only one waiting) loses nothing: the next run tags that PR too (#1512).
 That tag push is what triggers `deploy.yml`. It authenticates with a
 short-lived token from the release GitHub App (`RELEASE_APP_CLIENT_ID`
-variable, `RELEASE_APP_PRIVATE_KEY` secret; Contents: write on this repo
+variable, `RELEASE_APP_PRIVATE_KEY` secret; Contents and Workflows: write on this repo
 only) rather than
 the default `GITHUB_TOKEN`, since GitHub doesn't let a
 `GITHUB_TOKEN`-authenticated push trigger other workflows (#197, #1069).
