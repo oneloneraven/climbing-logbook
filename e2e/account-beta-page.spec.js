@@ -8,7 +8,7 @@ test("not enrolled: explains joining, and Join writes the setting and opens the 
 
   await expect(page.getByRole("heading", { name: "Check our beta" })).toBeVisible();
   await expect(page.locator("#beta-status")).toHaveText("You're not enrolled in the beta.");
-  await expect(page.locator("#beta-join")).toContainText("The beta uses your logbook");
+  await expect(page.locator("#beta-join")).toContainText("uses the same logbook as the regular version");
   await expect(page.locator("#beta-leave")).toBeHidden();
   await expect(page.locator("#beta-queue-warning")).toBeHidden();
 
