@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.16.0"
+  required_version = ">= 1.10.0"
 
   required_providers {
     cloudflare = {
@@ -15,7 +15,7 @@ terraform {
   # State lives in an R2 bucket (S3-compatible API), bootstrapped once via
   # scripts/bootstrap-state.mjs. Only the credentials (access_key/secret_key)
   # are excluded here — supplied via AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-  # env vars at `terraform init` time, never committed.
+  # env vars at `tofu init` time, never committed.
   backend "s3" {
     bucket                      = "climbing-logbook-tfstate"
     key                         = "climbing-logbook/terraform.tfstate"
