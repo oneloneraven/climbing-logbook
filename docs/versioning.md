@@ -59,13 +59,12 @@ app rather than a published library with a versioned API contract:
     tag whose diff touches either deploys straight to production as well
     as beta (`deploy.yml`). So an untagged infra or migration change
     doesn't wait for the next promote: it takes whatever release comes
-    next to production with it. That's how #984 reached production
-    unpromoted (#990, #995).
+    next to production with it.
   - **App code, build scripts and build config always get a real bump**,
     including refactors with no intended visible difference: they change
     what's deployed.
 
-  CI enforces this (#995): `require-release-label.yml` fails `release:
+  CI enforces this: `require-release-label.yml` fails `release:
   none` unless every changed file is on the allowlist in
   `.github/release-paths.json` of paths that never reach users (`docs/`,
   `.github/`, `.claude/`, `.gitignore`, `.git-blame-ignore-revs`,
@@ -126,9 +125,9 @@ time, by applying one of four labels to the PR:
 **A release label is required before merge** — `.github/workflows/
 require-release-label.yml` runs as a required check on every PR and fails
 until one of the four labels above is applied. This isn't optional
-bookkeeping: for three weeks (see issue #173) "no label → no release" meant
-PRs merged unlabeled by default, and 58 of them did, silently bundling real
-user-facing changes into an unreleased, untagged backlog. Making the
+bookkeeping: without it, "no label → no release" lets PRs merge unlabelled by
+default, silently bundling real user-facing changes into an unreleased,
+untagged backlog. Making the
 release decision itself required — even when the answer is "none" — is
 what prevents that from happening again. `release: none` merges with no
 version bump; the other three trigger the release workflow below.
@@ -139,13 +138,13 @@ finds the latest existing `vX.Y.Z` tag, calculates the new version with the
 no push to `main`) and creates a GitHub Release with auto-generated notes —
 no manual step required. Because it never pushes to `main`, this never
 interacts with branch protection on `main` — tags aren't covered by it.
-The tag goes on the merged PR's own merge commit, not the tip of `main`, so two PRs merged moments apart each get their own tag (#1509). Every merged PR's run tags each released PR since the latest tag, oldest first, so a run that GitHub cancels while it waits (the `release` concurrency group keeps only one waiting) loses nothing: the next run tags that PR too (#1512).
+The tag goes on the merged PR's own merge commit, not the tip of `main`, so two PRs merged moments apart each get their own tag. Every merged PR's run tags each released PR since the latest tag, oldest first, so a run that GitHub cancels while it waits (the `release` concurrency group keeps only one waiting) loses nothing: the next run tags that PR too.
 That tag push is what triggers `deploy.yml`. It authenticates with a
 short-lived token from the release GitHub App (`RELEASE_APP_CLIENT_ID`
 variable, `RELEASE_APP_PRIVATE_KEY` secret; Contents: write on this repo
 only) rather than
 the default `GITHUB_TOKEN`, since GitHub doesn't let a
-`GITHUB_TOKEN`-authenticated push trigger other workflows (#197, #1069).
+`GITHUB_TOKEN`-authenticated push trigger other workflows.
 
 `workflow_dispatch` (Actions tab → "Release" → Run workflow) still exists
 as a manual override, for a corrective release or anything unusual that
@@ -160,15 +159,15 @@ the annotated tag's message, under the version
 from git (`scripts/lib/whats-new.mjs`). A release with no lines isn't
 listed. The required release-label check also fails a PR labelled patch,
 minor or major whose description has no "What's new" heading
-(`scripts/check-whats-new.mjs`, #1504).
+(`scripts/check-whats-new.mjs`).
 
 Each build also publishes the same list as `/-/releases.json`. The page
 lives on the main site only (the app hosts redirect help pages there).
 When it opens, it reads beta's `/-/releases.json` (allowed cross-origin by
 `static/_headers`) and production's version (`/-/api/health`), then shows
 releases newer than production under **Beta channel** and the rest under
-**Main channel** (`client/whats-new-channels.js`, #1506). If either read
-fails, it keeps the list its own build rendered. Releases from before #917 are in
+**Main channel** (`client/whats-new-channels.js`). If either read
+fails, it keeps the list its own build rendered. Earlier releases are in
 `scripts/lib/whats-new-history.json`.
 
 ## Database migrations: expand and contract

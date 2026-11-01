@@ -131,18 +131,17 @@ quietly reversed without someone re-deciding on purpose.
 See [ADR-0002](adr/0002-replace-cloudflare-access-with-better-auth.md) for
 why Better Auth replaced Cloudflare Access as the mechanism itself.
 
-- **Better Auth sessions gate admin/write paths inside the Worker itself
-  (#297)** — not a shared secret checked ad hoc, and not an edge-only gate.
+- **Better Auth sessions gate admin/write paths inside the Worker itself** — not a shared secret checked ad hoc, and not an edge-only gate.
   Every resource route under `/-/api/` (entries, places, locations,
   settings, performance, map) requires a session for every method and
-  answers 401 without one (#992). Anonymous reads exist only under
+  answers 401 without one. Anonymous reads exist only under
   `/-/api/public/:username/*`, which checks the target user's
   `logbook_public` itself, so a private logbook is secure by absence.
 - Every write endpoint resolves its session server-side
   (`server/lib/session.js`) and scopes the operation to that session's own
   `user_id` — the actual multi-tenant isolation boundary. Never trust a
   `user_id` supplied in the request body.
-- **One username policy (#997).** `shared/username-policy.js` decides
+- **One username policy.** `shared/username-policy.js` decides
   every username, on sign-up and on change, via Better Auth's
   `usernameValidator`. It covers the format, the demo accounts, reserved
   names and their lookalikes (`he1p`, `log_in`), authority words as part
@@ -154,7 +153,7 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
   already have it. The script only reports, so a person decides what
   happens to each account.
 
-- **Keep [threat-model.md](threat-model.md) current (#1031).** A change
+- **Keep [threat-model.md](threat-model.md) current.** A change
   that adds or moves a trust boundary updates it in the same PR: a new
   host, an auth or session change, data exposed to anyone but its owner, a
   new processor, a new secret or CI permission, or an ADR touching any of
@@ -197,7 +196,7 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
   writes one JSON object per event, with the request's `ray`, route
   template, environment and release version, so Workers Logs can filter on
   each field. `server/index.js` builds one per request. The one exception
-  is local dev's email print (`EMAIL_DELIVERY: "log"`, #1357), which writes
+  is local dev's email print (`EMAIL_DELIVERY: "log"`), which writes
   the recipient and link to the developer's own terminal and refuses to
   run anywhere `APP_ENV` isn't `development`.
 - **Name events as stable, dotted names**, such as `email.failed` or
@@ -208,7 +207,7 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
 - **Never log a body, an email address, a password, token or cookie, or
   any entry field** (notes, injury, RPE). The logger only passes fields on
   its allowlist and writes `"[redacted]"` for anything else. Add a field
-  to the allowlist only when it's safe under the telemetry policy (#1027),
+  to the allowlist only when it's safe under the telemetry policy,
   with a test.
 - **Identify a person by their internal user id only,** never by username
   or email.
@@ -238,8 +237,7 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
   build (`scripts/minify-static.mjs`), and templates use `{# #}`, never
   `<!-- -->` (enforced by `test/scripts/template-comments.test.js`).
   Never spell out Nunjucks' own delimiters
-  literally in a template, even inside a comment: Nunjucks evaluates them
-  (#943).
+  literally in a template, even inside a comment: Nunjucks evaluates them.
 - **Docs describe the current state.** They're maps of how things are,
   with links to ADRs for the reasons, not a log of every change. Update
   them in the same PR as the change that makes them wrong.
@@ -250,7 +248,7 @@ See [ADR-0006](adr/0006-design-for-poor-connectivity-first.md) for the full
 decision and why it's an ongoing constraint, not a single shipped feature.
 
 - **This app is built for bad connections, not despite them** — "signal at
-  the crag is usually bad" (#111). That's the actual operating condition to
+  the crag is usually bad". That's the actual operating condition to
   design for, not an edge case.
 - **Don't put a network request at the moment of interaction for something
   that could be available upfront instead.** A lazy/on-demand fetch (e.g.
@@ -262,7 +260,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
   (`client/store.js`) and offline queue (`client/offline-sync.js`) keep it
   working with no signal.
 - **Opening an owner page with no signal is the service worker's job**
-  ([ADR-0028](adr/0028-service-worker-owns-the-owner-app-shell.md), #945).
+  ([ADR-0028](adr/0028-service-worker-owns-the-owner-app-shell.md)).
   `/service-worker.js`, built from `client/sw/`, is registered with scope
   `/` by owner pages only. At install it pre-caches every owner page's
   shell and assets for the build (resumable, reusing unchanged files), so
@@ -280,8 +278,6 @@ decision and why it's an ongoing constraint, not a single shipped feature.
   it as a static file under `/-/` so it's cached after first load
   (ADR-0028's static-asset tier) rather than leaving it an uncached
   fetch-on-open.
-- See #111 for the broader initiative (progressive/streamed data loading)
-  this principle is part of.
 
 ### Accessibility
 - **Use a real `<button>` for anything clickable**, so focus, Enter/Space
@@ -293,7 +289,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
   pattern**: `aria-sort` on the `<th>` (it's only valid on column and row
   headers) and a `<button>` inside it. Never `role="button"` on the `<th>`
   itself: that replaces the column header role, so the header and its
-  sort state stop being announced (#1098).
+  sort state stop being announced.
 - **Every column header has an accessible name.** An icon-only column
   gets visually hidden text ("Notes", "Video", "Edit"), not an empty
   `<th>`.
@@ -319,7 +315,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
   device data*, *Join the beta*). Buttons that open a form, show
   something, download, copy, navigate or dismiss are grey (`btn`).
   Exceptions: the log's *Add*, the landing page's *Sign up*, and the
-  welcome wizard's and tour's *Next* (#1467).
+  welcome wizard's and tour's *Next*.
 - **`btn-danger` (red text) is for destructive actions**: deleting,
   removing, discarding, banning, and anything that makes the account less
   secure, such as turning off 2FA. They read as a high-risk submit, so

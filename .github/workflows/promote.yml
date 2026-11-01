@@ -1,12 +1,7 @@
 name: Promote to production
 
-# The deliberate second half of the beta/production split (#443/ADR-0020,
-# see deploy.yml's own comment for the first half). Deploys a chosen,
-# already-tagged commit to production only -- beta already has it, this
-# doesn't touch beta. No separate "which releases to bundle" mechanism is
-# needed: git tags in this repo are cumulative snapshots of `main`, not
-# deltas, so promoting the latest tag already includes everything beta has
-# accumulated since the last promotion.
+# Deploys a chosen, already-tagged commit to production only (ADR-0020). Tags are cumulative snapshots of main,
+# so promoting the latest tag includes everything beta has accumulated.
 on:
   workflow_dispatch:
     inputs:
@@ -31,9 +26,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          # Full history + tags: resolving "latest tag" and checking out
-          # an arbitrary past tag both need more than the default shallow
-          # single-commit checkout.
+          # Full history and tags, to resolve the latest tag and check out an earlier one.
           fetch-depth: 0
       - name: Resolve tag to promote
         id: resolve
@@ -53,18 +46,10 @@ jobs:
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
       - uses: $/.github/actions/setup-node-pnpm
-      # #760 -- see deploy.yml's own comment on this same line: page
-      # shells are 11ty-generated, gitignored output now, not committed.
       - run: pnpm run html:build
       - run: pnpm run tailwind:build
-      # Idempotent -- safe to run even if this tag's migrations (if any)
-      # already applied via deploy.yml's own direct-path deploy. Beta and
-      # production share the same D1 database (ADR-0020), so there's
-      # nothing environment-specific about this step.
-      # Beta and production share this database (ADR-0020), so every tag
-      # migrates production. Logged first so the run itself records the
-      # restore point: `wrangler d1 time-travel restore climbing-logbook
-      # --bookmark=<bookmark>` (docs/versioning.md, Database migrations).
+      # Idempotent, and beta and production share the database (ADR-0020). The restore point is logged first
+      # (docs/versioning.md, Database migrations).
       - name: Record D1 restore point before migrating
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DEPLOY_TOKEN }}
@@ -73,13 +58,8 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DEPLOY_TOKEN }}
         run: pnpm exec wrangler d1 migrations apply climbing-logbook --remote
-      # #774 -- CLOUDFLARE_ENV=production (env.production, wrangler.jsonc)
-      # at build time, not `wrangler deploy --env=""` alone -- see
-      # deploy.yml's own comment for the full reasoning.
-      # scripts/require-cloudflare-env.mjs refuses to build at all without
-      # a recognized CLOUDFLARE_ENV, so a missing value here fails loudly
-      # rather than deploying silently-wrong bindings. `--env=""` is kept
-      # on the deploy command too as real (confirmed) defense in depth.
+      # CLOUDFLARE_ENV selects the environment at build time; deploy:build refuses to run without it,
+      # and --env="" pins deploy-time validation to env.production.
       - name: Deploy to production
         id: deploy_production
         run: pnpm run deploy:build && pnpm exec wrangler deploy --env="" --tag "$TAG"

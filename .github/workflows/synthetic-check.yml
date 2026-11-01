@@ -1,40 +1,8 @@
 name: Synthetic production check
 
-# #361: catches the exact "shipped but broken" class of bug #354 was --
-# a session cookie the server issues that a real browser would never
-# actually send cross-subdomain. Neither the Playwright E2E suite (only
-# ever runs against PR previews on a single origin, ADR-0011) nor a
-# manual post-deploy glance caught it; this would have, within seconds.
-#
-# Runs right after every successful Deploy (catches a bad deploy
-# immediately) and on a schedule (catches drift unrelated to any specific
-# deploy -- cert expiry, Cloudflare-side config changes).
-#
-# Requires SYNTHETIC_USER_EMAIL / SYNTHETIC_USER_PASSWORD secrets -- see
-# infra/README.md's "Synthetic monitoring account" section for the
-# one-time manual bootstrap. Set them yourself, not via an assistant, so
-# the credential never passes through a shared transcript:
-#   gh secret set SYNTHETIC_USER_EMAIL
-#   gh secret set SYNTHETIC_USER_PASSWORD
-#
-# Deliberately does NOT auto-file a GitHub issue on every failure -- a
-# failing scheduled run is already loud (visible in the Actions tab, and
-# GitHub emails the repo owner on a scheduled-workflow failure by
-# default); auto-filing on top of that would spam an issue per flaky/
-# transient failure instead of a real deploy regression.
-#
-# #891 -- the one narrow exception: notify-on-repeated-failure below
-# files a single issue when the check fails on TWO CONSECUTIVE real
-# deploys (workflow_run-triggered only -- the schedule-triggered runs
-# above never participate in this at all, same noise concern the no-
-# auto-file decision above was about). Notification only, deliberately
-# not automatic rollback -- promote.yml's own workflow_dispatch already
-# makes redeploying a known-good prior tag a one-input manual operation,
-# and an auto-revert risks rolling back to a tag that has the identical
-# problem if the break isn't actually in the code (a live Cloudflare
-# blip, an expired cert) -- a human looking is the safer default here,
-# same reasoning the no-auto-file decision above already established for
-# a single failure, just re-applied one confirmed-real-regression later.
+# Checks production after every successful Deploy and every 30 minutes (the e2e suite only sees PR previews, ADR-0011).
+# Needs SYNTHETIC_USER_EMAIL and SYNTHETIC_USER_PASSWORD (infra/README.md, Synthetic monitoring account).
+# It files one issue, only after two consecutive real-deploy failures, and notifies rather than rolls back.
 on:
   # Runs repo code from main and reads nothing from the triggering run.
   workflow_run: # zizmor: ignore[dangerous-triggers]
@@ -49,20 +17,14 @@ permissions:
 
 jobs:
   check:
-    # workflow_run fires on every completion of Deploy, including a
-    # failed or skipped run -- only actually check after a real success
-    # (a failed deploy is already loud on its own, no need to also run
-    # this against whatever was live before it).
+    # Only check after a successful Deploy; a failed one is already loud.
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # No pnpm/dependency install -- the script is plain Node fetch with
-      # zero npm dependencies, so the full setup-node-pnpm composite
-      # action (which also runs `pnpm install`) would just be wasted
-      # work here.
+      # Nothing to install, so setup-node-pnpm is skipped.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
@@ -71,13 +33,7 @@ jobs:
           SYNTHETIC_USER_EMAIL: ${{ secrets.SYNTHETIC_USER_EMAIL }}
           SYNTHETIC_USER_PASSWORD: ${{ secrets.SYNTHETIC_USER_PASSWORD }}
 
-  # #891 -- only for a real Deploy-triggered failure (the `if` below),
-  # never for a scheduled run -- see this file's own header comment for
-  # why the two are treated so differently. No persistent counter to
-  # maintain: GitHub already keeps this workflow's own run history, so
-  # "was the immediately-preceding workflow_run-triggered run ALSO a
-  # failure" is answered by reading that history directly rather than
-  # tracking state of our own that could itself drift out of sync.
+  # Deploy-triggered failures only. The previous run's conclusion comes from run history, so there is no counter to keep.
   notify-on-repeated-failure:
     needs: check
     if: github.event_name == 'workflow_run' && needs.check.result == 'failure'
@@ -93,20 +49,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # --status completed, not --limit 2 off the raw list: THIS run
-          # (the one notify-on-repeated-failure is itself part of) hasn't
-          # completed yet at this point -- only its `check` job has -- so
-          # it wouldn't have a real conclusion to compare against anyway,
-          # and needs.check.result == 'failure' above already establishes
-          # it as failure #1. This finds failure #2's candidate: the most
-          # recent workflow_run-triggered run that HAS actually finished.
-          #
-          # --workflow takes this file's own filename, not
-          # the workflow's name -- that resolves to the `name:` field
-          # above ("Synthetic production check"), which `gh run list`
-          # does NOT match against (confirmed empirically: the name form
-          # errors "could not find any workflows named ...", the filename
-          # form works) -- hardcoded rather than silently wrong.
+          # --status completed skips this unfinished run; --workflow needs the filename, as gh run list doesn't match the name.
           PREVIOUS=$(gh run list --repo "${{ github.repository }}" --workflow synthetic-check.yml --event workflow_run --status completed --limit 1 --json conclusion --jq '.[0].conclusion // empty')
           echo "previous=$PREVIOUS" >> "$GITHUB_OUTPUT"
 

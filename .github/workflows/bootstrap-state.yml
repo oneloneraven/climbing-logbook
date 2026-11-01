@@ -20,11 +20,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          # No pnpm install runs here (bootstrap-state.mjs is a
-          # self-contained script, only Node builtins) -- v5+'s automatic
-          # packageManager-detected caching would otherwise turn on for
-          # no benefit, since nothing after this step would ever restore
-          # from it.
+          # Nothing is installed here, so setup-node's automatic cache would never be restored.
           package-manager-cache: false
       - run: node scripts/bootstrap-state.mjs
         env:

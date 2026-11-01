@@ -1,22 +1,7 @@
 name: Require release label
 
-# Blocks a PR from being mergeable until it carries a deliberate release
-# decision — one of the three release: major/minor/patch labels, or the
-# explicit no-bump opt-out release: none. See docs/versioning.md.
-# A PR that makes a release must also have a "What's new" section (#1504).
-#
-# This exists because "no label = no release" previously meant PRs could
-# (and did — see issue #173) merge silently unlabeled for weeks, bundling
-# real user-facing changes into an untagged, unreleased backlog. Making the
-# choice itself required, rather than opt-in, is what actually prevents
-# that recurring.
-#
-# Draft PRs are skipped, and ready_for_review runs it (#1021): Claude opens
-# PRs as drafts, labels them, then marks them ready, because its GitHub tool
-# can't label at creation. Checking at `opened` failed in the seconds
-# before the label landed, and that failed run stayed on the PR as a stale
-# red even after the `labeled` run passed. A draft can't be merged, so
-# skipping it gives nothing away.
+# Blocks a PR until it carries a release label (major, minor, patch or none; docs/versioning.md), and a
+# "What's new" section when it makes a release. Drafts are skipped; ready_for_review runs it, so the label is on first.
 on:
   pull_request:
     types: [opened, reopened, edited, labeled, unlabeled, synchronize, ready_for_review]
@@ -34,14 +19,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Live query, not `github.event.pull_request.labels` -- that's a
-      # snapshot of the webhook payload at the moment the triggering event
-      # fired, not the PR's actual state when this job runs. `gh pr create
-      # --label` isn't a single atomic API call (create-PR, then a separate
-      # add-labels call), so the `opened` event's payload can genuinely
-      # predate the label landing -- checking live state at run time (by
-      # which point the label call has long since completed) closes that
-      # race regardless of how/when the label was attached.
+      # Live labels, not the event payload: a label added just after creation isn't in the opened event.
       - name: Verify a release label is present
         env:
           GH_TOKEN: ${{ github.token }}
@@ -55,8 +33,7 @@ jobs:
             exit 1
           fi
 
-      # #995 -- release: none is only for changes that never reach users. To widen
-      # the allowlist, edit .github/release-paths.json in a reviewed diff.
+      # release: none is only for changes that never reach users. Widen the allowlist in .github/release-paths.json.
       - name: Verify release none only covers files that never reach users
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,7 +48,7 @@ jobs:
             --jq '.[] | .filename, (.previous_filename // empty)')
           printf '%s\n' "$files" | env -u GH_TOKEN node .github/scripts/check-release-paths.mjs
 
-      # #1504 -- Help > What's new is built from this section, via the release tag.
+      # Help > What's new is built from this section, via the release tag.
       - name: Verify a released PR has a What's new section
         env:
           GH_TOKEN: ${{ github.token }}

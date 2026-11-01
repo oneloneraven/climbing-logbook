@@ -1,6 +1,6 @@
 name: Preview
 
-# A Cloudflare Preview of the separate preview Worker for each PR, deleted when it closes (#1338). Not a required check, so
+# A Cloudflare Preview of the separate preview Worker for each PR, deleted when it closes. Not a required check, so
 # it filters at the trigger.
 on:
   pull_request:
@@ -12,7 +12,7 @@ on:
       - 'test/**'
       - 'e2e/**'
 
-# A newer push supersedes the older run (#970).
+# A newer push supersedes the older run.
 concurrency:
   group: preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   preview:
-    # Dependabot runs get no secrets, so they'd always fail (#895).
+    # Dependabot runs get no secrets, so they'd always fail.
     if: github.actor != 'dependabot[bot]' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     permissions:
@@ -57,7 +57,7 @@ jobs:
           gh pr comment "$PR_NUMBER" --edit-last --body "$BODY" \
             || gh pr comment "$PR_NUMBER" --body "$BODY"
 
-  # A PR only migrates the shared preview database; preview-db.yml rebuilds and seeds it from main (#1291).
+  # A PR only migrates the shared preview database; preview-db.yml rebuilds and seeds it from main.
   migrate:
     if: github.actor != 'dependabot[bot]' && github.event.action != 'closed'
     runs-on: ubuntu-latest

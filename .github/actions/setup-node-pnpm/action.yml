@@ -15,11 +15,7 @@ runs:
       with:
         node-version: 22
         cache: pnpm
-        # v5+ auto-enables its own caching whenever package.json has a
-        # `packageManager` field (this repo's does) -- redundant with the
-        # explicit `cache: pnpm` above and not something this composite
-        # action opted into, so disabled to keep caching behavior exactly
-        # as it was before the v4->v7 bump (#340).
+        # setup-node would otherwise enable its own cache because package.json has packageManager; cache: pnpm is explicit.
         package-manager-cache: false
         registry-url: https://npm.pkg.github.com
         scope: '@ravendarque'
