@@ -45,7 +45,7 @@ Browsers change their menus from time to time, so the exact wording may differ s
 
 ## Logbook Beta
 
-If you've joined the beta, Logbook Beta is a separate PWA. Install it the same way, from **beta.climbinglogbook.com**. You can keep both installed.
+If you've joined *Check our beta*, Logbook Beta is a separate PWA. Install it the same way, from **beta.climbinglogbook.com**. You can keep both installed.
 
 ## Removing it
 

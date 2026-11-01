@@ -37,13 +37,13 @@ function monthNodes(releases) {
 function betaIntro(hasReleases) {
   const intro = el("p");
   if (!hasReleases) {
-    intro.textContent = "Nothing on the beta channel yet that isn't on the main app.";
+    intro.textContent = "Nothing in Check our beta yet that isn't on the main app.";
     return intro;
   }
-  const link = el("a", "beta channel");
+  const link = el("a", "Check our beta");
   link.href = "/help/beta-channel/";
   intro.append(
-    "Released to the beta channel, not the main app yet. To get them now, join the ",
+    "Released to Check our beta, not the main app yet. To get them now, join ",
     link,
     ": in My account, choose Check our beta.",
   );
@@ -66,6 +66,6 @@ export function enhanceWhatsNew(doc = document) {
     console.warn("What's new: couldn't read the beta channel", err);
     list
       .querySelector("#whats-new-beta")
-      .replaceChildren(el("p", "Couldn't check the beta channel just now. Try again later.", "text-muted"));
+      .replaceChildren(el("p", "Couldn't load what's in Check our beta just now. Try again later.", "text-muted"));
   });
 }

@@ -91,7 +91,7 @@ describe("enrollmentAllowsBoot", () => {
     });
     expect(allowed).toBe(false);
     expect(message()).not.toBeNull();
-    expect(message().textContent).toContain("Beta is for enrolled users");
+    expect(message().textContent).toContain("Check our beta is for enrolled users");
     expect(message().querySelector("a").getAttribute("href")).toBe("https://my.climbinglogbook.com/raven/account/beta");
     expect(document.querySelector("climbing-page-header").hidden).toBe(false);
     expect(document.getElementById("content").hidden).toBe(true);
@@ -148,7 +148,7 @@ describe("enrollmentAllowsBoot", () => {
       }),
     ).toBe(false);
     expect(storage2.dump().betaOptIn).toBe(false);
-    expect(message().textContent).toContain("Beta is for enrolled users");
+    expect(message().textContent).toContain("Check our beta is for enrolled users");
   });
 
   it("nothing cached and no session (401): boots, so the page's own session handling takes over; caches nothing", async () => {
@@ -176,6 +176,6 @@ describe("enrollmentAllowsBoot", () => {
         reload: vi.fn(),
       }),
     ).toBe(false);
-    expect(message().textContent).toContain("Can't check your beta access");
+    expect(message().textContent).toContain("Can't check your access to Check our beta");
   });
 });

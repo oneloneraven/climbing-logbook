@@ -77,6 +77,10 @@ plain read.
   GraphQL directly over GitHub MCP-server tools for board work — MCP-based
   GitHub tools have had confirmed Projects v2 access gaps.
 
+## Copy
+
+Follow `docs/editorial-guide.md` for all user-facing copy, and add settled terms to it.
+
 ## Comments
 
 Follow `docs/coding-standards.md` (Part 2, Comments and docs): **code

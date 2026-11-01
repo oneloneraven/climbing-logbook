@@ -7,14 +7,14 @@ test("not enrolled: explains joining, and Join writes the setting and opens the 
   await page.goto(owner.url("/account/beta"));
 
   await expect(page.getByRole("heading", { name: "Check our beta" })).toBeVisible();
-  await expect(page.locator("#beta-status")).toHaveText("You're not enrolled in the beta.");
+  await expect(page.locator("#beta-status")).toHaveText("You're not enrolled in Check our beta.");
   await expect(page.locator("#beta-join")).toContainText("uses the same logbook as the regular version");
   await expect(page.locator("#beta-leave")).toBeHidden();
   await expect(page.locator("#beta-queue-warning")).toBeHidden();
 
   const [patch] = await Promise.all([
     page.waitForRequest(req => req.url().endsWith("/-/api/settings") && req.method() === "PATCH"),
-    page.getByRole("button", { name: "Join the beta" }).click(),
+    page.getByRole("button", { name: "Join Check our beta" }).click(),
   ]);
   expect(patch.postDataJSON()).toEqual({ betaOptIn: true });
   await page.waitForURL(`**/${owner.username}/log`);
@@ -27,13 +27,13 @@ test("enrolled: explains leaving, and Leave writes the setting and opens the reg
   await owner.settings({ betaOptIn: true });
   await page.goto(owner.url("/account/beta"));
 
-  await expect(page.locator("#beta-status")).toHaveText("You're enrolled in the beta.");
+  await expect(page.locator("#beta-status")).toHaveText("You're enrolled in Check our beta.");
   await expect(page.locator("#beta-leave")).toContainText("Logbook Beta PWA will say you're not enrolled");
   await expect(page.locator("#beta-join")).toBeHidden();
 
   const [patch] = await Promise.all([
     page.waitForRequest(req => req.url().endsWith("/-/api/settings") && req.method() === "PATCH"),
-    page.getByRole("button", { name: "Leave the beta" }).click(),
+    page.getByRole("button", { name: "Leave Check our beta" }).click(),
   ]);
   expect(patch.postDataJSON()).toEqual({ betaOptIn: false });
   await page.waitForURL(`**/${owner.username}/log`);
@@ -45,7 +45,7 @@ test("offline: the button is disabled with a note, and comes back with the conne
   owner,
 }) => {
   await page.goto(owner.url("/account/beta"));
-  const button = page.getByRole("button", { name: "Join the beta" });
+  const button = page.getByRole("button", { name: "Join Check our beta" });
   await expect(button).toBeEnabled();
 
   await context.setOffline(true);
@@ -74,7 +74,7 @@ test("changes waiting to sync on this device are pointed out, without blocking",
   await expect(page.locator("#beta-queue-warning")).toContainText(
     "Other devices you've used offline need to sync on their own.",
   );
-  await expect(page.getByRole("button", { name: "Join the beta" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Join Check our beta" })).toBeEnabled();
 });
 
 test("a failed save shows the error, focused, and stays on the page", async ({ page, owner }) => {
@@ -84,17 +84,17 @@ test("a failed save shows the error, focused, and stays on the page", async ({ p
   await page.goto(owner.url("/account/beta"));
   const before = page.url();
 
-  await page.getByRole("button", { name: "Join the beta" }).click();
+  await page.getByRole("button", { name: "Join Check our beta" }).click();
   const error = page.locator("#beta-error");
-  await expect(error).toHaveText("Couldn't join the beta (error 500). Try again.");
+  await expect(error).toHaveText("Couldn't join Check our beta (error 500). Try again.");
   await expect(error).toBeFocused();
-  await expect(page.getByRole("button", { name: "Join the beta" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Join Check our beta" })).toBeEnabled();
   expect(page.url()).toBe(before);
 });
 
 test("links to the full help page and back to My account", async ({ page, owner }) => {
   await page.goto(owner.url("/account/beta"));
-  await expect(page.getByRole("link", { name: "Read more about the beta" })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "Read more about Check our beta" })).toHaveAttribute(
     "href",
     "/help/beta-channel/",
   );

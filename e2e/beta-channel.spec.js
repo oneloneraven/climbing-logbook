@@ -33,14 +33,14 @@ test.describe("beta channel enrollment check", () => {
     await page.goto(`${BETA}/${DEV_USER.username}/log`);
     const message = page.locator("#beta-not-enrolled");
     await expect(message).toBeVisible();
-    await expect(message).toContainText("Beta is for enrolled users");
-    await expect(message.getByRole("link", { name: "Join the beta" })).toHaveAttribute(
+    await expect(message).toContainText("Check our beta is for enrolled users");
+    await expect(message.getByRole("link", { name: "Join Check our beta" })).toHaveAttribute(
       "href",
       `/${DEV_USER.username}/account/beta`,
     );
     await expect(page.locator("climbing-page-header")).toBeVisible();
     await expect(page.locator("climbing-entries-table")).toBeHidden();
-    await expect(page.locator("h1:visible")).toHaveText("Beta is for enrolled users");
+    await expect(page.locator("h1:visible")).toHaveText("Check our beta is for enrolled users");
     expect(dataRequests).toEqual([]);
   });
 

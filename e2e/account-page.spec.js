@@ -72,7 +72,7 @@ test("the Check our beta row links to its sub-page and shows the saved status", 
   const row = page.locator("#beta-row");
   await expect(row).toBeVisible();
   await expect(row).toHaveAttribute("href", `/${owner.username}/account/beta`);
-  await expect(page.locator("#beta-status")).toHaveText("You're enrolled in the beta.");
+  await expect(page.locator("#beta-status")).toHaveText("You're enrolled in Check our beta.");
 });
 
 test("groups the hub into Account and Settings, then Data and the Danger zone (#1457)", async ({ page, owner }) => {

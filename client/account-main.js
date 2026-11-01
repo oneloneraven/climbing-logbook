@@ -46,8 +46,8 @@ function syncSettingsToggles() {
       ? "Paused until you agree to the updated Health Data Agreement."
       : "On";
   betaStatus.textContent = adminAuth.getBetaOptIn()
-    ? "You're enrolled in the beta."
-    : "You're not enrolled in the beta.";
+    ? "You're enrolled in Check our beta."
+    : "You're not enrolled in Check our beta.";
 }
 
 // A failed save leaves the toggle at its last known state rather than flipping it.

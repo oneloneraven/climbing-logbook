@@ -34,11 +34,11 @@ function pendingChangeCount(storage = localStorage) {
 
 function render() {
   const enrolled = adminAuth.getBetaOptIn();
-  statusEl.textContent = enrolled ? "You're enrolled in the beta." : "You're not enrolled in the beta.";
+  statusEl.textContent = enrolled ? "You're enrolled in Check our beta." : "You're not enrolled in Check our beta.";
   statusEl.hidden = false;
   joinEl.hidden = enrolled;
   leaveEl.hidden = !enrolled;
-  confirmBtn.textContent = enrolled ? "Leave the beta" : "Join the beta";
+  confirmBtn.textContent = enrolled ? "Leave Check our beta" : "Join Check our beta";
 
   const pending = pendingChangeCount();
   queueWarningEl.hidden = pending === 0;
@@ -63,10 +63,10 @@ async function saveEnrollment(join) {
     const result = await adminAuth.setBetaOptIn(join);
     if (result.ok) return null;
     return result.status
-      ? `Couldn't ${join ? "join" : "leave"} the beta (error ${result.status}). Try again.`
+      ? `Couldn't ${join ? "join" : "leave"} Check our beta (error ${result.status}). Try again.`
       : "Your session has ended. Log in again, then try again.";
   } catch {
-    return `Couldn't ${join ? "join" : "leave"} the beta. Check your connection and try again.`;
+    return `Couldn't ${join ? "join" : "leave"} Check our beta. Check your connection and try again.`;
   }
 }
 

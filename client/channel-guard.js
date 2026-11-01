@@ -47,15 +47,15 @@ export function renderNotEnrolled(doc, { reason, joinUrl }) {
   if (reason === "unknown") {
     renderBlockedPage(doc, {
       id: "beta-not-enrolled",
-      heading: "Can't check your beta access",
-      text: "Connect to the internet to open the beta on this device for the first time.",
+      heading: "Can't check your access to Check our beta",
+      text: "Connect to the internet to open Check our beta on this device for the first time.",
     });
   } else {
     renderBlockedPage(doc, {
       id: "beta-not-enrolled",
-      heading: "Beta is for enrolled users",
-      text: "You're not enrolled in the beta. You can join from My account at my.climbinglogbook.com.",
-      link: { href: joinUrl, label: "Join the beta" },
+      heading: "Check our beta is for enrolled users",
+      text: "You're not enrolled in Check our beta. You can join from My account at my.climbinglogbook.com.",
+      link: { href: joinUrl, label: "Join Check our beta" },
     });
   }
 }
