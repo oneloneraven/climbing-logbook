@@ -114,7 +114,7 @@ function showFailedWrites() {
 document.getElementById("grade-scale-reference-link").href = resolveApexUrl(location.hostname, "/help/grade-scales/");
 document.getElementById("hardest-beta-help-link").href = resolveApexUrl(
   location.hostname,
-  "/help/describing-the-beta/",
+  "/help/describing-your-beta/",
 );
 
 async function boot() {
