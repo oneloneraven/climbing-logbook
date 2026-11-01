@@ -18,7 +18,7 @@ import {
   hasConsent,
 } from "../lib/health-consent.js";
 import { followMovedPlace } from "../lib/place-moves.js";
-import { hardestBetaMovements, movementRow } from "../lib/hardest-beta.js";
+import { betaSampleStatements, hardestBetaMovements, movementRow } from "../lib/hardest-beta.js";
 
 // Must match migrations/0016_add_grade_scale.sql's backfill WHERE clause.
 const LEGACY_SPORT_NON_STANDARD_GRADES = new Set(["1", "1+", "2", "2+", "3", "3+"]);
@@ -151,6 +151,7 @@ function replaceChildRowStatements(env, table, entryId, records, buildRow, guard
 function moveStatements(env, entryId, record) {
   const consented = { sql: ENTRY_OWNER_CONSENTED, binds: ENTRY_OWNER_CONSENTED_BINDS(entryId) };
   return [
+    ...betaSampleStatements(env, record.hardestBeta),
     ...replaceChildRowStatements(
       env,
       "entry_movements",

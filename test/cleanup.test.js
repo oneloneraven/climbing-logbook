@@ -92,6 +92,22 @@ describe("the daily clean-up (#1051)", () => {
       .bind(id, expiresAt, `token-${id}`, expiresAt, expiresAt, userId)
       .run();
 
+  it("deletes beta samples after 90 days (#1544)", async () => {
+    const now = Date.now();
+    await db
+      .prepare(
+        `INSERT INTO beta_samples (text, interpreter_version, created_at) VALUES
+         ('old', 'v', datetime(?1, 'unixepoch')), ('recent', 'v', datetime(?2, 'unixepoch'))`,
+      )
+      .bind(Math.floor((now - 91 * DAY_MS) / 1000), Math.floor((now - 89 * DAY_MS) / 1000))
+      .run();
+
+    await cleanUp(env, log, now);
+
+    const { results } = await db.prepare("SELECT text FROM beta_samples").all();
+    expect(results.map(r => r.text)).toEqual(["recent"]);
+  });
+
   it("deletes sessions expired over a week ago, and expired links, and keeps the rest", async () => {
     const now = Date.now();
     await insertSession("long-gone", new Date(now - 8 * DAY_MS).toISOString());

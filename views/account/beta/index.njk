@@ -22,12 +22,7 @@ headerClass: mb-6
     <div id="beta-join" hidden>
       <h2 class="row-card-title mb-2">Join the beta</h2>
       <p class="text-sm mb-2">Get early access to new features before they're released. They may have bugs.</p>
-      <ul class="bullet-list mb-3">
-        <li>The beta uses your logbook. Anything you add, change or delete in the beta is real, and shows up outside the beta too.</li>
-        <li>The beta has its own address, <strong>beta.climbinglogbook.com</strong>. Logging in at climbinglogbook.com takes you there.</li>
-        <li>Each device downloads your logbook the first time it opens the beta.</li>
-        <li>If you've installed Climbing Logbook as a Progressive Web App (<a class="text-accent-ink underline" href="/help/install/" data-apex-link>PWA</a>), install <strong>Logbook Beta</strong> from the beta address too. It's a separate PWA, so you can keep both.</li>
-      </ul>
+      {% include "beta-channel-points.njk" %}
     </div>
 
     <div id="beta-leave" hidden>

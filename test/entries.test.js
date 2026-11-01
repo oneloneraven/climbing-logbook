@@ -805,6 +805,33 @@ async function movementsOf(entryId) {
   return results;
 }
 
+describe("beta samples (#1544)", () => {
+  const samples = async () => (await env.LOGBOOK_DB.prepare("SELECT * FROM beta_samples").all()).results;
+  const original = env.APP_ENV;
+
+  beforeEach(() => env.LOGBOOK_DB.prepare("DELETE FROM beta_samples").run());
+  afterAll(() => {
+    env.APP_ENV = original;
+  });
+
+  it("keeps the text once on the beta channel, with nothing linking it to a person or climb", async () => {
+    env.APP_ENV = "beta";
+    await post({ ...validEntry(), hardestBeta: ` ${HEEL_HOOK_CROSS} ` });
+    await post({ ...validEntry(), hardestBeta: HEEL_HOOK_CROSS });
+
+    const rows = await samples();
+    expect(rows).toHaveLength(1);
+    expect(Object.keys(rows[0]).sort()).toEqual(["created_at", "interpreter_version", "text"]);
+    expect(rows[0]).toMatchObject({ text: HEEL_HOOK_CROSS, interpreter_version: VOCABULARY_VERSION });
+  });
+
+  it("keeps nothing off the beta channel", async () => {
+    env.APP_ENV = "production";
+    await post({ ...validEntry(), hardestBeta: HEEL_HOOK_CROSS });
+    expect(await samples()).toEqual([]);
+  });
+});
+
 describe("hardest move beta and pain moves (#1522)", () => {
   it("defaults to no hardest beta and no pain moves when omitted", async () => {
     const created = await (await post(validEntry())).json();

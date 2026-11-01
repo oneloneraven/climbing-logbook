@@ -18,7 +18,15 @@
   {% include "skip-link.njk" %}
   <main class="flex flex-col items-center gap-6 w-full focus:outline-none" id="main" tabindex="-1">
     <climbing-header variant="brand"></climbing-header>
-    <form class="w-full max-w-[360px] bg-surface border border-border rounded-app p-6" id="register-form" novalidate>
+    <section class="w-full max-w-[480px] bg-surface border border-border rounded-app p-6" id="beta-agreement" aria-labelledby="beta-agreement-heading">
+      <h1 class="section-heading" id="beta-agreement-heading">Check our beta</h1>
+      <p class="text-sm mb-2">Signing up puts you in Check our beta. You can leave at any time in My account.</p>
+      {% include "beta-channel-points.njk" %}
+      <button type="button" class="btn btn-primary w-full" id="beta-agreement-continue">Agree and continue</button>
+      <p class="text-sm text-muted mt-4 text-center"><a class="text-accent-ink underline underline-offset-2" href="../">Not now</a></p>
+    </section>
+
+    <form class="w-full max-w-[360px] bg-surface border border-border rounded-app p-6" id="register-form" novalidate hidden>
       <h1 class="sr-only">Create an account</h1>
       <label class="block text-sm text-muted mb-1" for="code">Invite code</label>
       <input

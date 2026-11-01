@@ -13,6 +13,7 @@ function seedInviteCode(code) {
 
 // The test sitekey passes by itself; wait for its token rather than race the widget.
 async function waitForTurnstile(page) {
+  if (await page.locator("#beta-agreement").isVisible()) await page.locator("#beta-agreement-continue").click();
   await page.waitForFunction(() => window.turnstile?.getResponse());
 }
 
@@ -113,4 +114,16 @@ test("a reserved-lookalike username isn't available, and the invite code still w
   await page.locator("#username").fill(`e2ereserved${Date.now()}`);
   await page.locator("#register-submit-btn").click();
   await expect(page.locator("#register-success")).toBeVisible();
+});
+
+test("the Check our beta agreement comes before the form, and says what's saved", async ({ page }) => {
+  await page.goto("/register/?code=abc");
+  await expect(page.locator("#register-form")).toBeHidden();
+  await expect(page.locator("#beta-agreement")).toContainText("saved without your name or account");
+
+  await page.locator("#beta-agreement-continue").click();
+  await expect(page.locator("#beta-agreement")).toBeHidden();
+  await expect(page.locator("#register-form")).toBeVisible();
+  await expect(page.locator("#code")).toHaveValue("abc");
+  await expect(page.locator("#email")).toBeFocused();
 });

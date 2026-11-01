@@ -18,7 +18,14 @@ function showError(message) {
 const params = new URLSearchParams(window.location.search);
 if (params.has("code")) codeInput.value = params.get("code");
 
-const turnstile = renderTurnstile("#turnstile-widget");
+let turnstile;
+document.getElementById("beta-agreement-continue").addEventListener("click", () => {
+  document.getElementById("beta-agreement").hidden = true;
+  form.hidden = false;
+  // A hidden container has no width, and the widget sizes itself from it.
+  turnstile = renderTurnstile("#turnstile-widget");
+  (codeInput.value ? document.getElementById("email") : codeInput).focus();
+});
 
 form.addEventListener("submit", async event => {
   event.preventDefault();

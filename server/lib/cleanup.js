@@ -2,6 +2,7 @@ const BATCH = 500;
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const SESSION_GRACE_DAYS = 7;
 export const TOMBSTONE_DAYS = 30;
+export const BETA_SAMPLE_DAYS = 90;
 
 // Bounded per run for D1's limits; RETURNING counts rows, as meta.changes includes the usage triggers' writes.
 const someOf = (table, where) => `SELECT rowid, * FROM ${table} WHERE ${where} ORDER BY rowid LIMIT ${BATCH}`;
@@ -23,6 +24,12 @@ export async function cleanUp(env, log, now = Date.now()) {
   const linkCutoff = new Date(now).toISOString();
   const tombstoneCutoff = now - TOMBSTONE_DAYS * DAY_MS;
   const steps = [
+    [
+      "beta-samples",
+      env.LOGBOOK_DB.prepare(deleteSomeOf("beta_samples", "created_at < datetime(?, 'unixepoch')")).bind(
+        Math.floor((now - BETA_SAMPLE_DAYS * DAY_MS) / 1000),
+      ),
+    ],
     ["sessions", env.LOGBOOK_DB.prepare(deleteSomeOf('"session"', '"expiresAt" < ?')).bind(sessionCutoff)],
     ["verifications", env.LOGBOOK_DB.prepare(deleteSomeOf('"verification"', '"expiresAt" < ?')).bind(linkCutoff)],
     ["deleted-entry-movements", env.LOGBOOK_DB.prepare(deleteSomeOf("entry_movements", DELETED_ENTRY))],

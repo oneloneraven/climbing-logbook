@@ -31,6 +31,7 @@ The record UK GDPR Art. 30 requires. The small-organisation exemption doesn't ap
 | Security and abuse logs | Keep the service working and secure | Legitimate interests | Request logs with user id, route and status; no passwords, tokens, notes or health information (allowlist) | Workers Logs retention (days) | `server/lib/log.js` |
 | Rate limiting | Stop abuse | Legitimate interests | IP-derived keys, user id | Seconds to minutes | `server/lib/rate-limits.js` |
 | Bot checks | Stop automated sign-ups | Legitimate interests | Whatever Turnstile collects in the browser | Turnstile's own | `server/lib/turnstile.js` |
+| Beta samples | Improve how the beta interpreter reads hardest moves | Legitimate interests | Hardest-move text saved on the Check our beta channel, with no user or entry link | 90 days | `beta_samples`, `server/lib/hardest-beta.js`, `server/lib/cleanup.js` |
 | Visit statistics | See which pages are used | Legitimate interests | Cookieless page views (no profile of the visitor) | Web Analytics' own | Cloudflare Web Analytics |
 | Account emails | Verification, password reset, email change, and a notice for every account change that changes data (username, password, email, 2FA, passkeys, health data, account deletion; #1456) | Contract | Email address, username | Resend's own sending logs | `server/lib/email.js` |
 | Backups | Recover from data loss | Legitimate interests | A full copy of the database | 7 days on the current plan (30 on Workers Paid) | D1 Time Travel; off-platform backups in #1068 |

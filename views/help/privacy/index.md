@@ -20,13 +20,14 @@ Climbing Logbook is an independent project run from the UK. Under data protectio
 - **Your logbook.** The climbs, places and settings you add.
 - **Health information**, only if you agree to the Health Data Agreement. See [Health information](#health-data).
 
-We use this to run the app for you, and for nothing else.
+We use this to run the app for you, for the reasons below, and for nothing else.
 
 ## Why we use it
 
 - **To run your account and logbook.** This is the service you signed up for, so it's covered by our agreement with you, the [Terms of use](/help/terms/). It covers your account, your climbs, places and settings, and the emails we send about your account.
 - **Health information,** only if you agree to the [Health Data Agreement](#health-data). If you don't, we don't collect any. You can withdraw at any time.
 - **To keep Climbing Logbook secure and working.** Request logs, rate limits and bot checks protect everyone's logbook. They never hold your password, your notes or your health information.
+- **To improve how we read hardest moves.** The hardest moves you write when opted in to the Check our beta channel are saved without your name or account, and deleted after 90 days.
 - **To see which pages get used,** through visit statistics that don't use cookies.
 - **To answer your feedback and reports,** and to act on reports about content.
 

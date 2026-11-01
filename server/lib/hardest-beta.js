@@ -34,6 +34,16 @@ function compactState(state) {
   };
 }
 
+export function betaSampleStatements(env, text) {
+  const sample = text?.trim();
+  if (env.APP_ENV !== "beta" || !sample) return [];
+  return [
+    env.LOGBOOK_DB.prepare(
+      `INSERT INTO beta_samples (text, interpreter_version) VALUES (?, ?) ON CONFLICT(text) DO NOTHING`,
+    ).bind(sample, VOCABULARY_VERSION),
+  ];
+}
+
 export function hardestBetaMovements(text) {
   if (!text?.trim()) return [];
   const record = toMovements(parse(text));
