@@ -96,7 +96,7 @@ lists can't be probed rule by rule.
 | `static/` | Hand-written assets copied into the build: icons, fonts, manifest, `_headers`, and the classic-script components (`static/-/components/`) |
 | `styles/` | `tailwind.css`, the Tailwind entry point |
 | `migrations/` | D1 schema migrations, applied on every release ([expand and contract](versioning.md)) |
-| `infra/` | Terraform for every Cloudflare resource ([infra/README.md](../infra/README.md), [infra-architecture.md](infra-architecture.md)) |
+| `infra/` | OpenTofu for every Cloudflare resource ([infra/README.md](../infra/README.md), [infra-architecture.md](infra-architecture.md)) |
 | `scripts/` | Build steps, seeding and one-off tools |
 | `test/` | Vitest: `workers` project (real Workers runtime, real D1), `client-dom` project (DOM tests) and `node` project (pure logic and repo checks) |
 | `e2e/` | Playwright, run against the production build |

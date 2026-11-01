@@ -31,7 +31,7 @@ configured in `wrangler.jsonc`. It routes by hostname inside
   URLs" setting in the dashboard: Cloudflare made them opt-in in September
   2025.
 
-## What Terraform manages
+## What OpenTofu manages
 
 Everything provisionable, in `infra/`:
 
@@ -51,10 +51,10 @@ Everything provisionable, in `infra/`:
 
 The zone is looked up by name (`var.app_zone_name`), not a hardcoded id.
 
-**Not in Terraform:**
+**Not in OpenTofu:**
 - The logbook's data (D1 rows).
 - Worker runtime secrets (see below).
-- The state bucket: it must exist before Terraform can use it.
+- The state bucket: it must exist before OpenTofu can use it.
 - The preview database: created once by hand; disposable.
 - Bot and AI-crawler protection. It's set in the dashboard because the
   provider can't express the three-tier AI crawler settings, and managing
@@ -68,7 +68,7 @@ The zone is looked up by name (`var.app_zone_name`), not a hardcoded id.
   Workers Issues automation. The Cloudflare provider doesn't support that
   alert type yet (checked up to 5.27.0), so the automation was made in the
   dashboard (Workers → climbing-logbook → Observability → Issues), posting to
-  the Terraform-managed `Discord #alerts` destination.
+  the OpenTofu-managed `Discord #alerts` destination.
 - The `ravendarque.com/logbook` → `my.climbinglogbook.com/ravendarque`
   redirect. It lives on the `ravendarque.com` zone, which this project's
   token can't read, so it was removed from state and left running.
@@ -99,8 +99,8 @@ creates the bucket, and is safe to re-run.
 **Cloudflare tokens** (#1069). Each workflow gets the narrowest token:
 `CLOUDFLARE_PREVIEW_TOKEN` (previews: Workers Scripts and D1),
 `CLOUDFLARE_DEPLOY_TOKEN` (deploy and promote: the same plus Workers
-Routes), `CLOUDFLARE_INFRA_PLAN_TOKEN` (Terraform plan on PRs, read-only)
-and `CLOUDFLARE_INFRA_APPLY_TOKEN` (Terraform apply and the state bootstrap).
+Routes), `CLOUDFLARE_INFRA_PLAN_TOKEN` (OpenTofu plan on PRs, read-only)
+and `CLOUDFLARE_INFRA_APPLY_TOKEN` (OpenTofu apply and the state bootstrap).
 The deploy and apply tokens are secrets of the `production` and `infra`
 GitHub environments, which only `main` (and `v*` tags, for `production`)
 can use, so no PR job can deploy or change DNS. Each token expires after a
@@ -122,7 +122,7 @@ Releases are tag-gated, not merge-gated ([ADR-0008](adr/0008-tag-based-semantic-
 Node and pnpm setup. A new workflow can only be dispatched once it's on
 `main`.
 
-**Generated config sync.** After apply, `infra.yml` writes Terraform's
+**Generated config sync.** After apply, `infra.yml` writes OpenTofu's
 outputs into the repo: the D1 id and the admin Access audience into
 `wrangler.jsonc`, and the Turnstile sitekey into `client/turnstile.js`,
 which every Turnstile form imports. When anything changed, it pushes a
@@ -136,9 +136,9 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 
 | Name | Kind | Purpose |
 |---|---|---|
-| `CLOUDFLARE_PREVIEW_TOKEN`, `CLOUDFLARE_INFRA_PLAN_TOKEN` | Actions secrets | Previews; Terraform plan on PRs (permissions below) |
+| `CLOUDFLARE_PREVIEW_TOKEN`, `CLOUDFLARE_INFRA_PLAN_TOKEN` | Actions secrets | Previews; OpenTofu plan on PRs (permissions below) |
 | `CLOUDFLARE_DEPLOY_TOKEN` | `production` environment secret | Deploy and promote |
-| `CLOUDFLARE_INFRA_APPLY_TOKEN` | `infra` environment secret | Terraform apply and the state bootstrap |
+| `CLOUDFLARE_INFRA_APPLY_TOKEN` | `infra` environment secret | OpenTofu apply and the state bootstrap |
 | `RELEASE_APP_CLIENT_ID` (variable), `RELEASE_APP_PRIVATE_KEY` (secret) | Actions variable and secret | The release GitHub App, which pushes the version tag that triggers a deploy (Contents and Workflows: write, this repo only) |
 | `PROJECT_STATUS_PAT` | Actions secret | Classic token with only the `project` scope, for the board sync; a GitHub App can't reach a board owned by a personal account |
 | `PROJECT_ID`, `PROJECT_STATUS_FIELD_ID`, `PROJECT_IN_PROGRESS_OPTION`, `PROJECT_IN_REVIEW_OPTION` | Actions variables | The board, its Status field and the two Status options the board sync sets; not confidential |
@@ -151,7 +151,7 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 | `BETTER_AUTH_SECRET` | Worker secret, per environment | Session signing |
 | `RESEND_API_KEY` | Worker secret, per environment | Verification and password-reset email (sent from `myaccount@climbinglogbook.com`) |
 | `EMAIL_DELIVERY` | Worker variable (`wrangler.jsonc`) | `"off"` in `e2e` skips every email, since e2e registers and resets passwords by the dozen; `"log"` in local dev prints each email's link to the terminal (only when `APP_ENV` is `development`) |
-| `TURNSTILE_SECRET_KEY` | Worker secret, per environment | Turnstile verification. Production and beta each need the real value (`terraform output -raw turnstile_secret`); preview and local dev use Cloudflare's public always-passes test secret |
+| `TURNSTILE_SECRET_KEY` | Worker secret, per environment | Turnstile verification. Production and beta each need the real value (`tofu output -raw turnstile_secret`); preview and local dev use Cloudflare's public always-passes test secret |
 
 Worker secrets are set once by hand with `wrangler secret put <name>
 --env <env>`. Setting one environment never sets another. Local dev reads
@@ -167,7 +167,7 @@ replaces. It needs a token with Account API Tokens: Edit.
 - **Deploy:** the same, plus Workers Routes Write on the zone.
 - **Infra apply:** copied from the current "CI infra apply" token (the
   first run copied the original "(classic)" token, without its Workers
-  grants, which Terraform doesn't use).
+  grants, which OpenTofu doesn't use).
   Account: Access: Apps Write, Access: Policies Write, Notifications Write, D1 Write,
   Turnstile Sites Write, Email Routing Addresses Write, Account WAF,
   Rulesets and Rule Lists Write, Workers R2 Storage Write, Zero Trust
@@ -194,8 +194,8 @@ hand; a guessable code gets round the gate.
 
 ## Disaster recovery
 
-1. Run "Bootstrap Terraform state bucket".
-2. Run "Infra" (merge to `infra/**`, or dispatch it). Terraform recreates
+1. Run "Bootstrap OpenTofu state bucket".
+2. Run "Infra" (merge to `infra/**`, or dispatch it). OpenTofu recreates
    the D1 database and the rest. Open and merge the sync PR its summary
    links to, which updates `wrangler.jsonc` and cuts a release.
 3. Set the Worker secrets again (`wrangler secret put`, per environment).

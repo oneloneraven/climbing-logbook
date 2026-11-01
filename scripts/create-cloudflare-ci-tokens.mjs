@@ -10,10 +10,10 @@ const API = "https://api.cloudflare.com/client/v4";
 const ZONE_NAME = "climbinglogbook.com";
 // The infra permissions are copied from the current apply token, or from the original token before the first run.
 const INFRA_SOURCE_TOKENS = ["[climbinglogbook.com] CI infra apply", "[climbinglogbook.com] Infrastructure (classic)"];
-// Permissions Terraform needs that the copied token may not have yet; each is added once.
+// Permissions OpenTofu needs that the copied token may not have yet; each is added once.
 const INFRA_ADDITIONS = ["Bot Management Write"];
-// Terraform manages no Workers and the infra workflow never runs wrangler, so the infra tokens don't get these.
-const NOT_FOR_TERRAFORM = new Set([
+// OpenTofu manages no Workers and the infra workflow never runs wrangler, so the infra tokens don't get these.
+const NOT_FOR_TOFU = new Set([
   "Workers Editor",
   "Workers Scripts Write",
   "Workers KV Storage Write",
@@ -157,7 +157,7 @@ async function main() {
     "com.cloudflare.api.account.zone": { [`com.cloudflare.api.account.zone.${zoneId}`]: "*" },
   };
   const copied = existing.policies
-    .map(p => ({ ...p, permission_groups: p.permission_groups.filter(g => !NOT_FOR_TERRAFORM.has(g.name)) }))
+    .map(p => ({ ...p, permission_groups: p.permission_groups.filter(g => !NOT_FOR_TOFU.has(g.name)) }))
     .filter(p => p.permission_groups.length > 0);
   const copiedIds = new Set(copied.flatMap(p => p.permission_groups.map(g => g.id)));
   const additions = INFRA_ADDITIONS.map(name => {

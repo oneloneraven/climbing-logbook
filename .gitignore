@@ -50,7 +50,7 @@ blob-report/
 e2e/.auth/
 playwright/.cache/
 
-# Terraform
+# OpenTofu
 infra/.terraform/
 infra/terraform.tfvars
 infra/*.tfplan

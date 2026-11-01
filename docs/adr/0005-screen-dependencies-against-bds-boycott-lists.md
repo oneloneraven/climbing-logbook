@@ -72,3 +72,5 @@ costs, same as any other tradeoff — but it must be surfaced, not skipped.
     hardware. One sub-processor, Rookout, was founded in Tel Aviv (now owned
     by Dynatrace). Accepted on the free tier until launch; #1309 moves
     backups to Hetzner (private, German, own EU data centres).
+  - **OpenTofu** (Linux Foundation): replaces Terraform, whose owner IBM is a
+    No Tech for Apartheid target.

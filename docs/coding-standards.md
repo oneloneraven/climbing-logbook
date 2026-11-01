@@ -115,7 +115,7 @@ quietly reversed without someone re-deciding on purpose.
   explicit confirmation a dependent step (e.g. infra apply) succeeded.
 
 ### Infrastructure
-- **All Cloudflare infra is Terraform-managed** — the D1 database, DNS,
+- **All Cloudflare infra is OpenTofu-managed** — the D1 database, DNS,
   rulesets, zone settings, Turnstile, and anything else
   provisionable — declarative, repeatable, idempotent. The *only* thing
   that lives outside that: the logbook's actual data. See

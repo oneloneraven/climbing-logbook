@@ -55,7 +55,7 @@ flowchart LR
 | TB6 | Owner to administrator | The admin host's user list, logbook view, suspend, ban, delete | Cloudflare Access, one allowed email (`infra/access.tf`); the Worker verifies the Access token (`ACCESS_AUD`); read-only logbook view; audit log (ADR-0034) |
 | TB7 | Device storage | The on-device logbook copy and the offline queue | Keyed per user (`client/user-storage.js`); *Clear device data*; logout keeps unsynced changes by design |
 | TB8 | Worker to processors | Email address and username to Resend; everything to Cloudflare | DPAs and transfer safeguards (`docs/data-protection.md`); allowlist logger, no bodies or notes in logs (#1027) |
-| TB9 | CI to production | Deploy, migrations, Terraform, release tags | Scoped, expiring Cloudflare tokens (`docs/infra-architecture.md`); environment secrets for deploy and infra; pinned actions, zizmor, CodeQL, Scorecard, dependency review |
+| TB9 | CI to production | Deploy, migrations, OpenTofu, release tags | Scoped, expiring Cloudflare tokens (`docs/infra-architecture.md`); environment secrets for deploy and infra; pinned actions, zizmor, CodeQL, Scorecard, dependency review |
 
 ## Assets
 

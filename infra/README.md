@@ -1,8 +1,8 @@
 # Infrastructure
 
-Terraform-managed: the D1 database, DNS, the Turnstile widget, and
+OpenTofu-managed: the D1 database, DNS, the Turnstile widget, and
 zone-level TLS/DNS settings, Cache Rules, and WAF custom and managed rules. Everything here is declarative,
-repeatable, and idempotent — re-running `terraform apply` with no
+repeatable, and idempotent — re-running `tofu apply` with no
 changes is always a no-op.
 
 The only thing *not* managed here, by design: the logbook's actual data
@@ -29,13 +29,13 @@ The only thing *not* managed here, by design: the logbook's actual data
    - `ADMIN_EMAIL` (secret) — the one email the admin host's Access policy
      lets in
 
-3. **Run the "Bootstrap Terraform state bucket" workflow** manually
-   (Actions tab → workflow_dispatch). Creates the R2 bucket Terraform's
+3. **Run the "Bootstrap OpenTofu state bucket" workflow** manually
+   (Actions tab → workflow_dispatch). Creates the R2 bucket OpenTofu's
    state lives in. Idempotent — safe to re-run, including for full
    disaster recovery.
 
 4. **Merge a PR touching `infra/**`** (or push to `main` directly) —
-   the "Infra" workflow runs `terraform apply` and keeps
+   the "Infra" workflow runs `tofu apply` and keeps
    `wrangler.jsonc`'s D1 database id in sync automatically.
 
 5. **Synthetic monitoring account** (#361) — a dedicated user the
@@ -73,12 +73,12 @@ The only thing *not* managed here, by design: the logbook's actual data
      Raven, 2026-08-25. When Cloudflare is both registrar and DNS
      provider, it auto-publishes the DS record to the parent zone once
      DNSSEC is enabled zone-side — **no manual step needed** in that
-     case, this Terraform apply is the whole story.
+     case, this OpenTofu apply is the whole story.
    - The manual step below only applies if the domain is ever moved to
      a third-party registrar (nameservers delegated to Cloudflare, but
-     registration held elsewhere) — Cloudflare/Terraform have no API
+     registration held elsewhere) — Cloudflare/OpenTofu have no API
      into a registrar they don't control:
-     1. Get the record: `cd infra && terraform output -raw
+     1. Get the record: `cd infra && tofu output -raw
         app_dnssec_ds_record` (needs the same credentials as "Local
         runs" below).
      2. Add it at that registrar's "DNSSEC"/"DS records" section under
@@ -88,7 +88,7 @@ The only thing *not* managed here, by design: the logbook's actual data
         four fields entered separately, not the raw line pasted in one
         box.
 
-## Not in Terraform
+## Not in OpenTofu
 
 Everything in the zone's DNS is in `infra/` (#1336). These stay in the
 dashboard or elsewhere, and why:
@@ -123,8 +123,8 @@ cp terraform.tfvars.example terraform.tfvars   # fill in real values, gitignored
 export AWS_ACCESS_KEY_ID=<R2 access key>
 export AWS_SECRET_ACCESS_KEY=<R2 secret key>
 export CLOUDFLARE_API_TOKEN=<token>
-terraform init
-terraform plan
+tofu init
+tofu plan
 ```
 
 ## Deleting or replacing a resource (#1075)
@@ -133,14 +133,14 @@ The Infra workflow applies unattended, so it refuses any plan that deletes
 or replaces a resource. The PR check goes red, and so does the run on
 `main`, before anything is applied. On top of that, the D1 database, every
 DNS record and the Turnstile widget have `lifecycle { prevent_destroy =
-true }`, so Terraform itself refuses to plan their destruction at all.
+true }`, so OpenTofu itself refuses to plan their destruction at all.
 
 When a delete really is intended (say, a WAF rule being retired):
 
 1. Merge the change with the check red only if you've read the plan and
    the delete is the whole point. Otherwise fix the change.
-2. Run it locally (above) with `terraform plan -out=tfplan`, read the
-   plan, then `terraform apply tfplan`.
+2. Run it locally (above) with `tofu plan -out=tfplan`, read the
+   plan, then `tofu apply tfplan`.
 3. For a `prevent_destroy` resource, removing the `lifecycle` block is its
    own reviewed change first. A deleted D1 database can't be restored
    (Time Travel only restores in place): export it first
@@ -149,8 +149,8 @@ When a delete really is intended (say, a WAF rule being retired):
 ## Disaster recovery
 
 If the account/project is lost entirely:
-1. Re-run "Bootstrap Terraform state bucket" (recreates the state bucket).
-2. Merge/push to `infra/**` — Terraform recreates the D1 database, and
+1. Re-run "Bootstrap OpenTofu state bucket" (recreates the state bucket).
+2. Merge/push to `infra/**` — OpenTofu recreates the D1 database, and
    `wrangler.jsonc` is updated automatically.
 3. Manually trigger the "Deploy" workflow (its sync commit from step 2
    is tagged `[skip ci]` so Infra and Deploy don't trigger each other in a loop, so this

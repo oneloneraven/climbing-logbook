@@ -17,7 +17,7 @@ output "turnstile_sitekey" {
 # despite the widget itself succeeding client-side. Nothing here
 # previously said beta needed this step at all.
 output "turnstile_secret" {
-  description = "The Turnstile widget's server-side verification secret -- read manually (terraform output -raw turnstile_secret), piped straight into `wrangler secret put TURNSTILE_SECRET_KEY --env=production` AND `--env=beta` (both consume this same widget, both need the real secret set independently -- Workers secrets are per-environment, setting one never sets the other), never displayed. Not synced automatically by infra.yml, unlike the sitekey above."
+  description = "The Turnstile widget's server-side verification secret -- read manually (tofu output -raw turnstile_secret), piped straight into `wrangler secret put TURNSTILE_SECRET_KEY --env=production` AND `--env=beta` (both consume this same widget, both need the real secret set independently -- Workers secrets are per-environment, setting one never sets the other), never displayed. Not synced automatically by infra.yml, unlike the sitekey above."
   value       = cloudflare_turnstile_widget.register.secret
   sensitive   = true
 }

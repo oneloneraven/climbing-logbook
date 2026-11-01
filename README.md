@@ -9,7 +9,7 @@ an opt-in beta at `beta.climbinglogbook.com` (ADR-0020).
 ## Stack
 
 One Cloudflare Worker (Static Assets plus the API, ADR-0007), D1 for
-storage, Better Auth for authentication, Terraform for infrastructure,
+storage, Better Auth for authentication, OpenTofu for infrastructure,
 GitHub Actions for CI/CD. No UI framework: native Web Components and ES
 modules (ADR-0003, ADR-0012), bundled by Vite (ADR-0021), page shells
 templated by 11ty (ADR-0022), styled with Tailwind (ADR-0004). A service
@@ -50,7 +50,7 @@ Infra changes (`infra/**`) apply through their own workflow on merge; see
 - [`docs/app-architecture.md`](docs/app-architecture.md) — request routing,
   data model, auth flow, offline design
 - [`docs/infra-architecture.md`](docs/infra-architecture.md) — Cloudflare
-  Worker/routing setup, Terraform-managed resources, CI workflows, disaster
+  Worker/routing setup, OpenTofu-managed resources, CI workflows, disaster
   recovery
 - [`docs/climbing-analytics-research.md`](docs/climbing-analytics-research.md) —
   sourced research grounding a future reporting/insights feature (grade

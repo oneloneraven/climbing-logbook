@@ -1,4 +1,4 @@
-// Creates the Terraform state bucket if missing. Needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+// Creates the OpenTofu state bucket if missing. Needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 
 const BUCKET_NAME = "climbing-logbook-tfstate";
 const CF_BASE = "https://api.cloudflare.com/client/v4";

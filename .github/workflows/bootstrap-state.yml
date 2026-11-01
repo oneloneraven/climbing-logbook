@@ -1,6 +1,6 @@
-name: Bootstrap Terraform state bucket
+name: Bootstrap OpenTofu state bucket
 
-# Manual only — this creates the R2 bucket that Terraform's remote state
+# Manual only — this creates the R2 bucket that OpenTofu's remote state
 # lives in. Never runs automatically. Safe to re-run any time, including
 # full disaster recovery: it's a no-op if the bucket already exists.
 on:

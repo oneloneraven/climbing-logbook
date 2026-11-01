@@ -54,7 +54,7 @@ app rather than a published library with a versioned API contract:
   CI workflows, `.gitignore`, tests and similar. Nothing that's deployed,
   applied or built into what users run qualifies, however small or
   behavior-neutral it seems. That means:
-  - **`infra/` and `migrations/` always get a real bump.** Terraform is
+  - **`infra/` and `migrations/` always get a real bump.** OpenTofu is
     applied to production, and migrations run against its database. A
     tag whose diff touches either deploys straight to production as well
     as beta (`deploy.yml`). So an untagged infra or migration change

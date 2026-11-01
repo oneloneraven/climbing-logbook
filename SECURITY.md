@@ -37,7 +37,7 @@ We try to acknowledge a report within 7 days and keep you updated as we work on 
 ## Scope
 
 Covers the application code in this repository (`client/`, `server/`) and its
-Terraform-managed infrastructure config (`infra/`). Does not cover the
+OpenTofu-managed infrastructure config (`infra/`). Does not cover the
 underlying Cloudflare Workers/KV platform itself — report platform-level
 issues to Cloudflare directly.
 

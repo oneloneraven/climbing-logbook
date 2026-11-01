@@ -13,7 +13,7 @@
           },
           {
             "type": "command",
-            "command": "input=$(cat); file=$(echo \"$input\" | jq -r '.tool_input.file_path // empty' 2>/dev/null); case \"$file\" in */wrangler.jsonc|wrangler.jsonc) text=$(echo \"$input\" | jq -r '[.tool_input.old_string, .tool_input.new_string, .tool_input.content] | map(select(. != null)) | join(\"\\n\")' 2>/dev/null); if echo \"$text\" | grep -q 'LOGBOOK_KV'; then echo \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"permissionDecision\\\":\\\"deny\\\",\\\"permissionDecisionReason\\\":\\\"wrangler.jsonc's KV namespace id is managed by infra.yml (Terraform + bot PR, see #182) \u2014 manual edits fight that automation.\\\"}}\"; fi ;; esac"
+            "command": "input=$(cat); file=$(echo \"$input\" | jq -r '.tool_input.file_path // empty' 2>/dev/null); case \"$file\" in */wrangler.jsonc|wrangler.jsonc) text=$(echo \"$input\" | jq -r '[.tool_input.old_string, .tool_input.new_string, .tool_input.content] | map(select(. != null)) | join(\"\\n\")' 2>/dev/null); if echo \"$text\" | grep -q 'LOGBOOK_KV'; then echo \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PreToolUse\\\",\\\"permissionDecision\\\":\\\"deny\\\",\\\"permissionDecisionReason\\\":\\\"wrangler.jsonc's KV namespace id is managed by infra.yml (OpenTofu + bot PR, see #182) \u2014 manual edits fight that automation.\\\"}}\"; fi ;; esac"
           }
         ]
       }
