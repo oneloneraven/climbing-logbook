@@ -6,6 +6,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "dependencies"
+      - "release: patch"
     cooldown:
       default-days: 3
     groups:
@@ -15,9 +18,14 @@ updates:
           - "patch"
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "weekly"
+    labels:
+      - "dependencies"
+      - "release: none"
     cooldown:
       default-days: 3
     groups:
