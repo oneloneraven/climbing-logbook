@@ -39,7 +39,7 @@ jobs:
           # previous one below -- the default shallow checkout only has
           # the single commit the tag points at.
           fetch-depth: 0
-      - uses: ./.github/actions/setup-node-pnpm
+      - uses: $/.github/actions/setup-node-pnpm
       # #760 -- public/**/index.html is now 11ty-generated, gitignored
       # output (not committed) -- without this, every page 404s outright
       # (env.ASSETS.fetch() has nothing to serve), the same class of gap
@@ -170,7 +170,7 @@ jobs:
         run: echo "version=$(git describe --tags --exact-match HEAD 2>/dev/null || git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - name: Tell Discord about beta
         if: always() && steps.deploy_beta.outcome != 'skipped' && steps.deploy_beta.outcome != ''
-        uses: ./.github/actions/notify-deploy
+        uses: $/.github/actions/notify-deploy
         with:
           webhook: ${{ secrets.DISCORD_DEPLOYS_WEBHOOK }}
           environment: beta
@@ -178,7 +178,7 @@ jobs:
           outcome: ${{ steps.deploy_beta.outcome }}
       - name: Tell Discord about production
         if: always() && steps.deploy_production.outcome != 'skipped' && steps.deploy_production.outcome != ''
-        uses: ./.github/actions/notify-deploy
+        uses: $/.github/actions/notify-deploy
         with:
           webhook: ${{ secrets.DISCORD_DEPLOYS_WEBHOOK }}
           environment: production

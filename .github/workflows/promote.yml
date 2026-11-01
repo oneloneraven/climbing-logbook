@@ -52,7 +52,7 @@ jobs:
       - run: git checkout "$TAG"
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
-      - uses: ./.github/actions/setup-node-pnpm
+      - uses: $/.github/actions/setup-node-pnpm
       # #760 -- see deploy.yml's own comment on this same line: page
       # shells are 11ty-generated, gitignored output now, not committed.
       - run: pnpm run html:build
@@ -89,7 +89,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DEPLOY_TOKEN }}
       - name: Tell Discord
         if: always() && steps.deploy_production.outcome != 'skipped' && steps.deploy_production.outcome != ''
-        uses: ./.github/actions/notify-deploy
+        uses: $/.github/actions/notify-deploy
         with:
           webhook: ${{ secrets.DISCORD_DEPLOYS_WEBHOOK }}
           environment: production
