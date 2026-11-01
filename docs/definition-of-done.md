@@ -6,7 +6,7 @@ PR ready. Each item points at the rule it comes from rather than restating it.
 
 1. **Tracked.** A GitHub issue exists, the branch is linked to it and named
    by the right prefix, and the issue is on the board
-   ([CLAUDE.md](../CLAUDE.md), Git and GitHub workflow).
+   ([workflow](workflow.md)).
 2. **Reviewed.** The diff has had a `/code-review` run against
    [coding-standards.md](coding-standards.md), and every blocking and
    should-fix finding is fixed. A finding is skipped only if it's wrong or
