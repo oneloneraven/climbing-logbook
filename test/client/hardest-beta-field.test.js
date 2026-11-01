@@ -49,11 +49,11 @@ describe("createHardestBetaField (#1522)", () => {
     expect(parts.readback.querySelector("mark.beta-transition").textContent).toBe("cross");
   });
 
-  it("reads the beta back as steps, with the crux marked", () => {
+  it("reads the beta back as steps, without a crux badge", () => {
     type("Right heel hook on the lip, then deadpoint to the sloper, crux");
     const steps = [...parts.steps.querySelectorAll("li")].map(li => li.textContent);
     expect(steps).toHaveLength(2);
-    expect(steps[1]).toContain("Crux");
+    expect(steps[1]).not.toContain("Crux");
   });
 
   it("settles an ambiguous word by rewriting it in the text", () => {

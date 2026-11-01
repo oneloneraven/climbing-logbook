@@ -152,7 +152,6 @@ export function createHardestBetaField({ input, angleSelect, mismatch, reading, 
     steps.replaceChildren(
       ...result.beats.map(beat => {
         const item = el("li", "", interpreter.say(beat));
-        if (beat.crux) item.append(" ", el("span", "beta-crux", "Crux"));
         for (const issue of beat.issues) item.append(el("span", "block text-xs text-warning-ink", issue));
         return item;
       }),

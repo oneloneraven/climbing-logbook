@@ -667,7 +667,3 @@ climbing-status-picker:has(input:focus-visible) .status-picker-frame {
   border: 1px dashed var(--color-warning-border); background: var(--color-warning-bg); color: var(--color-warning-ink);
 }
 .beta-chip[aria-expanded="true"], .beta-answer { border-style: solid; }
-.beta-crux {
-  font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
-  color: var(--color-accent-ink); border: 1px solid var(--color-accent-ink); border-radius: 4px; padding: 0 .3rem;
-}

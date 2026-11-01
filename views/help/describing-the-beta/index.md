@@ -10,7 +10,7 @@ eleventyNavigation:
 
 In Athlete Mode, the Performance page of the entry form asks for the hardest move or sequence on each climb. Write it the way you'd describe it to a friend, and Climbing Logbook works out what you mean.
 
-> Right heel hook on the lip, cross left hand to a sidepull crimp, then deadpoint to the pinch. Crux!
+> Right heel hook on the lip, cross left hand to a sidepull crimp, then deadpoint to the pinch.
 
 ## Choose the wall angle first
 
@@ -29,7 +29,7 @@ As you type, **How it was read** shows your words coloured by what each one was 
 - moves, such as a crossover, deadpoint, dyno or mantle;
 - which hand or foot, such as "left hand" or "rf".
 
-Open **Read as steps** to see your beta written out step by step, with the crux marked if you said "crux".
+Open **Read as steps** to see your beta written out step by step.
 
 It understands common slang and shorthand, like "bucket" for a jug or "lh" for left hand, and it fixes obvious typos, so "slopper" is read as sloper.
 
@@ -46,7 +46,6 @@ Your text is always saved exactly as it is. Words it doesn't know are kept, they
 
 - Name the hand or foot when it matters: "left hand", "right foot", "lf".
 - Use "from", "to" and "on" for holds: "from the undercling to the crimp".
-- In a longer sequence, put "crux" straight after the move that is: "deadpoint to the pinch, crux".
 
 ## Where it's used
 
