@@ -19,6 +19,10 @@ permissions:
   contents: read
   packages: read
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   promote:
     runs-on: ubuntu-latest
