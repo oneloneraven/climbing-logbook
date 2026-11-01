@@ -37,7 +37,9 @@
   {
     "version": "v2.116.0",
     "date": "2026-10-11",
-    "changes": ["When the terms of use change, you're asked to agree to the new version. Anything you save meanwhile waits on your device until you do."]
+    "changes": [
+      "When the terms of use change, you're asked to agree to the new version. Anything you save meanwhile waits on your device until you do."
+    ]
   },
   {
     "version": "v2.115.0",
