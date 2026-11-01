@@ -66,13 +66,14 @@ app rather than a published library with a versioned API contract:
     what's deployed.
 
   CI enforces this (#995): `require-release-label.yml` fails `release:
-  none` unless every changed file is on an allowlist of paths that never
-  reach users (`docs/`, `.github/`, `.claude/`, `.gitignore`,
-  `.git-blame-ignore-revs`, `biome.json`, `test/`, `e2e/`, the test runner
-  configs, repo-root Markdown and the synthetic production check). To
-  widen it,
-  edit the allowlist in the workflow, in a reviewed diff. Changes in this
-  bucket are real work, just not release-worthy on their own; they ride
+  none` unless every changed file is on the allowlist in
+  `.github/release-paths.json` of paths that never reach users (`docs/`,
+  `.github/`, `.claude/`, `.gitignore`, `.git-blame-ignore-revs`,
+  `biome.json`, `test/`, `e2e/`, the test runner configs, repo-root Markdown
+  and the synthetic production check). `infra/` and `migrations/` are
+  forbidden there outright. To widen the list, edit that file in a reviewed
+  diff. Changes in this bucket are real work, just not release-worthy on
+  their own; they ride
   along into whichever version comes next.
   Critically, this bucket is not a place for "the app looks or works
   slightly different but it felt too small to call a release" — a

@@ -22,6 +22,7 @@ on:
     types: [opened, reopened, edited, labeled, unlabeled, synchronize, ready_for_review]
 
 permissions:
+  contents: read
   pull-requests: read
 
 jobs:
@@ -44,8 +45,9 @@ jobs:
       - name: Verify a release label is present
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          labels=$(gh pr view "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --json labels --jq '.labels[].name')
+          labels=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json labels --jq '.labels[].name')
           if echo "$labels" | grep -qE "^release: (major|minor|patch|none)$"; then
             echo "Release label present."
           else
@@ -53,50 +55,28 @@ jobs:
             exit 1
           fi
 
-      # #995 -- release: none is only for changes that never reach users.
-      # Twice the docs alone didn't hold that line: #990 changed infra/
-      # under release: none, its change rode into the next tag's diff, and
-      # deploy.yml sent that tag straight to production (a diff touching
-      # infra/ or migrations/ deploys to both beta and production). So every
-      # changed file, renames' old paths included, must be on this
-      # allowlist. To widen it, edit it here, in a reviewed diff.
+      # #995 -- release: none is only for changes that never reach users. To widen
+      # the allowlist, edit .github/release-paths.json in a reviewed diff.
       - name: Verify release none only covers files that never reach users
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          labels=$(gh pr view "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --json labels --jq '.labels[].name')
+          labels=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json labels --jq '.labels[].name')
           if ! echo "$labels" | grep -qx "release: none"; then
             echo "Not release: none -- nothing to check."
             exit 0
           fi
-          files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[] | .filename, (.previous_filename // empty)')
-          offending=""
-          while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            case "$f" in
-              docs/*|.github/*|scripts/seed-preview-data.mjs|scripts/lib/dev-session.mjs|scripts/lib/drop-order.mjs|.claude/*|.gitignore|.git-blame-ignore-revs|biome.json|test/*|e2e/*|playwright.config.js|vitest.config.js) continue ;;
-              # #1002 -- a production monitor run from CI, never deployed.
-              scripts/synthetic-check.mjs) continue ;;
-            esac
-            # Repo-root Markdown only: views/help/*.md is user-facing.
-            case "$f" in
-              */*) ;;
-              *.md) continue ;;
-            esac
-            offending="$offending$f"$'\n'
-          done <<< "$files"
-          if [ -n "$offending" ]; then
-            echo "::error::release: none is only for changes that never reach users (see docs/versioning.md). These files can reach users, so this PR needs release: patch, minor or major:"
-            printf '%s' "$offending"
-            exit 1
-          fi
-          echo "Every changed file is on the never-reaches-users allowlist."
+          gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" \
+            --jq '.[] | .filename, (.previous_filename // empty)' \
+            | node .github/scripts/check-release-paths.mjs
 
       # #1504 -- Help > What's new is built from this section, via the release tag.
       - name: Verify a released PR has a What's new section
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         # The script is the PR's own checkout, so it runs without the token.
         run: |
-          PR_JSON=$(gh pr view "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --json body,labels)
+          PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body,labels)
           env -u GH_TOKEN PR_JSON="$PR_JSON" node scripts/check-whats-new.mjs

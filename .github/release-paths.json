@@ -1,0 +1,20 @@
+{
+  "noneAllowed": [
+    "docs/",
+    ".github/",
+    ".claude/",
+    "test/",
+    "e2e/",
+    "scripts/seed-preview-data.mjs",
+    "scripts/lib/dev-session.mjs",
+    "scripts/lib/drop-order.mjs",
+    "scripts/synthetic-check.mjs",
+    ".gitignore",
+    ".git-blame-ignore-revs",
+    "biome.json",
+    "playwright.config.js",
+    "vitest.config.js",
+    "*.md"
+  ],
+  "noneForbidden": ["infra/", "migrations/"]
+}
