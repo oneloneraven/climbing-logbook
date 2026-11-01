@@ -58,7 +58,7 @@ Four things make this model wrong for where the app is going (#950):
 ## Decision
 
 1. **Two states: enrolled or not enrolled. Everyone starts not
-   enrolled.** The "never decided" state is removed: existing nulls
+   enrolled, except anyone who signs up with an invite code (#1540).** The "never decided" state is removed: existing nulls
    become "not enrolled", and `betaOptIn` is always a boolean.
 2. **Enrollment is checked in one place: the boot of a beta owner page.**
    On `beta.x`, every owner page reads the enrollment flag synchronously
@@ -100,7 +100,8 @@ Four things make this model wrong for where the app is going (#950):
    server it has unsynced changes, so this can't be solved. The sub-page
    warns about *this* device's queue (the one thing it can see), and the
    help page tells users to sync every device before switching.
-7. **Keep it simple.** Joining is a conscious, active choice, so a cold
+7. **Keep it simple.** Joining is a conscious, active choice, or part of
+   signing up with an invite, so a cold
    sync the first time beta is used on a device is acceptable. No
    migration of local data between origins.
 

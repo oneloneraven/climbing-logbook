@@ -14,6 +14,10 @@ The beta uses your logbook, not a copy of it. Anything you add, change or delete
 
 ## Joining the beta
 
+If you signed up with an invite code, you're already in the beta. You can leave at any time from the same page in My account.
+
+Otherwise:
+
 1. Open the menu and go to **My account**.
 2. Choose **Check our beta**.
 3. Confirm that you understand what changes and what you need to do by hitting **Join the beta**.

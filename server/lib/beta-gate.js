@@ -58,6 +58,12 @@ export function createBetaGateAfterHook(env) {
   return async (user, context) => {
     const code = context?.body?.code;
     if (typeof code !== "string" || !code) return;
-    await env.LOGBOOK_DB.prepare(`UPDATE beta_invites SET used_by = ? WHERE code = ?`).bind(user.id, code).run();
+    const claim = await env.LOGBOOK_DB.prepare(`UPDATE beta_invites SET used_by = ? WHERE code = ?`)
+      .bind(user.id, code)
+      .run();
+    if (claim.meta.changes === 0) return;
+    await env.LOGBOOK_DB.prepare(`INSERT INTO settings (user_id, logbook_public, beta_opt_in) VALUES (?, 0, 1)`)
+      .bind(user.id)
+      .run();
   };
 }

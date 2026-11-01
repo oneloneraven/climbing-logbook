@@ -20,6 +20,20 @@ describe("beta gate enabled (BETA_GATE_ENABLED=true, wrangler.jsonc default)", (
     expect(row.used_by).not.toBeNull();
   });
 
+  it("enrols an invited sign-up in the beta, with a private logbook", async () => {
+    await seedInvite({ code: "open-code" });
+
+    await signUp({ code: "open-code" });
+
+    const invite = await env.LOGBOOK_DB.prepare(`SELECT used_by FROM beta_invites WHERE code = ?`)
+      .bind("open-code")
+      .first();
+    const settings = await env.LOGBOOK_DB.prepare(`SELECT beta_opt_in, logbook_public FROM settings WHERE user_id = ?`)
+      .bind(invite.used_by)
+      .first();
+    expect(settings).toEqual({ beta_opt_in: 1, logbook_public: 0 });
+  });
+
   it("accepts an email-pinned code used with the matching email", async () => {
     await seedInvite({ code: "pinned-code", email: "nix@example.com" });
 
