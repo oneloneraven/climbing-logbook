@@ -11,6 +11,7 @@ bundle: admin
   <a class="{{ tabClass }}" id="tab-feedback" href="/feedback">Feedback <span class="text-accent-ink" data-unread></span></a>
   <a class="{{ tabClass }}" id="tab-users" href="/users">Users</a>
   <a class="{{ tabClass }}" id="tab-usage" href="/usage">Usage</a>
+  <a class="{{ tabClass }}" id="tab-invites" href="/invites">Invites</a>
   <a class="{{ tabClass }}" id="tab-activity" href="/activity">Activity</a>
 </nav>
 
@@ -137,6 +138,19 @@ bundle: admin
       </section>
     </div>
   </div>
+</section>
+
+<section id="invites-view" aria-labelledby="invites-heading" hidden>
+  <h2 class="sr-only" id="invites-heading">Invites</h2>
+  <form class="flex flex-wrap items-end gap-3 mt-4 max-w-[720px]" id="invite-form" novalidate>
+    <div class="flex flex-col gap-1 flex-[1_1_240px] min-w-0">
+      <label class="text-sm" for="invite-email">Email address (optional)</label>
+      <input class="w-full" type="email" id="invite-email" autocomplete="off">
+    </div>
+    <button type="submit" class="btn" id="invite-create">Create invite</button>
+  </form>
+  <p class="mt-4 text-sm text-muted" id="invites-status" role="status"></p>
+  <ul class="list-none max-w-[720px]" id="invites-list"></ul>
 </section>
 
 <section id="activity-view" aria-labelledby="activity-heading" hidden>

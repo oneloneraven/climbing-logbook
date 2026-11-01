@@ -2,10 +2,11 @@ import { json, parseJsonBody } from "../lib/json.js";
 import { verifyAccessRequest } from "../lib/access.js";
 import { actOnUser, listAuditLog, listUsers, setEntryHidden, viewLogbook } from "./admin-users.js";
 import { handleUsage } from "./admin-usage.js";
+import { createInvite, listInvites } from "./admin-invites.js";
 import { environmentOf } from "../../shared/app-version.js";
 
 const TABLES = { reports: "issue_reports", feedback: "feedback_submissions" };
-const PAGES = new Set(["/reports", "/feedback", "/users", "/usage", "/activity"]);
+const PAGES = new Set(["/reports", "/feedback", "/users", "/usage", "/invites", "/activity"]);
 const LIST_LIMIT = 500;
 
 export function isAdminHost(hostname) {
@@ -122,6 +123,10 @@ async function handleAdminApi(request, env, pathname) {
   if (pathname === "/-/api/admin/users") return method === "GET" ? listUsers(request, env) : null;
   if (pathname === "/-/api/admin/audit") return method === "GET" ? listAuditLog(env) : null;
   if (pathname === "/-/api/admin/usage") return method === "GET" ? handleUsage(env) : null;
+  if (pathname === "/-/api/admin/invites") {
+    if (method === "GET") return listInvites(request, env);
+    return method === "POST" ? createInvite(request, env) : null;
+  }
   const logbook = pathname.match(/^\/-\/api\/admin\/users\/([^/]+)\/logbook$/);
   if (logbook) return method === "GET" ? viewLogbook(env, safeDecode(logbook[1])) : null;
   const userAction = pathname.match(/^\/-\/api\/admin\/users\/([^/]+)\/([a-z]+)$/);

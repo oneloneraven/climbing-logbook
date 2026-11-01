@@ -184,10 +184,11 @@ not the dashboard labels.
 
 While the beta gate is on (`BETA_GATE_ENABLED`,
 [ADR-0014](adr/0014-closed-beta-invite-gate-togglable-not-removable.md)),
-sign-up needs an unused code from `beta_invites`. Make codes with
-`node scripts/mint-invite.mjs [--email <address>]`: it prints a random
-128-bit code, the `wrangler` command that stores it, and the link to send.
-Don't type codes by hand; a guessable code gets round the gate.
+sign-up needs an unused code from `beta_invites`. Make codes on the admin
+host's Invites tab, or with `node scripts/mint-invite.mjs [--email <address>]`
+when there's no admin host yet: it prints a random 128-bit code, the
+`wrangler` command that stores it, and the link to send. Don't type codes by
+hand; a guessable code gets round the gate.
 
 ## Disaster recovery
 

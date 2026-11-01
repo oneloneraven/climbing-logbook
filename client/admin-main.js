@@ -2,6 +2,7 @@ import { startSubmissions } from "./admin/submissions.js";
 import { startUsers } from "./admin/users.js";
 import { startActivity } from "./admin/activity.js";
 import { startUsage } from "./admin/usage.js";
+import { startInvites } from "./admin/invites.js";
 import { refreshCounts } from "./admin/shared.js";
 
 const PAGES = {
@@ -9,6 +10,7 @@ const PAGES = {
   feedback: { view: "submissions-view", start: () => startSubmissions("feedback") },
   users: { view: "users-view", start: startUsers },
   usage: { view: "usage-view", start: startUsage },
+  invites: { view: "invites-view", start: startInvites },
   activity: { view: "activity-view", start: startActivity },
 };
 

@@ -283,3 +283,16 @@ test("the usage tab shows the headline figures, the splits, and places by countr
   await expect(locations.first()).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(312);
 });
+
+test("an invite is created, tied to an email address, and listed with its code", async ({ page }) => {
+  const email = `invite-${Date.now()}@example.com`;
+  await page.goto(`${ADMIN}/invites`);
+  await expect(page.locator("#tab-invites")).toHaveAttribute("aria-current", "page");
+  await page.locator("#invite-email").fill(email);
+  await page.locator("#invite-create").click();
+
+  await expect(page.locator("#invites-status")).toHaveText("Invite created. Copy its link to send it.");
+  const row = page.locator("#invites-list li", { hasText: email });
+  await expect(row).toContainText("Unused");
+  await expect(row.getByRole("button", { name: /Copy link/ })).toBeVisible();
+});
