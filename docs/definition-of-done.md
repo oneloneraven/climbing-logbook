@@ -7,9 +7,10 @@ PR ready. Each item points at the rule it comes from rather than restating it.
 1. **Tracked.** A GitHub issue exists, the branch is linked to it and named
    by the right prefix, and the issue is on the board
    ([CLAUDE.md](../CLAUDE.md), Git and GitHub workflow).
-2. **Reviewed.** The diff has had a code review against
+2. **Reviewed.** The diff has had a `/code-review` run against
    [coding-standards.md](coding-standards.md), and every blocking and
-   should-fix finding is fixed.
+   should-fix finding is fixed. A finding is skipped only if it's wrong or
+   out of scope, never because it's small.
 3. **Tested.** New or changed behaviour is covered at the right layer
    ([ADR-0030](adr/0030-test-against-the-real-worker-mock-only-what-it-cant-produce.md)),
    and `pnpm test` passes. For e2e, run the areas the change touches
@@ -21,17 +22,19 @@ PR ready. Each item points at the rule it comes from rather than restating it.
 4. **Verified.** User-facing changes have been driven in a browser, in light
    and dark themes, at desktop and phone widths
    ([coding-standards.md](coding-standards.md#verification)).
-5. **No slower.** `e2e/log-page-boot-perf.spec.js` still passes, and a change
+5. **Screened.** Any new dependency or vendor has been checked and recorded
+   ([ADR-0005](adr/0005-screen-dependencies-against-bds-boycott-lists.md)).
+6. **No slower.** `e2e/log-page-boot-perf.spec.js` still passes, and a change
    to the boot path has its local render time compared before and after. No
    throttled-network timings ([ADR-0026](adr/0026-local-preview-cant-validate-network-performance.md)).
-6. **Documented.** Docs and ADRs are updated where behaviour or a decision
+7. **Documented.** Docs and ADRs are updated where behaviour or a decision
    changed, and the diff adds no narrative comments
    ([coding-standards.md](coding-standards.md#comments-and-docs)).
-7. **Clean.** Nothing the change replaced is left behind: no unused exports,
+8. **Clean.** Nothing the change replaced is left behind: no unused exports,
    CSS, fixtures, scripts or tests.
-8. **Labelled.** The PR has the right release label
+9. **Labelled.** The PR has the right release label
    ([versioning.md](versioning.md#what-semver-means-for-this-project)).
-9. **Announced.** Every PR that makes a release has a "What's new" heading,
+10. **Announced.** Every PR that makes a release has a "What's new" heading,
    with one plain sentence per change climbers will notice, written for
    them: it's what Help → What's new shows. Leave it empty only when they
    won't notice anything. CI fails a released PR without the heading
