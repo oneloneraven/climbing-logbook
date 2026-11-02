@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { browser } from "@wdio/globals";
 import { currentContext } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
+import { stopHolding } from "./wdio-hold.js";
 
 const PAGE_REPLACED =
   /navigation canceled by concurrent navigation|Cannot find context with specified id|does not belong to the document/;
@@ -51,5 +52,6 @@ export const mochaHooks = {
   },
   async afterEach() {
     await screenshotFailure(this.currentTest ?? this.test);
+    await stopHolding();
   },
 };
