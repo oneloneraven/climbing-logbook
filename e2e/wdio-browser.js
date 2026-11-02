@@ -39,9 +39,9 @@ export async function settle() {
 }
 
 // What Playwright's page.request does: a request outside the page that carries the browser's cookies for that host.
-export async function browserFetch(url, init = {}) {
+export async function browserFetch(url, init = {}, partition = undefined) {
   const { hostname } = new URL(url);
-  const { cookies } = await browser.storageGetCookies({ partition: await userContextPartition() });
+  const { cookies } = await browser.storageGetCookies({ partition: partition ?? (await userContextPartition()) });
   const cookie = cookies
     .filter(c => c.domain.replace(/^\./, "") === hostname)
     .map(c => `${c.name}=${c.value.value}`)
@@ -68,7 +68,9 @@ export async function recordFetches() {
     next(urlPart, method) {
       const since = fetches.length;
       const find = () => fetches.slice(since).find(f => f.url.includes(urlPart) && f.method === method);
-      return browser.waitUntil(find, { timeoutMsg: `no ${method} ${urlPart} finished` }).then(find);
+      const finished = browser.waitUntil(find, { timeoutMsg: `no ${method} ${urlPart} finished` }).then(find);
+      finished.catch(() => {});
+      return finished;
     },
   };
 }

@@ -8,7 +8,40 @@ const PAGE_REPLACED =
   /navigation canceled by concurrent navigation|Cannot find context with specified id|does not belong to the document/;
 
 // Playwright rides out the page's own redirects and reloads; WebDriver BiDi reports them as errors.
-export function rideOutPageNavigations() {
+// Its clicks also wait for transitions, for the element to stop moving and to be the one under the pointer.
+export function actLikePlaywright() {
+  browser.overwriteCommand(
+    "click",
+    async function (click, options) {
+      await browser.waitUntil(() =>
+        browser.execute(
+          () =>
+            new Promise(resolve =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() =>
+                  resolve(!document.getAnimations().some(a => a instanceof CSSTransition && a.playState === "running")),
+                ),
+              ),
+            ),
+        ),
+      );
+      await this.waitForStable();
+      if (!options) {
+        await this.scrollIntoView({ block: "center" });
+        await browser.waitUntil(
+          () =>
+            browser.execute(element => {
+              const box = element.getBoundingClientRect();
+              const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+              return element === hit || element.contains(hit);
+            }, this),
+          { timeoutMsg: `${this.selector} never came out from under whatever covers it` },
+        );
+      }
+      return click(options);
+    },
+    { attachToElement: true },
+  );
   browser.overwriteCommand("url", async (url, path, options) => {
     try {
       return await url(path, options);

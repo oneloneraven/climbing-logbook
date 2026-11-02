@@ -1,25 +1,26 @@
 import { browser } from "@wdio/globals";
-import { currentContext } from "./wdio-browser.js";
+import { browserFetch, currentContext, userContextPartition } from "./wdio-browser.js";
 
 const holds = new Map();
 
-const answer = (request, json) =>
-  json === undefined
-    ? browser.networkContinueRequest({ request })
-    : browser.networkProvideResponse({
-        request,
-        statusCode: 200,
-        headers: [{ name: "content-type", value: { type: "string", value: "application/json" } }],
-        body: { type: "string", value: JSON.stringify(json) },
-      });
+const respond = (request, statusCode, body) =>
+  browser.networkProvideResponse({
+    request,
+    statusCode,
+    headers: [{ name: "content-type", value: { type: "string", value: "application/json" } }],
+    body: { type: "string", value: body },
+  });
 
 // browser.mock can't delay an answer, so pause requests to this path (any query) over WebDriver BiDi until the test
-// releases them, to the server or with the given JSON. Don't mix it with browser.mock in a test: a mock lets every
-// other paused request go.
-export async function holdRequests(pathname) {
+// releases them (only the first, with once): to the server, with the given JSON, or with what the server said when sent
+// (answerFromWhenSent, Playwright's route.fetch then a delayed fulfill). Don't mix it with browser.mock in a test:
+// a mock lets every other paused request go.
+export async function holdRequests(pathname, { method, once = false, answerFromWhenSent = false } = {}) {
   const context = currentContext();
+  const partition = answerFromWhenSent ? await userContextPartition() : undefined;
   const held = [];
   let released = false;
+  let caught = false;
   const { intercept } = await browser.networkAddIntercept({
     phases: ["beforeRequestSent"],
     contexts: [context],
@@ -27,8 +28,17 @@ export async function holdRequests(pathname) {
   });
   const listener = ({ isBlocked, intercepts, request }) => {
     if (!isBlocked || !intercepts?.includes(intercept)) return;
-    if (released) browser.networkContinueRequest({ request: request.request }).catch(() => {});
-    else held.push(request.request);
+    if (released || (method && request.method !== method) || (once && caught)) {
+      browser.networkContinueRequest({ request: request.request }).catch(() => {});
+      return;
+    }
+    caught = true;
+    held.push({
+      id: request.request,
+      sent: answerFromWhenSent
+        ? browserFetch(request.url, {}, partition).then(async res => ({ status: res.status, body: await res.text() }))
+        : null,
+    });
   };
   await browser.sessionSubscribe({ events: ["network.beforeRequestSent"], contexts: [context] });
   browser.on("network.beforeRequestSent", listener);
@@ -41,7 +51,12 @@ export async function holdRequests(pathname) {
   ]);
   return async json => {
     released = true;
-    await Promise.all(held.splice(0).map(request => answer(request, json).catch(() => {})));
+    const answer = async ({ id, sent }) => {
+      if (json !== undefined) return respond(id, 200, JSON.stringify(json));
+      if (sent) return sent.then(({ status, body }) => respond(id, status, body));
+      return browser.networkContinueRequest({ request: id });
+    };
+    await Promise.all(held.splice(0).map(request => answer(request).catch(() => {})));
   };
 }
 

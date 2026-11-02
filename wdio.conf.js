@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { SevereServiceError } from "webdriverio";
 import globalSetup from "./e2e/global-setup.js";
 import { SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
-import { rideOutPageNavigations } from "./e2e/wdio-hooks.js";
+import { actLikePlaywright } from "./e2e/wdio-hooks.js";
 
 const BASE_URL = "http://localhost:8787";
 const SERVER_COMMAND =
@@ -101,7 +101,7 @@ export const config = {
     }
     await globalSetup();
   },
-  before: rideOutPageNavigations,
+  before: actLikePlaywright,
   onComplete() {
     stopServer();
   },
