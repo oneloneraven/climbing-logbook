@@ -17,7 +17,9 @@ describe("per-user data", () => {
   it("an owner page records the signed-in user and keeps its data under that user's namespace", async () => {
     await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await expect($("climbing-entries-table")).toBeDisplayed();
-    await browser.waitUntil(async () => (await cachedEntries())?.length > 0);
+    await browser.waitUntil(async () => (await cachedEntries().catch(() => null))?.length > 0);
+    await waitForPath(`/${DEV_USER.username}/log`);
+    await settle();
 
     const keys = await storageSnapshot();
     expect(keys.logbook_signed_in_user).toBe(OWNER);

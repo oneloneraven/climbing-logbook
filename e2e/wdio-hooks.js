@@ -34,9 +34,13 @@ export async function screenshotFailure(test) {
     /[^a-z0-9]+/gi,
     "-",
   );
-  const { data } = await browser.browsingContextCaptureScreenshot({ context: currentContext() });
-  mkdirSync("test-results/wdio", { recursive: true });
-  writeFileSync(`test-results/wdio/${name.slice(0, 150)}.png`, Buffer.from(data, "base64"));
+  try {
+    const { data } = await browser.browsingContextCaptureScreenshot({ context: currentContext() });
+    mkdirSync("test-results/wdio", { recursive: true });
+    writeFileSync(`test-results/wdio/${name.slice(0, 150)}.png`, Buffer.from(data, "base64"));
+  } catch (error) {
+    console.warn(`No screenshot of the failure: ${error.message}`);
+  }
 }
 
 // Playwright's Desktop Chrome viewport, and the shared specs run as the seeded dev user, as its shared project does.

@@ -20,7 +20,7 @@ async function setSessionCookie(cookie, domain) {
       domain,
       path: "/",
       httpOnly: cookie.httpOnly,
-      sameSite: "lax",
+      sameSite: cookie.sameSite?.toLowerCase() ?? "lax",
     },
     partition: await userContextPartition(),
   });
