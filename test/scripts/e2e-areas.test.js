@@ -3,9 +3,14 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { AREAS } from "../../e2e/areas.js";
 
-const specs = readdirSync(join(process.cwd(), "e2e"))
-  .filter(name => name.endsWith(".spec.js"))
-  .map(name => name.replace(/\.spec\.js$/, ""));
+const SPEC_FILE = /\.(spec|e2e)\.js$/;
+const specs = [
+  ...new Set(
+    readdirSync(join(process.cwd(), "e2e"))
+      .filter(name => SPEC_FILE.test(name))
+      .map(name => name.replace(SPEC_FILE, "")),
+  ),
+];
 const tagged = new Set(Object.values(AREAS).flat());
 
 describe("e2e areas (#1263)", () => {

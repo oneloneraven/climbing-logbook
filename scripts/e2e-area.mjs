@@ -1,4 +1,5 @@
 // Runs the e2e specs for one or more areas: pnpm e2e:area log tour
+import { existsSync } from "node:fs";
 import { AREAS } from "../e2e/areas.js";
 import { runE2e } from "./run-e2e.mjs";
 import { runE2eWdio } from "./run-e2e-wdio.mjs";
@@ -13,4 +14,4 @@ if (areas.length === 0 || unknown.length > 0) {
 
 const names = [...new Set(areas.flatMap(area => AREAS[area]))];
 if (process.env.E2E_RUNNER === "wdio") process.exit(runE2eWdio(names));
-process.exit(runE2e(names.map(name => `e2e/${name}.spec.js`)));
+process.exit(runE2e(names.map(name => `e2e/${name}.spec.js`).filter(spec => existsSync(spec))));
