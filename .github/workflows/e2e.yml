@@ -49,3 +49,22 @@ jobs:
           name: playwright-traces
           path: test-results/
           retention-days: 7
+
+  e2e-webdriverio:
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chrome, firefox]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/.github/actions/setup-node-pnpm
+      - run: echo 'TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA' >> .dev.vars
+      - run: echo 'BETTER_AUTH_SECRET=e2e-only-secret-not-used-anywhere-else-0000' >> .dev.vars
+      - run: pnpm run test:e2e:wdio
+        env:
+          E2E_BROWSERS: ${{ matrix.browser }}

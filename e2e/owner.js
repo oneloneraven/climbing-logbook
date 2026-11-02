@@ -4,10 +4,10 @@ import { OWNED_ORIGIN, ownedRouteUrl } from "./owned-route-url.js";
 import { PAIN_INJURY } from "../shared/health-consent.js";
 
 export const OWNER_POOL_PATH = "e2e/.auth/owners.json";
-const OWNER_NEXT_PATH = "e2e/.auth/owners-next";
+export const OWNER_NEXT_PATH = "e2e/.auth/owners-next";
 export const OWNER_POOL_SIZE = 400;
 export const NEW_OWNER_POOL_PATH = "e2e/.auth/new-owners.json";
-const NEW_OWNER_NEXT_PATH = "e2e/.auth/new-owners-next";
+export const NEW_OWNER_NEXT_PATH = "e2e/.auth/new-owners-next";
 export const NEW_OWNER_POOL_SIZE = 10;
 
 function ownerIdentity(username) {
@@ -50,7 +50,7 @@ function withLock(path, fn) {
   }
 }
 
-function claimFrom(poolPath, nextPath) {
+export function claimFrom(poolPath, nextPath) {
   return withLock(nextPath, () => {
     const owners = JSON.parse(readFileSync(poolPath, "utf8"));
     const next = Number(readFileSync(nextPath, "utf8"));
@@ -70,10 +70,14 @@ const DEFAULT_PLACE = { id: "p1", locationId: "l1", area: "" };
 const SEED_CONCURRENCY = 6;
 const ENTRY_DEFAULTS = { placeId: "p1", type: "boulder", status: "send", grade: "6A", date: daysAgo(1) };
 
-function createOwner(username, request) {
+export function createOwner(username, sessionCookie) {
   const api = async (method, path, data) => {
-    const res = await request.fetch(`${OWNED_ORIGIN}/-/api/${path}`, { method, data });
-    expect(res.ok(), `${method} ${path}: ${res.status()} ${await res.text()}`).toBe(true);
+    const res = await fetch(`${OWNED_ORIGIN}/-/api/${path}`, {
+      method,
+      headers: { cookie: `${sessionCookie.name}=${sessionCookie.value}`, "content-type": "application/json" },
+      body: data === undefined ? undefined : JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`${method} ${path}: ${res.status} ${await res.text()}`);
     return res;
   };
   const ownId = id => (id == null ? id : `${username}-${id}`);
@@ -122,12 +126,12 @@ export const test = base.extend({
   owner: async ({ context }, use) => {
     const { username, cookie } = claimFrom(OWNER_POOL_PATH, OWNER_NEXT_PATH);
     await context.addCookies([{ ...cookie, domain: "my.localhost" }]);
-    await use(createOwner(username, context.request));
+    await use(createOwner(username, cookie));
   },
   newOwner: async ({ context }, use) => {
     const { username, cookie } = claimFrom(NEW_OWNER_POOL_PATH, NEW_OWNER_NEXT_PATH);
     await context.addCookies([{ ...cookie, domain: "my.localhost" }]);
-    await use(createOwner(username, context.request));
+    await use(createOwner(username, cookie));
   },
 });
 

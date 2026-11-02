@@ -13,7 +13,9 @@ allowBuilds:
   # build needed for a code path this app never exercises.
   '@prisma/client': false
   better-sqlite3: false
+  edgedriver: false
   esbuild: true
+  geckodriver: false
   sharp: true
   workerd: true
 
