@@ -1,27 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 import { STORAGE_STATE_PATH } from "./e2e/global-setup.js";
+import { SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
 
 const PORT = 8787;
 const BASE_URL = `http://localhost:${PORT}`;
 
-// These use the seeded dev user, change state other specs see, write D1 through wrangler, or measure timing, so they run one at a time.
-const SHARED_SPECS = [
-  "account-page",
-  "admin",
-  "apex-links",
-  "asset-caching",
-  "beta-channel",
-  "launch",
-  "log-page-boot-perf",
-  "login",
-  "offline-launch",
-  "per-user-data",
-  "queue-replay",
-  "register",
-  "terms-prompt",
-  "two-step-recovery",
-  "zero-friction-redirect",
-].map(name => `**/${name}.spec.js`);
+const SHARED_SPECS = SHARED_SPEC_NAMES.map(name => `**/${name}.spec.js`);
 
 const NO_SESSION = { cookies: [], origins: [] };
 

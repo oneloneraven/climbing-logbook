@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { SevereServiceError } from "webdriverio";
 import globalSetup from "./e2e/global-setup.js";
+import { SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
 
 const BASE_URL = "http://localhost:8787";
 const SERVER_COMMAND =
@@ -52,12 +53,16 @@ const BROWSERS = {
   safari: { browserName: "safari" },
 };
 
+const sharedSpecs = SHARED_SPEC_NAMES.map(name => `./e2e/${name}.e2e.js`);
+const shared = process.env.E2E_PROJECT === "shared";
+
 const selected = (process.env.E2E_BROWSERS ?? "chrome,firefox").split(",").map(name => name.trim());
 
 export const config = {
   runner: "local",
-  specs: ["./e2e/**/*.e2e.js"],
-  maxInstances: selected.includes("safari") ? 1 : Number(process.env.E2E_WORKERS ?? 4),
+  specs: shared ? sharedSpecs : ["./e2e/**/*.e2e.js"],
+  exclude: shared ? [] : sharedSpecs,
+  maxInstances: shared || selected.includes("safari") ? 1 : Number(process.env.E2E_WORKERS ?? 4),
   capabilities: selected.map(name => {
     if (!BROWSERS[name]) throw new Error(`Unknown browser in E2E_BROWSERS: ${name}`);
     return BROWSERS[name];
