@@ -89,9 +89,12 @@ describe("sync page", () => {
     const navigations = await recordNavigations();
 
     await browser.url(owner.url("/log"));
-    await browser.waitUntil(() => navigations.some(url => url.pathname === `/${owner.username}/sync`), {
-      timeoutMsg: "never went to /sync",
-    });
+    const backFromSync = () => {
+      const paths = navigations.map(url => url.pathname);
+      const sync = paths.indexOf(`/${owner.username}/sync`);
+      return sync >= 0 && paths.slice(sync + 1).includes(`/${owner.username}/log`);
+    };
+    await browser.waitUntil(backFromSync, { timeoutMsg: "never went through /sync and back to /log" });
     await waitForPath(`/${owner.username}/log`);
     const cached = await cachedEntries(owner);
     expect(cached.map(e => e.name)).toContain("After Purge");

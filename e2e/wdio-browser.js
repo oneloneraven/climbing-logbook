@@ -81,9 +81,37 @@ export async function requery(element) {
   return element.index === undefined ? parent.$(element.selector) : (await parent.$$(element.selector))[element.index];
 }
 
+// Playwright's actionability: no transition running, the element has stopped moving, and it's what a pointer at its
+// centre would hit.
+export async function waitUntilActionable(element) {
+  await browser.waitUntil(() =>
+    browser.execute(
+      () =>
+        new Promise(resolve =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() =>
+              resolve(!document.getAnimations().some(a => a instanceof CSSTransition && a.playState === "running")),
+            ),
+          ),
+        ),
+    ),
+  );
+  await element.waitForStable();
+  await element.scrollIntoView({ block: "center" });
+  await browser.waitUntil(
+    () =>
+      browser.execute(target => {
+        const box = target.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        return target === hit || target.contains(hit);
+      }, element),
+    { timeoutMsg: `${element.selector} never came out from under whatever covers it` },
+  );
+}
+
 export async function tap(target) {
   const element = await requery(await target);
-  await element.scrollIntoView({ block: "center" });
+  await waitUntilActionable(element);
   await browser
     .action("pointer", { parameters: { pointerType: "touch" } })
     .move({ origin: element })

@@ -5,10 +5,10 @@ import { PAIN_INJURY } from "../shared/health-consent.js";
 
 export const OWNER_POOL_PATH = "e2e/.auth/owners.json";
 export const OWNER_NEXT_PATH = "e2e/.auth/owners-next";
-export const OWNER_POOL_SIZE = 400;
+export const OWNER_POOL_SIZE = 800;
 export const NEW_OWNER_POOL_PATH = "e2e/.auth/new-owners.json";
 export const NEW_OWNER_NEXT_PATH = "e2e/.auth/new-owners-next";
-export const NEW_OWNER_POOL_SIZE = 10;
+export const NEW_OWNER_POOL_SIZE = 20;
 
 function ownerIdentity(username) {
   return { username, email: `${username}@climbinglogbook.local`, password: "correct-horse-battery-staple" };
