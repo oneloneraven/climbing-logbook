@@ -17,6 +17,12 @@ export function actLikePlaywright() {
     },
     { attachToElement: true },
   );
+  // WebdriverIO opens the next test's window while this one runs, taking focus, and Firefox only turns keys like
+  // Enter into clicks in a focused window.
+  browser.overwriteCommand("keys", async (keys, value) => {
+    await browser.browsingContextActivate({ context: currentContext() });
+    return keys(value);
+  });
   browser.overwriteCommand("url", async (url, path, options) => {
     try {
       return await url(path, options);
