@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { SevereServiceError } from "webdriverio";
 import globalSetup from "./e2e/global-setup.js";
 import { SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
-import { followClientRedirects } from "./e2e/wdio-hooks.js";
+import { rideOutPageNavigations } from "./e2e/wdio-hooks.js";
 
 const BASE_URL = "http://localhost:8787";
 const SERVER_COMMAND =
@@ -38,7 +38,7 @@ const BROWSERS = {
     browserName: "chrome",
     "wdio:experimentalBiDiCommands": true,
     browserVersion: "stable",
-    "goog:chromeOptions": { args: ["--headless=new", "--no-sandbox"] },
+    "goog:chromeOptions": { args: ["--headless=new", "--no-sandbox", "--hide-scrollbars"] },
   },
   firefox: {
     browserName: "firefox",
@@ -48,6 +48,7 @@ const BROWSERS = {
       args: ["-headless"],
       prefs: {
         "ui.prefersReducedMotion": 1,
+        "ui.useOverlayScrollbars": 1,
         "security.webauth.webauthn_enable_softtoken": true,
         "security.webauth.webauthn_enable_usbtoken": false,
       },
@@ -100,7 +101,7 @@ export const config = {
     }
     await globalSetup();
   },
-  before: followClientRedirects,
+  before: rideOutPageNavigations,
   onComplete() {
     stopServer();
   },

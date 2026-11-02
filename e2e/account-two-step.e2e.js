@@ -47,7 +47,9 @@ describe("two-step verification", () => {
 
     await $("#code").setValue("000000");
     await $("#code-submit-btn").click();
-    await expect($("#code-error")).toHaveTextContent("That code didn't work. Check your authenticator app and try again.");
+    await expect($("#code-error")).toHaveTextContent(
+      "That code didn't work. Check your authenticator app and try again.",
+    );
 
     await $("#use-backup-code-btn").click();
     await $("#code").setValue(backupCodes[0]);

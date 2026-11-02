@@ -1,7 +1,7 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import { d1Execute, d1Query } from "../scripts/lib/dev-session.mjs";
 import { TERMS_VERSION } from "../shared/terms.js";
-import { recordFetches, settle, waitForFetch } from "./wdio-browser.js";
+import { recordFetches, settle } from "./wdio-browser.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 const D1 = { database: "climbing-logbook-preview", env: "preview" };
@@ -32,15 +32,16 @@ describe("terms prompt", () => {
       record,
     );
 
+    const fetches = await recordFetches();
     await browser.refresh();
     await expect(termsDialog()).toBeDisplayed();
     await expect(termsDialog()).toHaveTextContent(expect.stringContaining("Who can't use Climbing Logbook"));
     await termsDialog().$('role/button[name="Not now"]').click();
     await expect(termsDialog()).not.toBeDisplayed();
 
-    await recordFetches();
+    const refused = fetches.next("/-/api/entries", "POST");
     await $("#sync-now").click();
-    expect((await waitForFetch("/-/api/entries", "POST")).status).toBe(428);
+    expect((await refused).status).toBe(428);
     await expect($("#sync-line-text")).toHaveTextContent("1 change waiting to sync");
 
     await browser.refresh();
