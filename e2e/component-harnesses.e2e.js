@@ -12,8 +12,8 @@ describe("component harnesses", () => {
     await browser.url("/e2e-fixtures/pyramid-harness.html");
 
     await expect($("climbing-grade-pyramid #pyramid")).toBeDisplayed();
-    await expect($("climbing-grade-pyramid")).toHaveElementProperty("textContent", expect.stringContaining("Sources"));
-    await expect($("climbing-grade-pyramid")).toHaveElementProperty("textContent", expect.stringContaining("Hörst"));
+    await expect($("climbing-grade-pyramid")).toHaveTextContent(expect.stringContaining("Sources"));
+    await expect($("climbing-grade-pyramid")).toHaveTextContent(expect.stringContaining("Hörst"));
   });
 
   it("map-view.js: zoom/pan controls appear once the map has loaded", async () => {
@@ -53,7 +53,7 @@ describe("component harnesses", () => {
 
     const popover = $("#map-pin-popover");
     await expect(popover).toBeDisplayed();
-    await expect(popover).toHaveText(expect.stringContaining("France"));
+    await expect(popover).toHaveTextContent(expect.stringContaining("France"));
 
     await $("#map-pin-popover-close").click();
     await expect(popover).not.toBeDisplayed();

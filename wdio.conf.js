@@ -78,7 +78,7 @@ export const config = {
   reporters: ["spec"],
   mochaOpts: {
     timeout: 60000,
-    require: ["./e2e/wdio-hooks.js"],
+    require: ["./e2e/wdio-hooks.js", "./e2e/wdio-matchers.js"],
     parallelMode: "userContexts",
     maxParallelContexts: shared ? 1 : Number(process.env.E2E_CONTEXTS ?? 2),
   },

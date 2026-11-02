@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { browser, expect } from "@wdio/globals";
+import { settle } from "./wdio-browser.js";
 import { STORAGE_STATE_PATH } from "./global-setup.js";
 import {
   claimFrom,
@@ -48,4 +49,5 @@ export async function gotoSyncedLog(owner) {
   await expect($("climbing-entries-table")).toBeDisplayed();
   const settingsKey = `logbook_settings_cache:${owner.username}`;
   await browser.waitUntil(() => browser.execute(key => localStorage.getItem(key) !== null, settingsKey));
+  await settle();
 }

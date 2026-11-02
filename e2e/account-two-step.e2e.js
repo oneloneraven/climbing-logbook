@@ -47,7 +47,7 @@ describe("two-step verification", () => {
 
     await $("#code").setValue("000000");
     await $("#code-submit-btn").click();
-    await expect($("#code-error")).toHaveText("That code didn't work. Check your authenticator app and try again.");
+    await expect($("#code-error")).toHaveTextContent("That code didn't work. Check your authenticator app and try again.");
 
     await $("#use-backup-code-btn").click();
     await $("#code").setValue(backupCodes[0]);
@@ -60,10 +60,10 @@ describe("two-step verification", () => {
     await turnOnInPage(owner);
     await logInWithPassword(owner);
     await $("#lost-device-btn").click();
-    await expect($("#lost-device")).toHaveText(expect.stringContaining("7 days"));
-    await expect($("#lost-device")).toHaveText(expect.stringContaining("We can't switch it off for you"));
+    await expect($("#lost-device")).toHaveTextContent(expect.stringContaining("7 days"));
+    await expect($("#lost-device")).toHaveTextContent(expect.stringContaining("We can't switch it off for you"));
     await $("#recovery-btn").click();
-    await expect($("#code-info")).toHaveText("We've emailed you a link. It works for 24 hours.");
+    await expect($("#code-info")).toHaveTextContent("We've emailed you a link. It works for 24 hours.");
   });
 
   it("turns 2FA off with the password (#1436)", async () => {
