@@ -68,7 +68,7 @@
     "@ravendarque/beta-interpreter": "0.2.0",
     "better-auth": "^1.7.14",
     "obscenity": "0.4.6",
-    "resend": "^6.35.0",
+    "resend": "^6.36.0",
     "uqr": "0.1.3",
     "valibot": "^1.5.0"
   }
