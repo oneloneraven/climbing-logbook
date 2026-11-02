@@ -12,8 +12,9 @@ export function actLikePlaywright() {
   browser.overwriteCommand(
     "click",
     async function (click, options) {
-      if (!options) await waitUntilActionable(this);
-      return click(options);
+      if (options) return click(options);
+      const current = await waitUntilActionable(this);
+      return current.elementId === this.elementId ? click() : current.click({ button: "left" });
     },
     { attachToElement: true },
   );

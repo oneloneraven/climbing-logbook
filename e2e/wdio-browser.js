@@ -78,6 +78,7 @@ export async function recordFetches() {
 
 // A re-rendered element leaves the old node alive, so look it up again as a Playwright locator does.
 export async function requery(element) {
+  if (typeof element.selector !== "string") return element;
   const parent = element.parent?.selector ? await requery(element.parent) : browser;
   return element.index === undefined ? parent.$(element.selector) : (await parent.$$(element.selector))[element.index];
 }
@@ -97,22 +98,27 @@ export async function waitUntilActionable(element) {
         ),
     ),
   );
-  await element.waitForStable();
-  await element.scrollIntoView({ block: "center" });
+  // Looked up afresh each time, as a Playwright locator is: the page may have redrawn it meanwhile.
+  let current = await requery(element);
+  await current.waitForStable();
+  await current.scrollIntoView({ block: "center" });
   await browser.waitUntil(
-    () =>
-      browser.execute(target => {
+    async () => {
+      current = await requery(element);
+      return browser.execute(target => {
+        if (!target.isConnected) return false;
         const box = target.getBoundingClientRect();
         const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
         return target === hit || target.contains(hit);
-      }, element),
+      }, current);
+    },
     { timeoutMsg: `${element.selector} never came out from under whatever covers it` },
   );
+  return current;
 }
 
 export async function tap(target) {
-  const element = await requery(await target);
-  await waitUntilActionable(element);
+  const element = await waitUntilActionable(await target);
   await browser
     .action("pointer", { parameters: { pointerType: "touch" } })
     .move({ origin: element })
