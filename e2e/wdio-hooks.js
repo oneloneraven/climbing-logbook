@@ -1,8 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { browser } from "@wdio/globals";
-import { currentContext } from "./wdio-browser.js";
+import { cleanUpThisTest, currentContext } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
-import { stopHolding } from "./wdio-hold.js";
 
 const PAGE_REPLACED =
   /navigation canceled by concurrent navigation|Cannot find context with specified id|does not belong to the document/;
@@ -69,7 +68,10 @@ export async function screenshotFailure(test) {
     "-",
   );
   try {
-    const { data } = await browser.browsingContextCaptureScreenshot({ context: currentContext() });
+    const { data } = await Promise.race([
+      browser.browsingContextCaptureScreenshot({ context: currentContext() }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("the page didn't paint within 5s")), 5000)),
+    ]);
     mkdirSync("test-results/wdio", { recursive: true });
     writeFileSync(`test-results/wdio/${name.slice(0, 150)}.png`, Buffer.from(data, "base64"));
   } catch (error) {
@@ -85,6 +87,6 @@ export const mochaHooks = {
   },
   async afterEach() {
     await screenshotFailure(this.currentTest ?? this.test);
-    await stopHolding();
+    await cleanUpThisTest();
   },
 };

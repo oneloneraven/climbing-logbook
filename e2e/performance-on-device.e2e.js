@@ -1,6 +1,6 @@
 import { $, browser, expect } from "@wdio/globals";
 import { daysAgo } from "./owner.js";
-import { waitForPath } from "./wdio-browser.js";
+import { recordNavigations } from "./wdio-browser.js";
 import { gotoSyncedLog } from "./wdio-owner.js";
 import { athlete, blockIndexedDb } from "./wdio-performance.js";
 
@@ -105,11 +105,12 @@ describe("Performance on the device (ADR-0031)", () => {
   it("an unsynced device syncs first, then comes back to the report", async () => {
     const owner = await athlete();
     await owner.seed({ entries: [{ grade: "6B" }] });
-    const syncPage = await browser.mock(`**/${owner.username}/sync`);
+    const navigations = await recordNavigations();
 
     await browser.url(owner.url("/performance/gap"));
     await expect($("#gap-root [data-combo-chart]")).toBeDisplayed();
-    expect(syncPage.calls.length).toBeGreaterThan(0);
-    await waitForPath(`/${owner.username}/performance/gap`);
+    const visited = navigations.map(url => url.pathname);
+    expect(visited).toContain(`/${owner.username}/sync`);
+    expect(visited.at(-1)).toBe(`/${owner.username}/performance/gap`);
   });
 });

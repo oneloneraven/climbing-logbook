@@ -1,7 +1,5 @@
 import { browser } from "@wdio/globals";
-import { browserFetch, currentContext, userContextPartition } from "./wdio-browser.js";
-
-const holds = new Map();
+import { afterThisTest, browserFetch, currentContext, userContextPartition } from "./wdio-browser.js";
 
 const respond = (request, statusCode, body) =>
   browser.networkProvideResponse({
@@ -42,13 +40,10 @@ export async function holdRequests(pathname, { method, once = false, answerFromW
   };
   await browser.sessionSubscribe({ events: ["network.beforeRequestSent"], contexts: [context] });
   browser.on("network.beforeRequestSent", listener);
-  holds.set(context, [
-    ...(holds.get(context) ?? []),
-    async () => {
-      browser.off("network.beforeRequestSent", listener);
-      await browser.networkRemoveIntercept({ intercept }).catch(() => {});
-    },
-  ]);
+  afterThisTest(async () => {
+    browser.off("network.beforeRequestSent", listener);
+    await browser.networkRemoveIntercept({ intercept }).catch(() => {});
+  });
   return async json => {
     released = true;
     const answer = async ({ id, sent }) => {
@@ -58,10 +53,4 @@ export async function holdRequests(pathname, { method, once = false, answerFromW
     };
     await Promise.all(held.splice(0).map(request => answer(request).catch(() => {})));
   };
-}
-
-export async function stopHolding() {
-  const context = currentContext();
-  for (const stop of holds.get(context) ?? []) await stop();
-  holds.delete(context);
 }

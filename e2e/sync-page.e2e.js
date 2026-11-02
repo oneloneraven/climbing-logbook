@@ -1,6 +1,6 @@
 import { $, browser, expect } from "@wdio/globals";
 import { entriesDatabase, readCachedEntries } from "./entries-cache.js";
-import { settle, waitForPath, waitForUrl } from "./wdio-browser.js";
+import { recordNavigations, settle, waitForPath } from "./wdio-browser.js";
 import { holdRequests } from "./wdio-hold.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
@@ -14,7 +14,6 @@ const SEED = {
 const storedJson = (key, username) => browser.execute(k => JSON.parse(localStorage.getItem(k)), `${key}:${username}`);
 const cachedEntries = owner => browser.execute(readCachedEntries, entriesDatabase(owner.username));
 const syncUrl = owner => owner.url(`/sync?returnTo=${encodeURIComponent(`/${owner.username}/log`)}`);
-const syncPageLoads = owner => browser.mock(`**/${owner.username}/sync`);
 
 async function seededOwner() {
   const owner = await claimOwner();
@@ -51,18 +50,12 @@ describe("sync page", () => {
 
   it("/log redirects to /:username/sync when not yet synced, preserving returnTo", async () => {
     const owner = await claimOwner();
-    let redirectedTo = null;
+    const navigations = await recordNavigations();
     await browser.url(owner.url("/log"));
-    await browser.waitUntil(
-      async () => {
-        const url = new URL(await browser.getUrl());
-        if (url.pathname === `/${owner.username}/sync`) redirectedTo = url;
-        return redirectedTo !== null;
-      },
-      { timeoutMsg: "never went to /sync" },
-    );
+    const toSync = () => navigations.find(url => url.pathname === `/${owner.username}/sync`);
+    await browser.waitUntil(toSync, { timeoutMsg: "never went to /sync" });
 
-    expect(redirectedTo.searchParams.get("returnTo")).toBe(`/${owner.username}/log`);
+    expect(toSync().searchParams.get("returnTo")).toBe(`/${owner.username}/log`);
   });
 
   it("warm with drift: /sync takes the delta path and catches up on a change from another session", async () => {
@@ -93,13 +86,13 @@ describe("sync page", () => {
 
     const delta = await browser.mock("http://my.localhost:8787/-/api/entries?since=*");
     delta.respondOnce({}, { statusCode: 410, fetchResponse: false });
-    const syncPage = await syncPageLoads(owner);
+    const navigations = await recordNavigations();
 
     await browser.url(owner.url("/log"));
-    await waitForUrl(url => url.pathname === `/${owner.username}/sync`, "/sync");
+    await browser.waitUntil(() => navigations.some(url => url.pathname === `/${owner.username}/sync`), {
+      timeoutMsg: "never went to /sync",
+    });
     await waitForPath(`/${owner.username}/log`);
-
-    expect(syncPage.calls.length).toBeGreaterThan(0);
     const cached = await cachedEntries(owner);
     expect(cached.map(e => e.name)).toContain("After Purge");
   });
@@ -148,12 +141,11 @@ describe("sync page", () => {
     const owner = await seededOwner();
     await gotoSyncedLog(owner);
 
-    const syncPage = await syncPageLoads(owner);
+    const navigations = await recordNavigations();
     await browser.refresh();
     await expect($("climbing-entries-table")).toHaveTextContent(expect.stringContaining("Test Crag"));
     await settle();
 
-    expect(syncPage.calls).toEqual([]);
-    expect(new URL(await browser.getUrl()).pathname).toBe(`/${owner.username}/log`);
+    expect(navigations.map(url => url.pathname)).toEqual([`/${owner.username}/log`]);
   });
 });

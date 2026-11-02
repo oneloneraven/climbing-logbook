@@ -130,6 +130,19 @@ export async function expectEventually(read, expected) {
   expect(await read()).toEqual(expected);
 }
 
+const cleanups = new Map();
+
+export function afterThisTest(cleanup) {
+  const context = currentContext();
+  cleanups.set(context, [...(cleanups.get(context) ?? []), cleanup]);
+}
+
+export async function cleanUpThisTest() {
+  const context = currentContext();
+  for (const cleanup of cleanups.get(context) ?? []) await cleanup();
+  cleanups.delete(context);
+}
+
 export function currentContext() {
   const context = browser.__parallelContextStore?.getStore();
   if (!context) throw new Error("This needs WebdriverIO's userContexts parallel mode");
@@ -197,4 +210,17 @@ export async function openTab(url) {
 export async function chooseFile(input, file) {
   const element = await input;
   await browser.inputSetFiles({ context: currentContext(), element: { sharedId: element.elementId }, files: [file] });
+}
+
+// Playwright's framenavigated: every page this test's tab starts loading, however briefly it stays.
+export async function recordNavigations() {
+  const context = currentContext();
+  const urls = [];
+  await browser.sessionSubscribe({ events: ["browsingContext.navigationStarted"], contexts: [context] });
+  const listener = event => {
+    if (event.context === context) urls.push(new URL(event.url));
+  };
+  browser.on("browsingContext.navigationStarted", listener);
+  afterThisTest(() => browser.off("browsingContext.navigationStarted", listener));
+  return urls;
 }
