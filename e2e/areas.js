@@ -15,6 +15,9 @@ export const AREAS = {
   ],
   log: [
     "log-page",
+    "log-entry-form",
+    "log-offline-queue",
+    "log-sync-status",
     "health-consent-client",
     "log-page-boot-perf",
     "entries-table-collapse",

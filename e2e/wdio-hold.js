@@ -44,7 +44,7 @@ export async function holdRequests(pathname, { method, once = false, answerFromW
     browser.off("network.beforeRequestSent", listener);
     await browser.networkRemoveIntercept({ intercept }).catch(() => {});
   });
-  return async (json, status = 200) => {
+  const release = async (json, status = 200) => {
     released = true;
     const answer = async ({ id, sent }) => {
       if (json !== undefined) return respond(id, status, JSON.stringify(json));
@@ -53,4 +53,6 @@ export async function holdRequests(pathname, { method, once = false, answerFromW
     };
     await Promise.all(held.splice(0).map(request => answer(request).catch(() => {})));
   };
+  release.caught = () => browser.waitUntil(() => caught, { timeoutMsg: `nothing asked for ${pathname}` });
+  return release;
 }
