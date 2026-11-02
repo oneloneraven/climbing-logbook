@@ -1,6 +1,6 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import { totp } from "../test/totp.js";
-import { waitForPath } from "./wdio-browser.js";
+import { clearCookies, waitForPath } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
 async function turnOnInPage(owner) {
@@ -21,7 +21,7 @@ async function turnOnInPage(owner) {
 }
 
 async function logInWithPassword(owner) {
-  await browser.deleteCookies();
+  await clearCookies();
   await browser.url("/login/");
   await $("#email").setValue(owner.email);
   await $("#password").setValue(owner.password);
@@ -76,7 +76,7 @@ describe("two-step verification", () => {
     await $("#two-step-password-submit-btn").click();
     await expect($("#two-step-off")).toBeDisplayed();
 
-    await browser.deleteCookies();
+    await clearCookies();
     await browser.url("/login/");
     await $("#email").setValue(owner.email);
     await $("#password").setValue(owner.password);

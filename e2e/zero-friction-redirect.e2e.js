@@ -1,6 +1,6 @@
 import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
-import { waitForPath } from "./wdio-browser.js";
+import { clearCookies, waitForPath } from "./wdio-browser.js";
 
 describe("logged in", () => {
   it("redirects away from the apex marketing page to /log", async () => {
@@ -15,7 +15,7 @@ describe("logged in", () => {
 });
 
 describe("logged out", () => {
-  beforeEach(() => browser.deleteCookies());
+  beforeEach(clearCookies);
 
   it("shows the apex marketing page normally", async () => {
     await browser.url("/");

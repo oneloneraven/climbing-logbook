@@ -28,8 +28,9 @@ async function setSessionCookie(cookie, domain) {
 
 async function signIn(poolPath, nextPath) {
   const { username, cookie } = claimFrom(poolPath, nextPath);
-  await setSessionCookie(cookie, "my.localhost");
-  return createOwner(username, cookie);
+  const signInAgain = () => setSessionCookie(cookie, "my.localhost");
+  await signInAgain();
+  return { ...createOwner(username, cookie), signInAgain };
 }
 
 export async function signInDevUser(domain = "localhost") {

@@ -1,7 +1,7 @@
 import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
 import { ownedRouteUrl } from "./owned-route-url.js";
-import { waitForPath, waitForUrl } from "./wdio-browser.js";
+import { clearCookies, waitForPath, waitForUrl } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
 
 const LAUNCH = "http://my.localhost:8787/-/launch/";
@@ -31,7 +31,7 @@ describe("launch", () => {
   });
 
   describe("nobody signed in on this device", () => {
-    beforeEach(() => browser.deleteCookies());
+    beforeEach(clearCookies);
 
     it("opening the app goes to this origin's login", async () => {
       await browser.url(LAUNCH);

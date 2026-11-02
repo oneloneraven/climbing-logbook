@@ -1,7 +1,7 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { $, $$, browser, expect } from "@wdio/globals";
+import { $, browser, expect } from "@wdio/globals";
 import { CSV_COLUMNS } from "../shared/csv-import.js";
 import { captureDownloads, chooseFile, expectEventually, textContents } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";

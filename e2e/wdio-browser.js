@@ -142,6 +142,11 @@ export async function currentUserContext() {
 // The whole user context's cookies: WebdriverIO's own cookie commands only reach the current page's origin.
 export const userContextPartition = async () => ({ type: "storageKey", userContext: await currentUserContext() });
 
+// browser.deleteCookies misses cookies in Firefox from about:blank, so clear the whole user context.
+export async function clearCookies() {
+  await browser.storageDeleteCookies({ partition: await userContextPartition() });
+}
+
 // Playwright's waitForEvent("download"): this test's downloads land in their own folder.
 export async function captureDownloads() {
   const folder = mkdtempSync(join(tmpdir(), "e2e-downloads-"));
