@@ -8,8 +8,11 @@ function globToRegExp(glob) {
   let source = "";
   for (let i = 0; i < glob.length; i++) {
     if (glob[i] !== "*") source += glob[i].replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-    else if (glob[i + 1] === "*") (source += ".*"), i++;
-    else source += "[^/]*";
+    else if (glob[i + 1] !== "*") source += "[^/]*";
+    else {
+      source += ".*";
+      i++;
+    }
   }
   return new RegExp(`^${source}$`);
 }

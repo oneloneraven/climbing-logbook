@@ -25,10 +25,12 @@ export function cachedEntries(page, username) {
 }
 
 // A browser that won't keep site data in IndexedDB, as some privacy settings do.
+export function refuseIndexedDb() {
+  IDBFactory.prototype.open = () => {
+    throw new DOMException("IndexedDB is blocked", "SecurityError");
+  };
+}
+
 export async function blockIndexedDb(page) {
-  await page.addInitScript(() => {
-    IDBFactory.prototype.open = () => {
-      throw new DOMException("IndexedDB is blocked", "SecurityError");
-    };
-  });
+  await page.addInitScript(refuseIndexedDb);
 }
