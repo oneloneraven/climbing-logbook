@@ -53,14 +53,16 @@ const BROWSERS = {
   safari: { browserName: "safari" },
 };
 
-const sharedSpecs = SHARED_SPEC_NAMES.map(name => `./e2e/${name}.e2e.js`);
+const specPath = name => `./e2e/${name}.e2e.js`;
+const sharedSpecs = SHARED_SPEC_NAMES.map(specPath);
 const shared = process.env.E2E_PROJECT === "shared";
+const only = process.env.E2E_SPECS?.split(",").map(specPath);
 
 const selected = (process.env.E2E_BROWSERS ?? "chrome,firefox").split(",").map(name => name.trim());
 
 export const config = {
   runner: "local",
-  specs: shared ? sharedSpecs : ["./e2e/**/*.e2e.js"],
+  specs: only ?? (shared ? sharedSpecs : ["./e2e/**/*.e2e.js"]),
   exclude: shared ? [] : sharedSpecs,
   maxInstances: shared || selected.includes("safari") ? 1 : Number(process.env.E2E_WORKERS ?? 4),
   capabilities: selected.map(name => {
