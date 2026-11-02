@@ -1,9 +1,8 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { $, browser, expect } from "@wdio/globals";
 import { CSV_COLUMNS } from "../shared/csv-import.js";
-import { captureDownloads, chooseFile, expectEventually, textContents } from "./wdio-browser.js";
+import { captureDownloads, chooseFile, temporaryFolder, expectEventually, textContents } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
 const csv = (...rows) =>
@@ -28,7 +27,7 @@ async function openImportExport() {
 }
 
 async function choose(name, contents) {
-  const file = join(mkdtempSync(join(tmpdir(), "e2e-upload-")), name);
+  const file = join(temporaryFolder(), name);
   writeFileSync(file, contents);
   await chooseFile($("#import-file-input"), file);
 }

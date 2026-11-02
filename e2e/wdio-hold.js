@@ -31,12 +31,11 @@ export async function holdRequests(pathname, { method, once = false, answerFromW
       return;
     }
     caught = true;
-    held.push({
-      id: request.request,
-      sent: answerFromWhenSent
-        ? browserFetch(request.url, {}, partition).then(async res => ({ status: res.status, body: await res.text() }))
-        : null,
-    });
+    const sent = answerFromWhenSent
+      ? browserFetch(request.url, {}, partition).then(async res => ({ status: res.status, body: await res.text() }))
+      : null;
+    sent?.catch(() => {});
+    held.push({ id: request.request, sent });
   };
   await browser.sessionSubscribe({ events: ["network.beforeRequestSent"], contexts: [context] });
   browser.on("network.beforeRequestSent", listener);

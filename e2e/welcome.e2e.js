@@ -1,5 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { $, browser, expect } from "@wdio/globals";
 import { CSV_COLUMNS } from "../shared/csv-import.js";
@@ -9,6 +8,7 @@ import {
   expectEventually,
   recordFetches,
   tap,
+  temporaryFolder,
   textContents,
   waitForPath,
   waitForUrl,
@@ -129,7 +129,7 @@ describe("welcome", () => {
     await tap(next());
     await expect(heading("Import your climbs")).toBeDisplayed();
 
-    const file = join(mkdtempSync(join(tmpdir(), "e2e-upload-")), "import.csv");
+    const file = join(temporaryFolder(), "import.csv");
     writeFileSync(file, VALID_CSV);
     await chooseFile($("#import-file-input"), file);
     await tap($("#import-submit-btn"));

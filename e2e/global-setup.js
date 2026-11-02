@@ -26,15 +26,17 @@ async function waitForServer(url, timeoutMs = 60_000) {
 // The e2e Worker is built with CLOUDFLARE_ENV=preview, so these calls must target the same database.
 const D1_OPTIONS = { database: "climbing-logbook-preview", env: "preview" };
 
-export default async function globalSetup() {
+// The pools are per browser: one run of WebdriverIO can run every spec in several.
+export default async function globalSetup(_config, options) {
+  const browsers = options?.browsers ?? 1;
   await waitForServer(`${BASE_URL}/-/api/auth/get-session`);
 
   applyMigrations(D1_OPTIONS);
   resetDatabase(D1_OPTIONS);
   execFileSync("node", ["scripts/seed-demo-accounts.mjs", "--env", "preview"], { stdio: "inherit" });
 
-  const owners = Array.from({ length: OWNER_POOL_SIZE }, (_, i) => ownerPoolUser(i));
-  const newOwners = Array.from({ length: NEW_OWNER_POOL_SIZE }, (_, i) => ({
+  const owners = Array.from({ length: OWNER_POOL_SIZE * browsers }, (_, i) => ownerPoolUser(i));
+  const newOwners = Array.from({ length: NEW_OWNER_POOL_SIZE * browsers }, (_, i) => ({
     ...newOwnerPoolUser(i),
     onboarded: false,
   }));

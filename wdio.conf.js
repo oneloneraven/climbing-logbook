@@ -99,7 +99,7 @@ export const config = {
         throw new SevereServiceError(error.message);
       }
     }
-    await globalSetup();
+    await globalSetup(undefined, { browsers: selected.length });
   },
   before: actLikePlaywright,
   onComplete() {

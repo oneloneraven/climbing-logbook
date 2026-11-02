@@ -1,4 +1,4 @@
-import { mkdtempSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { browser, expect } from "@wdio/globals";
@@ -108,7 +108,7 @@ export async function waitUntilActionable(element) {
       return browser.execute(target => {
         if (!target.isConnected) return false;
         const box = target.getBoundingClientRect();
-        const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+        const hit = target.getRootNode().elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
         return target === hit || target.contains(hit);
       }, current);
     },
@@ -198,8 +198,14 @@ export async function clearCookies() {
 }
 
 // Playwright's waitForEvent("download"): this test's downloads land in their own folder.
+export function temporaryFolder() {
+  const folder = mkdtempSync(join(tmpdir(), "e2e-"));
+  afterThisTest(() => rmSync(folder, { recursive: true, force: true }));
+  return folder;
+}
+
 export async function captureDownloads() {
-  const folder = mkdtempSync(join(tmpdir(), "e2e-downloads-"));
+  const folder = temporaryFolder();
   await browser.browserSetDownloadBehavior({
     downloadBehavior: { type: "allowed", destinationFolder: folder },
     userContexts: [await currentUserContext()],
