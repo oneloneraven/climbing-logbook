@@ -1,4 +1,6 @@
+import { mkdirSync, writeFileSync } from "node:fs";
 import { browser } from "@wdio/globals";
+import { currentContext } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
 
 const PAGE_REPLACED =
@@ -28,8 +30,13 @@ export function rideOutPageNavigations() {
 
 export async function screenshotFailure(test) {
   if (test?.state !== "failed") return;
-  const name = `${test.parent?.title} ${test.title} ${browser.capabilities.browserName} ${Date.now()}`.replace(/[^a-z0-9]+/gi, "-");
-  await browser.saveScreenshot(`test-results/wdio/${name.slice(0, 150)}.png`).catch(() => {});
+  const name = `${test.parent?.title} ${test.title} ${browser.capabilities.browserName} ${Date.now()}`.replace(
+    /[^a-z0-9]+/gi,
+    "-",
+  );
+  const { data } = await browser.browsingContextCaptureScreenshot({ context: currentContext() });
+  mkdirSync("test-results/wdio", { recursive: true });
+  writeFileSync(`test-results/wdio/${name.slice(0, 150)}.png`, Buffer.from(data, "base64"));
 }
 
 // Playwright's Desktop Chrome viewport, and the shared specs run as the seeded dev user, as its shared project does.

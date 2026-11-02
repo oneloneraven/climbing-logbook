@@ -1,6 +1,6 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import { d1Execute } from "../scripts/lib/dev-session.mjs";
-import { boundingBox, browserFetch, expectEventually, tap, waitForResource } from "./wdio-browser.js";
+import { boundingBox, browserFetch, expectEventually, tap, waitForResource, waitForUrl } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
 const ADMIN = "http://admin.localhost:8787";
@@ -41,7 +41,7 @@ describe("admin on a phone", () => {
     ]);
 
     await browser.url(`${ADMIN}/`);
-    await browser.waitUntil(async () => (await browser.getUrl()) === `${ADMIN}/reports`);
+    await waitForUrl(url => url.href === `${ADMIN}/reports`);
     await expect($("#tab-reports")).toHaveAttribute("aria-current", "page");
     await expect(card(message)).toHaveTextContent(expect.stringContaining("Unread"));
     const before = Number(await unreadCount("reports").getProperty("textContent"));

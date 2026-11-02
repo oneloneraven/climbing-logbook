@@ -1,4 +1,5 @@
 import { browser, expect } from "@wdio/globals";
+import { waitForPath } from "./wdio-browser.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 describe("logout", () => {
@@ -13,7 +14,7 @@ describe("logout", () => {
 
     await $("#header-menu-btn").click();
     await $("#login-toggle-btn").click();
-    await browser.waitUntil(async () => new URL(await browser.getUrl()).pathname === "/-/login/");
+    await waitForPath("/-/login/");
     await expect($("#login-form")).toBeDisplayed();
 
     const stored = await browser.execute(

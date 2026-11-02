@@ -81,7 +81,7 @@ export const config = {
     timeout: 60000,
     require: ["./e2e/wdio-hooks.js", "./e2e/wdio-matchers.js"],
     parallelMode: "userContexts",
-    maxParallelContexts: shared ? 1 : Number(process.env.E2E_CONTEXTS ?? 2),
+    maxParallelContexts: shared ? 1 : Number(process.env.E2E_CONTEXTS ?? 1),
   },
   async onPrepare() {
     if (await answers(`${BASE_URL}/login/`)) {

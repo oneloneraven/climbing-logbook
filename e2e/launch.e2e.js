@@ -1,7 +1,7 @@
 import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
 import { ownedRouteUrl } from "./owned-route-url.js";
-import { waitForPath } from "./wdio-browser.js";
+import { waitForPath, waitForUrl } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
 
 const LAUNCH = "http://my.localhost:8787/-/launch/";
@@ -26,7 +26,7 @@ describe("launch", () => {
     );
 
     await browser.url(LAUNCH);
-    await browser.waitUntil(async () => (await browser.getUrl()) === ownedRouteUrl(DEV_USER.username, "/log"));
+    await waitForUrl(url => url.href === ownedRouteUrl(DEV_USER.username, "/log"));
     await expect($("climbing-entries-table")).toBeDisplayed();
   });
 

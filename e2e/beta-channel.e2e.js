@@ -1,6 +1,6 @@
 import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
-import { browserFetch, expectEventually, resourceUrls, settle, textContents } from "./wdio-browser.js";
+import { browserFetch, expectEventually, resourceUrls, settle, textContents, waitForUrl } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
 
 const BETA = "http://beta.localhost:8787";
@@ -43,7 +43,7 @@ describe("beta channel enrollment check", () => {
     await setEnrollment(true);
     const map = `/${DEV_USER.username}/view/map`;
     await browser.url(`${BETA}/${DEV_USER.username}/sync?returnTo=${encodeURIComponent(map)}`);
-    await browser.waitUntil(async () => (await browser.getUrl()) === `${BETA}${map}`);
+    await waitForUrl(url => url.href === `${BETA}${map}`);
     await settle();
     await expect($("#beta-not-enrolled")).not.toExist();
 

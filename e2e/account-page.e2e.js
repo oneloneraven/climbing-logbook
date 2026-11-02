@@ -3,7 +3,7 @@ import { DEV_USER } from "../scripts/lib/dev-session.mjs";
 import { OWNED_ORIGIN, ownedRouteUrl } from "./owned-route-url.js";
 import {
   browserFetch,
-  currentPath,
+  waitForUrl,
   expectEventually,
   recordFetches,
   textContents,
@@ -38,7 +38,7 @@ describe("account page", () => {
   it("logged out, the page sends you to log in rather than showing an empty account", async () => {
     await browser.url(ownedRouteUrl(DEV_USER.username, "/account"));
 
-    await browser.waitUntil(async () => (await currentPath()).includes("login"));
+    await waitForUrl(url => url.pathname.includes("login"));
   });
 
   it("Athlete Mode toggle (#445) switches and persists via the settings PATCH", async () => {

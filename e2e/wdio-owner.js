@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { browser, expect } from "@wdio/globals";
-import { settle, userContextPartition } from "./wdio-browser.js";
+import { settle, userContextPartition, waitForPath } from "./wdio-browser.js";
 import { STORAGE_STATE_PATH } from "./global-setup.js";
 import {
   claimFrom,
@@ -42,7 +42,7 @@ export const claimNewOwner = () => signIn(NEW_OWNER_POOL_PATH, NEW_OWNER_NEXT_PA
 
 export async function gotoSyncedLog(owner) {
   await browser.url(owner.url(`/sync?returnTo=${encodeURIComponent(`/${owner.username}/log`)}`));
-  await browser.waitUntil(async () => new URL(await browser.getUrl()).pathname === `/${owner.username}/log`);
+  await waitForPath(`/${owner.username}/log`);
   await expect($("climbing-entries-table")).toBeDisplayed();
   const settingsKey = `logbook_settings_cache:${owner.username}`;
   await browser.waitUntil(() => browser.execute(key => localStorage.getItem(key) !== null, settingsKey));

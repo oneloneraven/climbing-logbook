@@ -1,14 +1,20 @@
 import { browser, expect } from "@wdio/globals";
 
-export const currentPath = async () => new URL(await browser.getUrl()).pathname;
+// Playwright bounds navigation waits only by the test's timeout, not the 5s assertion timeout.
+export const NAVIGATION_TIMEOUT = 30000;
 
 // Like Playwright's waitForURL, this also waits for the new page's load event.
-export async function waitForPath(path) {
+export async function waitForUrl(matches, description = "the expected URL") {
   await browser.waitUntil(
-    () => browser.execute(p => location.pathname === p && document.readyState === "complete", path).catch(() => false),
-    { timeoutMsg: `never reached ${path}` },
+    async () => {
+      const page = await browser.execute(() => [location.href, document.readyState]).catch(() => null);
+      return page?.[1] === "complete" && matches(new URL(page[0]));
+    },
+    { timeout: NAVIGATION_TIMEOUT, timeoutMsg: `never reached ${description}` },
   );
 }
+
+export const waitForPath = path => waitForUrl(url => url.pathname === path, path);
 
 // Stands in for Playwright's networkidle: the page has loaded and fetched nothing new for half a second.
 export async function settle() {
@@ -23,7 +29,7 @@ export async function settle() {
       last = count;
       return quiet;
     },
-    { interval: 500, timeout: 30000, timeoutMsg: "the page kept fetching" },
+    { interval: 500, timeout: NAVIGATION_TIMEOUT, timeoutMsg: "the page kept fetching" },
   );
 }
 

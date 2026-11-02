@@ -2,10 +2,16 @@ import { $, browser, expect } from "@wdio/globals";
 import { recordFetches } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
+// The rows are in the static page, so wait for the script to fill them in before using their buttons.
+async function openAuthentication(owner) {
+  await browser.url(owner.url("/account/authentication"));
+  await expect($("#email-value")).toHaveTextContent(owner.email);
+}
+
 describe("account details", () => {
   it("shows the current username/email, and each row is independently editable", async () => {
     const owner = await claimOwner();
-    await browser.url(owner.url("/account/authentication"));
+    await openAuthentication(owner);
 
     await expect($("#username-value")).toHaveTextContent(owner.username);
     await expect($("#email-value")).toHaveTextContent(owner.email);
@@ -24,7 +30,7 @@ describe("account details", () => {
   it("username row: saving posts only { username }, and the server takes the new name", async () => {
     const owner = await claimOwner();
     const fetches = await recordFetches();
-    await browser.url(owner.url("/account/authentication"));
+    await openAuthentication(owner);
     const newName = `${owner.username}x`;
 
     await $("#username-edit-btn").click();
@@ -39,7 +45,7 @@ describe("account details", () => {
 
   it("email row: saving shows the pending-confirmation state, doesn't change the displayed email yet", async () => {
     const owner = await claimOwner();
-    await browser.url(owner.url("/account/authentication"));
+    await openAuthentication(owner);
     const newEmail = `${owner.username}-new@climbinglogbook.local`;
 
     await $("#email-edit-btn").click();
@@ -54,7 +60,7 @@ describe("account details", () => {
 
   it("password row: saving succeeds and closes the form, without touching username/email", async () => {
     const owner = await claimOwner();
-    await browser.url(owner.url("/account/authentication"));
+    await openAuthentication(owner);
 
     await $("#password-edit-btn").click();
     await $("#current-password-input").setValue(owner.password);
@@ -69,7 +75,7 @@ describe("account details", () => {
 
   it("shows the server's own error message and keeps the form open on failure", async () => {
     const owner = await claimOwner();
-    await browser.url(owner.url("/account/authentication"));
+    await openAuthentication(owner);
 
     await $("#password-edit-btn").click();
     await $("#current-password-input").setValue("wrong-password");
@@ -82,7 +88,7 @@ describe("account details", () => {
 
   it("each section's password form opens on its own (#1457)", async () => {
     const owner = await claimOwner();
-    await browser.url(owner.url("/account/authentication"));
+    await openAuthentication(owner);
     await expect($("#two-step-off")).toBeDisplayed();
 
     await $("#password-edit-btn").click();

@@ -1,9 +1,9 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { settle, waitForPath } from "./wdio-browser.js";
+import { settle, waitForPath, waitForUrl } from "./wdio-browser.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 const tour = () => $('[role="dialog"][aria-labelledby="tour-title"]');
-const waitForUrlEnding = ending => browser.waitUntil(async () => (await browser.getUrl()).endsWith(ending));
+const waitForUrlEnding = ending => waitForUrl(url => url.href.endsWith(ending), ending);
 
 describe("a visitor with nothing stored", () => {
   it("the home page's demo links start the tour, and the visit stores nothing", async () => {
