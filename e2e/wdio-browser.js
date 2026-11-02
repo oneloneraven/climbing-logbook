@@ -64,6 +64,7 @@ export async function recordFetches() {
   });
   script.on("data", record => fetches.push(record));
   return {
+    all: () => [...fetches],
     // Start waiting before the action that sends it, as with Playwright's waitForResponse.
     next(urlPart, method) {
       const since = fetches.length;
