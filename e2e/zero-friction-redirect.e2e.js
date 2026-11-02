@@ -1,25 +1,21 @@
-import { browser, expect } from "@wdio/globals";
+import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
-import { signInDevUser } from "./wdio-owner.js";
-
-const onDevUserLog = async () => new URL(await browser.getUrl()).pathname === `/${DEV_USER.username}/log`;
+import { waitForPath } from "./wdio-browser.js";
 
 describe("logged in", () => {
-  before(signInDevUser);
-
   it("redirects away from the apex marketing page to /log", async () => {
     await browser.url("/");
-    await browser.waitUntil(onDevUserLog);
+    await waitForPath(`/${DEV_USER.username}/log`);
   });
 
   it("redirects away from /login/ to /log", async () => {
     await browser.url("/login/");
-    await browser.waitUntil(onDevUserLog);
+    await waitForPath(`/${DEV_USER.username}/log`);
   });
 });
 
 describe("logged out", () => {
-  before(() => browser.storageDeleteCookies({}));
+  beforeEach(() => browser.deleteCookies());
 
   it("shows the apex marketing page normally", async () => {
     await browser.url("/");

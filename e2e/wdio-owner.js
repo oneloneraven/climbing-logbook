@@ -10,7 +10,11 @@ import {
   OWNER_POOL_PATH,
 } from "./owner.js";
 
+// WebdriverIO's setCookies picks partitions that Chrome rejects or Firefox misfiles, so set it in the test's user context.
 async function setSessionCookie(cookie, domain) {
+  const context = browser.__parallelContextStore?.getStore();
+  if (!context) throw new Error("Signing in needs WebdriverIO's userContexts parallel mode");
+  const { contexts } = await browser.browsingContextGetTree({ root: context, maxDepth: 0 });
   await browser.storageSetCookie({
     cookie: {
       name: cookie.name,
@@ -18,8 +22,9 @@ async function setSessionCookie(cookie, domain) {
       domain,
       path: "/",
       httpOnly: cookie.httpOnly,
-      sameSite: cookie.sameSite?.toLowerCase() ?? "lax",
+      sameSite: "lax",
     },
+    partition: { type: "storageKey", userContext: contexts[0].userContext },
   });
 }
 
@@ -29,9 +34,9 @@ async function signIn(poolPath, nextPath) {
   return createOwner(username, cookie);
 }
 
-export async function signInDevUser() {
+export async function signInDevUser(domain = "localhost") {
   const [cookie] = JSON.parse(readFileSync(STORAGE_STATE_PATH, "utf8")).cookies;
-  await setSessionCookie(cookie, "localhost");
+  await setSessionCookie(cookie, domain);
 }
 
 export const claimOwner = () => signIn(OWNER_POOL_PATH, OWNER_NEXT_PATH);

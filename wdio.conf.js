@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { SevereServiceError } from "webdriverio";
 import globalSetup from "./e2e/global-setup.js";
 import { SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
+import { followClientRedirects } from "./e2e/wdio-hooks.js";
 
 const BASE_URL = "http://localhost:8787";
 const SERVER_COMMAND =
@@ -35,11 +36,13 @@ function stopServer() {
 const BROWSERS = {
   chrome: {
     browserName: "chrome",
+    "wdio:experimentalBiDiCommands": true,
     browserVersion: "stable",
     "goog:chromeOptions": { args: ["--headless=new", "--no-sandbox"] },
   },
   firefox: {
     browserName: "firefox",
+    "wdio:experimentalBiDiCommands": true,
     browserVersion: "stable",
     "moz:firefoxOptions": {
       args: ["-headless"],
@@ -73,7 +76,12 @@ export const config = {
   logLevel: "warn",
   framework: "mocha",
   reporters: ["spec"],
-  mochaOpts: { timeout: 60000 },
+  mochaOpts: {
+    timeout: 60000,
+    require: ["./e2e/wdio-hooks.js"],
+    parallelMode: "userContexts",
+    maxParallelContexts: shared ? 1 : Number(process.env.E2E_CONTEXTS ?? 2),
+  },
   async onPrepare() {
     if (await answers(`${BASE_URL}/login/`)) {
       if (process.env.CI) throw new SevereServiceError(`Something is already serving ${BASE_URL}; stop it first`);
@@ -92,6 +100,7 @@ export const config = {
     }
     await globalSetup();
   },
+  before: followClientRedirects,
   onComplete() {
     stopServer();
   },
