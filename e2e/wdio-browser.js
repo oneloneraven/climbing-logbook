@@ -1,3 +1,6 @@
+import { mkdtempSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { browser, expect } from "@wdio/globals";
 
 // Playwright bounds navigation waits only by the test's timeout, not the 5s assertion timeout.
@@ -13,6 +16,8 @@ export async function waitForUrl(matches, description = "the expected URL") {
     { timeout: NAVIGATION_TIMEOUT, timeoutMsg: `never reached ${description}` },
   );
 }
+
+export const currentPath = () => browser.execute(() => location.pathname);
 
 export const waitForPath = path => waitForUrl(url => url.pathname === path, path);
 
@@ -129,10 +134,34 @@ export function currentContext() {
   return context;
 }
 
-// The whole user context's cookies: WebdriverIO's own cookie commands only reach the current page's origin.
-export async function userContextPartition() {
+export async function currentUserContext() {
   const { contexts } = await browser.browsingContextGetTree({ root: currentContext(), maxDepth: 0 });
-  return { type: "storageKey", userContext: contexts[0].userContext };
+  return contexts[0].userContext;
+}
+
+// The whole user context's cookies: WebdriverIO's own cookie commands only reach the current page's origin.
+export const userContextPartition = async () => ({ type: "storageKey", userContext: await currentUserContext() });
+
+// Playwright's waitForEvent("download"): this test's downloads land in their own folder.
+export async function captureDownloads() {
+  const folder = mkdtempSync(join(tmpdir(), "e2e-downloads-"));
+  await browser.browserSetDownloadBehavior({
+    downloadBehavior: { type: "allowed", destinationFolder: folder },
+    userContexts: [await currentUserContext()],
+  });
+  return {
+    async next() {
+      let name;
+      await browser.waitUntil(
+        () => {
+          name = readdirSync(folder).find(file => !/\.(crdownload|part)$/.test(file));
+          return name && statSync(join(folder, name)).size > 0;
+        },
+        { timeoutMsg: "nothing downloaded" },
+      );
+      return { name, text: () => readFileSync(join(folder, name), "utf8") };
+    },
+  };
 }
 
 export async function waitForOpenedTab() {
@@ -147,4 +176,18 @@ export async function waitForOpenedTab() {
     { timeoutMsg: "no tab opened" },
   );
   return opened;
+}
+
+// browser.newWindow opens in the default user context, away from this test's cookies and storage.
+export async function openTab(url) {
+  const { context } = await browser.browsingContextCreate({ type: "tab", userContext: await currentUserContext() });
+  const tab = (await browser.browsingContexts()).find(candidate => candidate.contextId === context);
+  await tab.navigate(url);
+  return tab;
+}
+
+// Setting a file input's value from a script is refused, so hand the file over as a user would.
+export async function chooseFile(input, file) {
+  const element = await input;
+  await browser.inputSetFiles({ context: currentContext(), element: { sharedId: element.elementId }, files: [file] });
 }

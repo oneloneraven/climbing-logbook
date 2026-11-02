@@ -5,3 +5,9 @@ export async function mockTurnstile() {
   const script = await browser.mock(TURNSTILE_SCRIPT);
   script.respond(TURNSTILE_STUB, { headers: { "content-type": "application/javascript" }, fetchResponse: false });
 }
+
+export async function waitForTurnstile() {
+  await browser.waitUntil(() => browser.execute(() => !!window.turnstile?.getResponse()), {
+    timeoutMsg: "the Turnstile stub never loaded",
+  });
+}

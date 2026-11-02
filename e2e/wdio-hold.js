@@ -3,42 +3,45 @@ import { currentContext } from "./wdio-browser.js";
 
 const holds = new Map();
 
-// Playwright's * stops at a slash and ** doesn't; everything else is literal.
-function globToRegExp(glob) {
-  let source = "";
-  for (let i = 0; i < glob.length; i++) {
-    if (glob[i] !== "*") source += glob[i].replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-    else if (glob[i + 1] !== "*") source += "[^/]*";
-    else {
-      source += ".*";
-      i++;
-    }
-  }
-  return new RegExp(`^${source}$`);
-}
+const answer = (request, json) =>
+  json === undefined
+    ? browser.networkContinueRequest({ request })
+    : browser.networkProvideResponse({
+        request,
+        statusCode: 200,
+        headers: [{ name: "content-type", value: { type: "string", value: "application/json" } }],
+        body: { type: "string", value: JSON.stringify(json) },
+      });
 
-// browser.mock can't delay an answer, so pause matching requests over WebDriver BiDi until the test releases them.
-export async function holdRequests(glob) {
+// browser.mock can't delay an answer, so pause requests to this path (any query) over WebDriver BiDi until the test
+// releases them, to the server or with the given JSON. Don't mix it with browser.mock in a test: a mock lets every
+// other paused request go.
+export async function holdRequests(pathname) {
   const context = currentContext();
-  const pattern = globToRegExp(glob);
   const held = [];
   let released = false;
-  const { intercept } = await browser.networkAddIntercept({ phases: ["beforeRequestSent"], contexts: [context] });
+  const { intercept } = await browser.networkAddIntercept({
+    phases: ["beforeRequestSent"],
+    contexts: [context],
+    urlPatterns: [{ type: "pattern", pathname }],
+  });
   const listener = ({ isBlocked, intercepts, request }) => {
     if (!isBlocked || !intercepts?.includes(intercept)) return;
-    if (!released && pattern.test(request.url)) held.push(request.request);
-    else browser.networkContinueRequest({ request: request.request }).catch(() => {});
+    if (released) browser.networkContinueRequest({ request: request.request }).catch(() => {});
+    else held.push(request.request);
   };
   await browser.sessionSubscribe({ events: ["network.beforeRequestSent"], contexts: [context] });
   browser.on("network.beforeRequestSent", listener);
-  const stop = async () => {
-    browser.off("network.beforeRequestSent", listener);
-    await browser.networkRemoveIntercept({ intercept }).catch(() => {});
-  };
-  holds.set(context, [...(holds.get(context) ?? []), stop]);
-  return async () => {
+  holds.set(context, [
+    ...(holds.get(context) ?? []),
+    async () => {
+      browser.off("network.beforeRequestSent", listener);
+      await browser.networkRemoveIntercept({ intercept }).catch(() => {});
+    },
+  ]);
+  return async json => {
     released = true;
-    await Promise.all(held.splice(0).map(request => browser.networkContinueRequest({ request }).catch(() => {})));
+    await Promise.all(held.splice(0).map(request => answer(request, json).catch(() => {})));
   };
 }
 
