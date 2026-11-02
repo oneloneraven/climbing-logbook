@@ -8,13 +8,19 @@ export const NAVIGATION_TIMEOUT = 30000;
 
 // Like Playwright's waitForURL, this also waits for the new page's load event.
 export async function waitForUrl(matches, description = "the expected URL") {
-  await browser.waitUntil(
-    async () => {
-      const page = await browser.execute(() => [location.href, document.readyState]).catch(() => null);
-      return page?.[1] === "complete" && matches(new URL(page[0]));
-    },
-    { timeout: NAVIGATION_TIMEOUT, timeoutMsg: `never reached ${description}` },
-  );
+  let last = "nothing";
+  await browser
+    .waitUntil(
+      async () => {
+        const page = await browser.execute(() => [location.href, document.readyState]).catch(() => null);
+        if (page) last = `${page[0]} (${page[1]})`;
+        return page?.[1] === "complete" && matches(new URL(page[0]));
+      },
+      { timeout: NAVIGATION_TIMEOUT },
+    )
+    .catch(() => {
+      throw new Error(`never reached ${description}; last saw ${last}`);
+    });
 }
 
 export const currentPath = () => browser.execute(() => location.pathname);
