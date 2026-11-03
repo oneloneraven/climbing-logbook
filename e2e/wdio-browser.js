@@ -109,15 +109,20 @@ export async function waitUntilActionable(element) {
   // Looked up afresh each time, as a Playwright locator is: the page may have redrawn it meanwhile.
   let current = await requery(element);
   await current.waitForStable();
-  await current.scrollIntoView({ block: "center" });
   await browser.waitUntil(
     async () => {
       current = await requery(element);
       return browser.execute(target => {
         if (!target.isConnected) return false;
-        const box = target.getBoundingClientRect();
-        const hit = target.getRootNode().elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
-        return target === hit || target.contains(hit);
+        const isHit = () => {
+          const box = target.getBoundingClientRect();
+          const hit = target.getRootNode().elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+          return target === hit || target.contains(hit);
+        };
+        if (isHit()) return true;
+        // Scrolled again on every try, as Playwright does: the page may have moved it since.
+        target.scrollIntoView({ block: "center", inline: "center" });
+        return isHit();
       }, current);
     },
     { timeoutMsg: `${element.selector} never came out from under whatever covers it` },
