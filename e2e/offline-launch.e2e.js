@@ -96,6 +96,7 @@ describe("offline launch", () => {
 
   // Offline emulation misses the worker's own fetches, so check its cache as installed, before other pages add to it.
   it("after visiting only /log, everything every owner page loads is already in the worker's cache", async () => {
+    await browser.addInitScript(() => performance.setResourceTimingBufferSize(10000));
     await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await waitForPath(logPath);
     await browser.execute(() => navigator.serviceWorker.ready.then(() => true));
