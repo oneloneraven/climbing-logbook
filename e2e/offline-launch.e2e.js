@@ -4,6 +4,7 @@ import { SHELL_PATHS } from "../shared/owner-routes.js";
 import { ownedRouteUrl } from "./owned-route-url.js";
 import {
   afterThisTest,
+  browserFetch,
   clearCookies,
   currentContext,
   goOffline,
@@ -70,6 +71,13 @@ async function recordWorkerRequests() {
 const BROWSER_ICONS = ["/-/favicon-", "/-/apple-touch-icon"];
 const isBrowserIcon = path => BROWSER_ICONS.some(icon => path.startsWith(icon));
 
+const setAthleteMode = athleteMode =>
+  browserFetch(`${ORIGIN}/-/api/settings`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ athleteMode }),
+  });
+
 const navigationFromWorker = () =>
   browser.execute(() => performance.getEntriesByType("navigation")[0].deliveryType === "cache-storage");
 
@@ -96,6 +104,8 @@ describe("offline launch", () => {
 
   // Offline emulation misses the worker's own fetches, so check its cache as installed, before other pages add to it.
   it("after visiting only /log, everything every owner page loads is already in the worker's cache", async () => {
+    await setAthleteMode(true);
+    afterThisTest(() => setAthleteMode(false));
     await browser.addInitScript(() => performance.setResourceTimingBufferSize(10000));
     await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await waitForPath(logPath);
@@ -104,10 +114,14 @@ describe("offline launch", () => {
 
     // Online-only by design: the API and map data.
     const onlineOnly = ["/-/api/", "/-/world-map-"];
+    // A synced, set-up user is sent on from these to the log.
+    const redirectsAway = ["sync", "welcome"];
     const missing = [];
     for (const [ownerPage, shell] of Object.entries(SHELL_PATHS)) {
       if (!cached.includes(shell)) missing.push(shell);
+      if (redirectsAway.includes(ownerPage)) continue;
       await browser.url(ownedRouteUrl(DEV_USER.username, `/${ownerPage}`));
+      await waitForPath(`/${DEV_USER.username}/${ownerPage}`);
       await expect($("#header-menu-btn")).toExist({ message: ownerPage });
       await settle();
       const loaded = await browser.execute(() =>
