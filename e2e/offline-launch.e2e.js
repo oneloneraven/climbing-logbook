@@ -40,7 +40,10 @@ async function cachedPaths(cachePrefix = "logbook-") {
     const paths = [];
     for (const name of await caches.keys()) {
       if (!name.startsWith(cachePrefix)) continue;
-      for (const req of await (await caches.open(name)).keys()) paths.push(new URL(req.url).pathname);
+      for (const req of await (await caches.open(name)).keys()) {
+        const url = new URL(req.url);
+        paths.push(url.pathname + url.search);
+      }
     }
     return paths;
   }, cachePrefix);
@@ -91,28 +94,34 @@ describe("offline launch", () => {
     await expect($("climbing-tab-bar")).toExist();
   });
 
-  it("after visiting only /log, every owner page opens offline", async () => {
+  // Offline emulation misses the worker's own fetches, so check its cache as installed, before other pages add to it.
+  it("after visiting only /log, everything every owner page loads is already in the worker's cache", async () => {
     await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await waitForPath(logPath);
     await browser.execute(() => navigator.serviceWorker.ready.then(() => true));
-    await goOffline();
+    const cached = await cachedPaths();
 
-    // Online-only by design: the API, map data, and the browser's own icon fetches.
-    const onlineOnly = ["/-/api/", "/-/world-map-", ...BROWSER_ICONS];
-    const context = currentContext();
-    const failed = [];
-    await watchNetwork("network.fetchError", ({ context: from, request }) => {
-      const { pathname } = new URL(request.url);
-      if (from === context && !onlineOnly.some(prefix => pathname.startsWith(prefix))) failed.push(pathname);
-    });
-    for (const ownerPage of Object.keys(SHELL_PATHS)) {
+    // Online-only by design: the API and map data.
+    const onlineOnly = ["/-/api/", "/-/world-map-"];
+    const missing = [];
+    for (const [ownerPage, shell] of Object.entries(SHELL_PATHS)) {
+      if (!cached.includes(shell)) missing.push(shell);
       await browser.url(ownedRouteUrl(DEV_USER.username, `/${ownerPage}`));
-      // Offline, a page that loads at all came from the worker.
       await expect($("#header-menu-btn")).toExist({ message: ownerPage });
-      // Leaving mid-load would abort its requests, which would read as failures.
       await settle();
+      const loaded = await browser.execute(() =>
+        performance
+          .getEntriesByType("resource")
+          .map(entry => new URL(entry.name))
+          .filter(url => url.origin === location.origin)
+          .map(url => url.pathname + url.search),
+      );
+      for (const path of loaded) {
+        if (path.startsWith("/-/") && !onlineOnly.some(prefix => path.startsWith(prefix)) && !cached.includes(path))
+          missing.push(`${path} (${ownerPage})`);
+      }
     }
-    expect(failed).toEqual([]);
+    expect(missing).toEqual([]);
   });
 
   it("the installed app's start page (/-/launch/) opens offline and lands on the signed-in user's log", async () => {
