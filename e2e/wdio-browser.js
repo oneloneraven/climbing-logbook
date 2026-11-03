@@ -97,13 +97,18 @@ export async function waitUntilActionable(element) {
   await browser.waitUntil(() =>
     browser.execute(
       () =>
-        new Promise(resolve =>
+        // Capped as WebdriverIO's own stability check is: a frame that never comes would hang waitUntil for good.
+        new Promise(resolve => {
+          const settled = () =>
+            resolve(!document.getAnimations().some(a => a instanceof CSSTransition && a.playState === "running"));
+          const timer = setTimeout(settled, 100);
           requestAnimationFrame(() =>
-            requestAnimationFrame(() =>
-              resolve(!document.getAnimations().some(a => a instanceof CSSTransition && a.playState === "running")),
-            ),
-          ),
-        ),
+            requestAnimationFrame(() => {
+              clearTimeout(timer);
+              settled();
+            }),
+          );
+        }),
     ),
   );
   // Looked up afresh each time, as a Playwright locator is: the page may have redrawn it meanwhile.
