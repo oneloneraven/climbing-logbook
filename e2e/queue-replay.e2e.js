@@ -2,7 +2,7 @@
 import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
 import { ownedRouteUrl } from "./owned-route-url.js";
-import { recordFetches } from "./wdio-browser.js";
+import { afterThisTest, recordFetches } from "./wdio-browser.js";
 import { holdRequests } from "./wdio-hold.js";
 import { signInDevUser } from "./wdio-owner.js";
 
@@ -114,6 +114,9 @@ describe("queue replay", () => {
       });
       if (!res.ok) throw new Error(`create failed: ${res.status}`);
     }, entry);
+    afterThisTest(() =>
+      browser.execute(id => fetch(`/-/api/entries?id=${encodeURIComponent(id)}`, { method: "DELETE" }), entry.id),
+    );
     await setQueue([{ kind: "entry", op: "edit", record: { ...entry, name: "Older queued edit" } }]);
     await browser.refresh();
     await expect($("#sync-line-text")).toHaveTextContent("1 change waiting to sync");
@@ -137,7 +140,5 @@ describe("queue replay", () => {
       entry.id,
     );
     expect(saved.name).toBe("Newer edit");
-
-    await browser.execute(id => fetch(`/-/api/entries?id=${encodeURIComponent(id)}`, { method: "DELETE" }), entry.id);
   });
 });

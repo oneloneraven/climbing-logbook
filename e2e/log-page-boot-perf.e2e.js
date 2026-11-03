@@ -1,4 +1,5 @@
 import { $$, browser, expect } from "@wdio/globals";
+import { DEV_USER } from "../scripts/lib/dev-session.mjs";
 import { ownedRouteUrl } from "./owned-route-url.js";
 import { signInDevUser } from "./wdio-owner.js";
 
@@ -8,7 +9,7 @@ describe("log page boot", () => {
     await signInDevUser("my.localhost");
 
     const start = Date.now();
-    await browser.url(ownedRouteUrl("devuser", "/log"));
+    await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await expect($$(".place-header[data-location-id]")[0]).toBeDisplayed();
     const elapsedMs = Date.now() - start;
 

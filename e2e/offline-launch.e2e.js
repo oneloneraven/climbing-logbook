@@ -35,15 +35,15 @@ async function warm(path) {
 
 const placeHeaders = () => $$(".place-header[data-location-id]");
 
-async function cachedPaths() {
-  return browser.execute(async () => {
+async function cachedPaths(cachePrefix = "logbook-") {
+  return browser.execute(async cachePrefix => {
     const paths = [];
     for (const name of await caches.keys()) {
-      if (!name.startsWith("logbook-")) continue;
+      if (!name.startsWith(cachePrefix)) continue;
       for (const req of await (await caches.open(name)).keys()) paths.push(new URL(req.url).pathname);
     }
     return paths;
-  });
+  }, cachePrefix);
 }
 
 async function watchNetwork(event, onEvent) {
@@ -187,13 +187,7 @@ describe("offline launch", () => {
   it("API responses never end up in the worker's cache", async () => {
     await warm("/log");
     await warm("/view/map");
-    const cachedUrls = await browser.execute(async () => {
-      const urls = [];
-      for (const name of await caches.keys()) {
-        for (const req of await (await caches.open(name)).keys()) urls.push(new URL(req.url).pathname);
-      }
-      return urls;
-    });
+    const cachedUrls = await cachedPaths("");
     expect(cachedUrls.length).toBeGreaterThan(0);
     expect(cachedUrls.filter(p => p.startsWith("/-/api/"))).toEqual([]);
     expect(cachedUrls).toContain("/log/index.html");
