@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { browser } from "@wdio/globals";
-import { cleanUpThisTest, currentContext, waitUntilActionable } from "./wdio-browser.js";
+import { cleanUpThisTest, currentContext, startInFreshWindow, waitUntilActionable } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
 
 const PAGE_REPLACED =
@@ -78,6 +78,7 @@ export async function screenshotFailure(test) {
 export const mochaHooks = {
   async beforeEach() {
     recentCommands.length = 0;
+    if (process.env.E2E_PROJECT === "classic") await startInFreshWindow();
     await browser.setViewport({ width: 1280, height: 720 });
     if (process.env.E2E_PROJECT === "shared") await signInDevUser();
   },

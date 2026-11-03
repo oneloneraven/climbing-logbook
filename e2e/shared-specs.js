@@ -16,3 +16,6 @@ export const SHARED_SPEC_NAMES = [
   "two-step-recovery",
   "zero-friction-redirect",
 ];
+
+// These need WebDriver Classic commands, which parallel mode refuses, so they run on their own, a fresh session per test.
+export const CLASSIC_SPEC_NAMES = ["passkey-login"];

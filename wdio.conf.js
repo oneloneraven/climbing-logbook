@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { SevereServiceError } from "webdriverio";
 import globalSetup from "./e2e/global-setup.js";
-import { SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
+import { CLASSIC_SPEC_NAMES, SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
 import { actLikePlaywright } from "./e2e/wdio-hooks.js";
 
 const BASE_URL = "http://localhost:8787";
@@ -59,15 +59,17 @@ const BROWSERS = {
 
 const specPath = name => `./e2e/${name}.e2e.js`;
 const sharedSpecs = SHARED_SPEC_NAMES.map(specPath);
+const classicSpecs = CLASSIC_SPEC_NAMES.map(specPath);
 const shared = process.env.E2E_PROJECT === "shared";
+const classic = process.env.E2E_PROJECT === "classic";
 const only = process.env.E2E_SPECS?.split(",").map(specPath);
 
 const selected = (process.env.E2E_BROWSERS ?? "chrome,firefox").split(",").map(name => name.trim());
 
 export const config = {
   runner: "local",
-  specs: only ?? (shared ? sharedSpecs : ["./e2e/**/*.e2e.js"]),
-  exclude: shared ? [] : sharedSpecs,
+  specs: only ?? (shared ? sharedSpecs : classic ? classicSpecs : ["./e2e/**/*.e2e.js"]),
+  exclude: shared || classic ? [] : [...sharedSpecs, ...classicSpecs],
   maxInstances: shared || selected.includes("safari") ? 1 : Number(process.env.E2E_WORKERS ?? 4),
   capabilities: selected.map(name => {
     if (!BROWSERS[name]) throw new Error(`Unknown browser in E2E_BROWSERS: ${name}`);
@@ -82,7 +84,8 @@ export const config = {
   mochaOpts: {
     timeout: 60000,
     require: ["./e2e/wdio-hooks.js", "./e2e/wdio-matchers.js"],
-    parallelMode: "userContexts",
+    // WebDriver Classic commands, such as the virtual authenticator, only work outside parallel mode.
+    ...(!classic && { parallelMode: "userContexts" }),
     maxParallelContexts: shared ? 1 : Number(process.env.E2E_CONTEXTS ?? 1),
   },
   async onPrepare() {

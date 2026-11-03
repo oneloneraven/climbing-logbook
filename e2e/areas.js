@@ -7,6 +7,7 @@ export const AREAS = {
     "account-places-page",
     "account-two-step",
     "account-passkeys",
+    "passkey-login",
     "account-details",
     "account-import-export-page",
     "remove-device-data",

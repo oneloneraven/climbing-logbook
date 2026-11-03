@@ -196,9 +196,17 @@ export async function cleanUpThisTest() {
   cleanups.delete(context);
 }
 
+let windowContext;
+
+// Outside parallel mode, each test runs in a fresh session's one window.
+export async function startInFreshWindow() {
+  if (windowContext) await browser.reloadSession();
+  windowContext = await browser.getWindowHandle();
+}
+
 export function currentContext() {
-  const context = browser.__parallelContextStore?.getStore();
-  if (!context) throw new Error("This needs WebdriverIO's userContexts parallel mode");
+  const context = browser.__parallelContextStore?.getStore() ?? windowContext;
+  if (!context) throw new Error("This needs WebdriverIO's userContexts parallel mode, or startInFreshWindow");
   return context;
 }
 
