@@ -1,7 +1,7 @@
 import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
 import { ownedRouteUrl } from "./owned-route-url.js";
-import { clearCookies, waitForPath, waitForUrl } from "./wdio-browser.js";
+import { clearCookies, recordNavigations, settle, waitForPath, waitForUrl } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
 
 const LAUNCH = "http://my.localhost:8787/-/launch/";
@@ -18,12 +18,21 @@ describe("launch", () => {
 
   it("opening the app lands the signed-in user on their own logbook", async () => {
     await signInDevUser("my.localhost");
+    const navigations = await recordNavigations();
+    const mapPath = `/${DEV_USER.username}/view/map`;
     await browser.url(ownedRouteUrl(DEV_USER.username, "/view/map"));
     await browser.waitUntil(
       async () =>
         (await browser.execute(() => localStorage.getItem("logbook_signed_in_user"))) ===
         DEV_USER.username.toLowerCase(),
     );
+    // The first visit goes through /sync and back; leaving mid-sync isn't what this test is about.
+    await browser.waitUntil(async () => {
+      await waitForPath(mapPath);
+      const seen = navigations.length;
+      await settle();
+      return navigations.length === seen && navigations.at(-1)?.pathname === mapPath;
+    });
 
     await browser.url(LAUNCH);
     await waitForUrl(url => url.href === ownedRouteUrl(DEV_USER.username, "/log"));
