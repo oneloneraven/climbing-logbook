@@ -18,6 +18,13 @@ function seed(table, rows) {
   });
 }
 
+async function findUser(username) {
+  await $("#user-search").setValue(username);
+  // Picked before the search applies, the row moves as the full list collapses to the match.
+  await expect($$("#user-list li")).toBeElementsArrayOfSize(1);
+  return $("#user-list").$(`a*=${username}`);
+}
+
 const card = message => $("#submission-list").$(`a*=${message}`);
 const unreadCount = tab => $(`#tab-${tab} [data-unread]`);
 
@@ -184,8 +191,7 @@ describe("admin", () => {
 
     await browser.url(`${ADMIN}/users`);
     await expect($("#tab-users")).toHaveAttribute("aria-current", "page");
-    await $("#user-search").setValue(owner.username);
-    const row = $("#user-list").$(`a*=${owner.username}`);
+    const row = await findUser(owner.username);
     await expect(row).toHaveTextContent(expect.stringContaining(owner.email));
     await row.click();
 
@@ -241,8 +247,7 @@ describe("admin", () => {
     });
 
     await browser.url(`${ADMIN}/users`);
-    await $("#user-search").setValue(owner.username);
-    await $("#user-list").$(`a*=${owner.username}`).click();
+    await (await findUser(owner.username)).click();
     await expect($$("#logbook-list li")).toBeElementsArrayOfSize(0);
 
     await $("#view-logbook").click();
