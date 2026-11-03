@@ -1,6 +1,6 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import { PAIN_INJURY_WORDING } from "../shared/health-consent.js";
-import { expectEventually, recordFetches, textContents } from "./wdio-browser.js";
+import { expectEventually, goOffline, recordFetches, textContents } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
 const pointText = ({ label, text }) => `${label}: ${text}`;
@@ -67,6 +67,23 @@ describe("account health page", () => {
     await expect(row).toHaveTextContent(contains("Health data"));
     await expect($("#health-status")).toHaveTextContent("On");
     await expect(row).toHaveAttribute("href", `/${owner.username}/account/health`);
+  });
+
+  it("offline: the buttons are disabled with a note, and come back with the connection", async () => {
+    const owner = await claimOwner();
+    await browser.url(owner.url("/account/health"));
+    const turnOn = $('role/button[name="Turn on"]');
+    await expect(turnOn).toBeDisplayed();
+    await consentBox().click();
+    await expect(turnOn).toBeEnabled();
+
+    const backOnline = await goOffline();
+    await expect(turnOn).toBeDisabled();
+    await expect($("#health-offline-note")).toBeDisplayed();
+
+    await backOnline();
+    await expect(turnOn).toBeEnabled();
+    await expect($("#health-offline-note")).not.toBeDisplayed();
   });
 
   it("My Account hides the card when Athlete Mode is off and tracking was never turned on", async () => {

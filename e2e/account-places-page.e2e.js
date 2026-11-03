@@ -1,5 +1,5 @@
 import { $, browser, expect } from "@wdio/globals";
-import { recordFetches, settle } from "./wdio-browser.js";
+import { goOffline, recordFetches, settle } from "./wdio-browser.js";
 import { holdRequests } from "./wdio-hold.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 import { blockIndexedDb } from "./wdio-performance.js";
@@ -142,6 +142,23 @@ describe("account places page", () => {
     await stalePullLanded;
 
     await expect(location(owner, "l2")).toHaveTextContent(contains("4 climbs"));
+  });
+
+  it("offline, a rename shows at once and syncs by itself once the connection is back (#159)", async () => {
+    const owner = await seededOwner();
+    await openPlaces(owner);
+    const backOnline = await goOffline();
+    await $(`[data-edit="${owner.ownId("l2")}"]`).click();
+    await $("#place-edit-name").setValue("Magic Wood (Averstal)");
+    await $("#place-edit-save").click();
+
+    await expect(location(owner, "l2")).toHaveTextContent(contains("Magic Wood (Averstal)"));
+    await expect($("#sync-line-text")).toHaveTextContent("1 change waiting to sync");
+
+    await backOnline();
+    await expect($("#sync-line")).not.toBeDisplayed();
+    const { locations } = await serverState(owner);
+    expect(locations.find(l => l.id === owner.ownId("l2")).name).toBe("Magic Wood (Averstal)");
   });
 
   it("works from the server's copy on a device that keeps no data, and saves changes (#159)", async () => {

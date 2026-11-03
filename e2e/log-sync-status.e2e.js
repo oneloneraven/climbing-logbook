@@ -1,5 +1,5 @@
 import { $, browser, expect } from "@wdio/globals";
-import { recordFetches, settle } from "./wdio-browser.js";
+import { goOffline, recordFetches, settle } from "./wdio-browser.js";
 import { holdRequests } from "./wdio-hold.js";
 import { gotoLog } from "./wdio-log.js";
 
@@ -48,6 +48,18 @@ describe("log sync status", () => {
     await expect($("#menu-status-row")).not.toBeDisplayed();
     await expect($("#menu-sync-announce")).toHaveTextContent("Synced.");
     await expect($("#menu-help-link")).toBeDisplayed();
+  });
+
+  it("#847 -- going offline turns the burger menu ring solid red and updates the status row; #893 -- and announces it", async () => {
+    await gotoLog();
+
+    await goOffline();
+    await expect($("#header-menu-btn")).toHaveAttribute("data-sync-state", "offline");
+    await expect($("#menu-sync-announce")).toHaveTextContent(
+      "You're offline. Changes will sync when you're back online.",
+    );
+    await $("#header-menu-btn").click();
+    await expect($("#menu-status-text")).toHaveTextContent("Status: Offline");
   });
 
   it("a dead link that reads as online shows Offline, keeps it through the next failed sync, and clears once the server answers (#1486)", async () => {

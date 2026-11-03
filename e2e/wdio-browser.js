@@ -273,3 +273,17 @@ export async function recordNavigations() {
   afterThisTest(() => browser.off("browsingContext.navigationStarted", listener));
   return urls;
 }
+
+// Playwright's context.setOffline for this test's tab: requests fail, including the service worker's.
+// Returns a function that brings the connection back.
+export async function goOffline() {
+  const restore = await browser.emulate("onLine", false);
+  let online = false;
+  const goOnline = async () => {
+    if (online) return;
+    online = true;
+    await restore();
+  };
+  afterThisTest(goOnline);
+  return goOnline;
+}

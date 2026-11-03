@@ -1,5 +1,5 @@
 import { $, browser, expect } from "@wdio/globals";
-import { currentPath, recordFetches, waitForPath } from "./wdio-browser.js";
+import { currentPath, goOffline, recordFetches, waitForPath } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
 const contains = text => expect.stringContaining(text);
@@ -39,6 +39,20 @@ describe("account beta page", () => {
 
     await expectSavedOnClick(fetches, $('role/button[name="Leave Check our beta"]'), { betaOptIn: false });
     await waitForPath(`/${owner.username}/log`);
+  });
+
+  it("offline: the button is disabled with a note, and comes back with the connection", async () => {
+    const owner = await claimOwner();
+    await browser.url(owner.url("/account/beta"));
+    await expect(joinButton()).toBeEnabled();
+
+    const backOnline = await goOffline();
+    await expect(joinButton()).toBeDisabled();
+    await expect($("#beta-offline-note")).toBeDisplayed();
+
+    await backOnline();
+    await expect(joinButton()).toBeEnabled();
+    await expect($("#beta-offline-note")).not.toBeDisplayed();
   });
 
   it("changes waiting to sync on this device are pointed out, without blocking", async () => {
