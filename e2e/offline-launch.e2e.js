@@ -71,12 +71,23 @@ async function recordWorkerRequests() {
 const BROWSER_ICONS = ["/-/favicon-", "/-/apple-touch-icon"];
 const isBrowserIcon = path => BROWSER_ICONS.some(icon => path.startsWith(icon));
 
-const setAthleteMode = athleteMode =>
-  browserFetch(`${ORIGIN}/-/api/settings`, {
+async function setAthleteMode(athleteMode) {
+  const res = await browserFetch(`${ORIGIN}/-/api/settings`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ athleteMode }),
   });
+  if (!res.ok) throw new Error(`setting Athlete Mode: ${res.status}`);
+}
+
+// The scripts and stylesheets a cached shell names, for pages a test can't stay on long enough to watch load.
+const cachedShellAssets = shell =>
+  browser.execute(async shell => {
+    const response = await caches.match(shell);
+    if (!response) return [];
+    const html = await response.text();
+    return [...html.matchAll(/(?:src|href)="(\/-\/[^"]+)"/g)].map(match => match[1]);
+  }, shell);
 
 const navigationFromWorker = () =>
   browser.execute(() => performance.getEntriesByType("navigation")[0].deliveryType === "cache-storage");
@@ -119,7 +130,11 @@ describe("offline launch", () => {
     const missing = [];
     for (const [ownerPage, shell] of Object.entries(SHELL_PATHS)) {
       if (!cached.includes(shell)) missing.push(shell);
-      if (redirectsAway.includes(ownerPage)) continue;
+      if (redirectsAway.includes(ownerPage)) {
+        for (const path of await cachedShellAssets(shell))
+          if (!cached.includes(path)) missing.push(`${path} (${ownerPage})`);
+        continue;
+      }
       await browser.url(ownedRouteUrl(DEV_USER.username, `/${ownerPage}`));
       await waitForPath(`/${DEV_USER.username}/${ownerPage}`);
       await expect($("#header-menu-btn")).toExist({ message: ownerPage });
