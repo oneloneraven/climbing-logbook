@@ -4,7 +4,7 @@ import { cleanUpThisTest, currentContext, waitUntilActionable } from "./wdio-bro
 import { signInDevUser } from "./wdio-owner.js";
 
 const PAGE_REPLACED =
-  /navigation canceled by concurrent navigation|Cannot find context with specified id|does not belong to the document/;
+  /navigation canceled by concurrent navigation|Cannot find context with specified id|does not belong to the document|belongs to different document/;
 
 // Playwright rides out the page's own redirects and reloads, which WebDriver BiDi reports as errors,
 // and waits for an element to be actionable before clicking it.

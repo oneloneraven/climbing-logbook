@@ -75,7 +75,9 @@ export async function recordFetches() {
     next(urlPart, method) {
       const since = fetches.length;
       const find = () => fetches.slice(since).find(f => f.url.includes(urlPart) && f.method === method);
-      const finished = browser.waitUntil(find, { timeoutMsg: `no ${method} ${urlPart} finished` }).then(find);
+      const finished = browser
+        .waitUntil(find, { timeout: NAVIGATION_TIMEOUT, timeoutMsg: `no ${method} ${urlPart} finished` })
+        .then(find);
       finished.catch(() => {});
       return finished;
     },

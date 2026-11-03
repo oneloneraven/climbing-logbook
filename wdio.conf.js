@@ -75,6 +75,8 @@ export const config = {
   }),
   baseUrl: BASE_URL,
   logLevel: "warn",
+  // Firefox in CI runs slower than the Chromium Playwright's 5s default was tuned on.
+  waitforTimeout: 10000,
   framework: "mocha",
   reporters: ["spec"],
   mochaOpts: {
