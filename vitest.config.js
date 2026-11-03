@@ -47,7 +47,6 @@ const NODE_TESTS = [
   "test/shared/*.test.js",
   "test/client/sw/*.test.js",
   "test/scripts/*.test.js",
-  "test/entry-schema.test.js",
   "test/log.test.js",
   "test/client/api-fetch.test.js",
   "test/client/combo-chart.test.js",

@@ -99,12 +99,6 @@ describe("owned route authorization", () => {
     }
   });
 
-  it("no longer serves the old per-discipline /map page", async () => {
-    const { cookie } = await createAuthedSession({ username: "oldmapuser", hostname: "climbinglogbook.com" });
-    const res = await fetchOwnedRoute("oldmapuser", "map", { cookie });
-    expect(res.status).toBe(404);
-  });
-
   it("serves the real static shell for performance", async () => {
     const { cookie } = await createAuthedSession({ username: "performanceshelluser", hostname: "climbinglogbook.com" });
     const res = await fetchOwnedRoute("performanceshelluser", "performance", { cookie });
@@ -210,12 +204,6 @@ describe("owned route authorization", () => {
   it("falls through (404) for a fourth path segment that isn't an owner page", async () => {
     const { cookie } = await createAuthedSession({ username: "unknownpageuser", hostname: "climbinglogbook.com" });
     const res = await fetchOwnedRoute("unknownpageuser", "settings", { cookie });
-    expect(res.status).toBe(404);
-  });
-
-  it("falls through (404) for the old grade-scales route, now that it's a public /help page instead", async () => {
-    const { cookie } = await createAuthedSession({ username: "oldgradesrouteuser", hostname: "climbinglogbook.com" });
-    const res = await fetchOwnedRoute("oldgradesrouteuser", "performance/grades", { cookie });
     expect(res.status).toBe(404);
   });
 

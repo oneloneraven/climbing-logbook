@@ -35,7 +35,7 @@ describe("isBetaHost / readCachedEnrollment", () => {
     expect(isBetaHost("localhost")).toBe(false);
   });
 
-  it("reads true/false, and undefined for no cache, a legacy null, or junk", () => {
+  it("reads true/false, and undefined for no cache, a null, or junk", () => {
     expect(readCachedEnrollment(memoryStorage({ betaOptIn: true }))).toBe(true);
     expect(readCachedEnrollment(memoryStorage({ betaOptIn: false }))).toBe(false);
     expect(readCachedEnrollment(memoryStorage({ betaOptIn: null }))).toBeUndefined();

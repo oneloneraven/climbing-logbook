@@ -282,7 +282,7 @@ describe("V_SCALE", () => {
     expect(V_SCALE.toOrdinal("V5")).toBe(FONT_STANDARD.toOrdinal("6C"));
     expect(V_SCALE.toOrdinal("V8")).toBe(FONT_STANDARD.toOrdinal("7B"));
   });
-  it("V0- is Font 3+ (the corrected mapping, not the old wrong 6A=V0)", () => {
+  it("V0- is Font 3+", () => {
     expect(V_SCALE.toOrdinal("V0-")).toBe(FONT_STANDARD.toOrdinal("3+"));
     expect(V_SCALE.toOrdinal("V0")).toBe(FONT_STANDARD.toOrdinal("4"));
     expect(V_SCALE.toOrdinal("V0+")).toBe(FONT_STANDARD.toOrdinal("4+"));

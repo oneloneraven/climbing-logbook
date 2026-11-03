@@ -1,7 +1,4 @@
 // Comments and docs that point at repo paths which no longer exist (#1088).
-// A ratchet: dead-path-references.baseline.json lists the references that
-// already existed when this check was added. A new dead reference fails, and
-// so does a baseline entry that's been fixed, so the list only ever shrinks.
 // ADRs and migrations are exempt: ADRs are never edited after acceptance
 // (docs/adr/README.md), and any change under migrations/, even a comment,
 // makes the next release deploy straight to production (deploy.yml).
@@ -11,7 +8,6 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const ROOT = join(import.meta.dirname, "../..");
-const BASELINE_FILE = join(import.meta.dirname, "dead-path-references.baseline.json");
 
 const TOP_LEVEL = [
   "client",
@@ -86,19 +82,10 @@ function deadReferences() {
 }
 
 describe("path references in comments and docs", () => {
-  const baseline = JSON.parse(readFileSync(BASELINE_FILE, "utf8"));
-  const current = deadReferences();
-
-  it("adds no new references to paths that don't exist", () => {
-    const added = current.filter(ref => !baseline.includes(ref));
+  it("has no references to paths that don't exist", () => {
     expect(
-      added,
+      deadReferences(),
       "Fix these references, or delete the comment if it only narrates history (docs/coding-standards.md, Comments and docs)",
     ).toEqual([]);
-  });
-
-  it("lists no baseline entries that have since been fixed", () => {
-    const fixed = baseline.filter(ref => !current.includes(ref));
-    expect(fixed, "Remove these from dead-path-references.baseline.json").toEqual([]);
   });
 });
