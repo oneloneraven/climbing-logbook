@@ -1,7 +1,7 @@
 // Rasterises static/-/beta/icon*.svg to the committed PNGs. CHROMIUM_PATH overrides the browser.
 //   node scripts/generate-beta-icons.mjs
-import { chromium } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { headlessChrome } from "./lib/headless-chrome.mjs";
 
 const DIR = "static/-/beta";
 const OUTPUTS = [
@@ -11,19 +11,17 @@ const OUTPUTS = [
   { svg: "icon-maskable.svg", png: "icon-maskable-512.png", size: 512 },
 ];
 
-const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+const browser = await headlessChrome();
 try {
   for (const { svg, png, size } of OUTPUTS) {
-    const page = await browser.newPage({ viewport: { width: size, height: size } });
+    await browser.setViewport({ width: size, height: size, devicePixelRatio: 1 });
     const src = `data:image/svg+xml;base64,${readFileSync(`${DIR}/${svg}`).toString("base64")}`;
-    await page.setContent(
-      `<body style="margin:0"><img src="${src}" width="${size}" height="${size}" style="display:block"></body>`,
-    );
-    await page.locator("img").evaluate(img => img.decode());
-    await page.screenshot({ path: `${DIR}/${png}`, clip: { x: 0, y: 0, width: size, height: size } });
-    await page.close();
+    const html = `<body style="margin:0"><img src="${src}" width="${size}" height="${size}" style="display:block"></body>`;
+    await browser.url(`data:text/html,${encodeURIComponent(html)}`);
+    await browser.execute(() => document.querySelector("img").decode());
+    await browser.saveScreenshot(`${DIR}/${png}`);
     console.log(`${DIR}/${png}`);
   }
 } finally {
-  await browser.close();
+  await browser.deleteSession();
 }

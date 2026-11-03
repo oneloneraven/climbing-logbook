@@ -7,14 +7,10 @@
 // Usage: `pnpm dev` running in another terminal (swatch.html loads its
 // stylesheet/tokens from it), then from the repo root:
 //   node docs/ui-component-catalog/generate.mjs
-//
-// @playwright/test's own chromium export, not the bare "playwright"
-// package -- this repo only declares the former as a real dependency
-// (playwright itself is present solely as its transitive, unhoisted
-// dependency, per pnpm's strict node_modules layout).
-import { chromium } from "@playwright/test";
+import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { headlessChrome } from "../../scripts/lib/headless-chrome.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SWATCH_URL = `file://${join(HERE, "swatch.html")}`;
@@ -45,18 +41,37 @@ const ENTRIES = [
   ["s-help-article", "help-article"],
 ];
 
-const browser = await chromium.launch();
-for (const theme of ["dark", "light"]) {
-  const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
-  await page.goto(`${SWATCH_URL}?theme=${theme}`);
-  // Lets the linked stylesheet (a real network request to the dev
-  // server, not an inline/cached one) finish applying before capture.
-  await page.waitForTimeout(300);
-  for (const [id, name] of ENTRIES) {
-    await page.locator(`#${id}`).screenshot({ path: join(HERE, `${name}-${theme}.png`) });
-    console.log(`saved ${name}-${theme}.png`);
-  }
-  await page.close();
+const browser = await headlessChrome();
+// WebdriverIO's element screenshots stop at the viewport and truncate fractional
+// boxes; these round outwards and reach below the fold, as the originals did.
+async function saveSwatch(id, path) {
+  const box = await browser.execute(swatchId => {
+    const rect = document.getElementById(swatchId).getBoundingClientRect();
+    const x = Math.floor(rect.left + scrollX);
+    const y = Math.floor(rect.top + scrollY);
+    return { x, y, width: Math.ceil(rect.right + scrollX) - x, height: Math.ceil(rect.bottom + scrollY) - y };
+  }, id);
+  const { data } = await browser.browsingContextCaptureScreenshot({
+    context: await browser.getWindowHandle(),
+    origin: "document",
+    clip: { type: "box", ...box },
+  });
+  writeFileSync(path, Buffer.from(data, "base64"));
 }
-await browser.close();
+
+try {
+  await browser.setViewport({ width: 900, height: 700, devicePixelRatio: 1 });
+  for (const theme of ["dark", "light"]) {
+    await browser.url(`${SWATCH_URL}?theme=${theme}`);
+    // Lets the linked stylesheet (a real network request to the dev
+    // server, not an inline/cached one) finish applying before capture.
+    await browser.pause(300);
+    for (const [id, name] of ENTRIES) {
+      await saveSwatch(id, join(HERE, `${name}-${theme}.png`));
+      console.log(`saved ${name}-${theme}.png`);
+    }
+  }
+} finally {
+  await browser.deleteSession();
+}
 console.log("done");

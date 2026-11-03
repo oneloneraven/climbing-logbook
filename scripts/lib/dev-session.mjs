@@ -186,8 +186,8 @@ export async function provisionUsers(baseUrl, usersWithCodes, options = {}) {
   return cookies;
 }
 
-// Playwright's storageState wants structured cookies, not a header string.
-export function toPlaywrightCookie(setCookieHeader, baseUrl) {
+// A Set-Cookie header as the structured cookie the e2e runners and their storage state take.
+export function parseSetCookie(setCookieHeader, baseUrl) {
   const [pair, ...attrs] = setCookieHeader.split(";").map(s => s.trim());
   const eq = pair.indexOf("=");
   const name = pair.slice(0, eq);

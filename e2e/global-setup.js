@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname } from "node:path";
-import { applyMigrations, DEV_USER, resetDatabase, toPlaywrightCookie } from "../scripts/lib/dev-session.mjs";
+import { applyMigrations, DEV_USER, resetDatabase, parseSetCookie } from "../scripts/lib/dev-session.mjs";
 import { seedLogbookData } from "../scripts/lib/seed-data.mjs";
 import { authSecret, seedUsers } from "./seed-users.js";
 import { NEW_OWNER_POOL_SIZE, newOwnerPoolUser, OWNER_POOL_SIZE, ownerPoolUser, resetOwnerPool } from "./owner.js";
@@ -46,14 +46,11 @@ export default async function globalSetup(_config, options) {
   });
 
   mkdirSync(dirname(STORAGE_STATE_PATH), { recursive: true });
-  writeFileSync(
-    STORAGE_STATE_PATH,
-    JSON.stringify({ cookies: [toPlaywrightCookie(devCookie, BASE_URL)], origins: [] }),
-  );
+  writeFileSync(STORAGE_STATE_PATH, JSON.stringify({ cookies: [parseSetCookie(devCookie, BASE_URL)], origins: [] }));
 
   if ((await seedLogbookData(BASE_URL, devCookie.split(";")[0])) > 0) throw new Error("Seeding the dev user failed");
 
   const pool = (users, userCookies) =>
-    users.map((owner, i) => ({ username: owner.username, cookie: toPlaywrightCookie(userCookies[i], BASE_URL) }));
+    users.map((owner, i) => ({ username: owner.username, cookie: parseSetCookie(userCookies[i], BASE_URL) }));
   resetOwnerPool(pool(owners, cookies.slice(0, owners.length)), pool(newOwners, cookies.slice(owners.length)));
 }
