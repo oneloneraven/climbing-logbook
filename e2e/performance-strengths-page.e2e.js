@@ -1,5 +1,5 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { athlete, expectOfflineMessage, expectRedirectToLog, expectSharedChrome } from "./wdio-performance.js";
+import { athlete, expectSharedChrome } from "./wdio-performance.js";
 
 const contains = text => expect.stringContaining(text);
 
@@ -36,11 +36,4 @@ describe("performance strengths page", () => {
     await expect($('role/img[name="What makes climbs hard for you"]')).toHaveTextContent(contains("Deadpoint"));
     await expect($('role/table[name="Where your cruxes are"]')).toHaveTextContent(contains("Crimp"));
   });
-
-  it("shows the offline message instead of the view when the device keeps no data and the server fails", async () => {
-    const owner = await athlete();
-    await expectOfflineMessage(owner, "/performance/strengths", "**/-/api/performance/strengths", "#strengths-root");
-  });
-
-  it("redirects to /log when Athlete Mode is off", () => expectRedirectToLog("/performance/strengths"));
 });

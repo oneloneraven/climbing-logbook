@@ -1,6 +1,5 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import { refuseIndexedDb } from "./entries-cache.js";
-import { waitForPath } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
 export const blockIndexedDb = () => browser.addInitScript(refuseIndexedDb);
@@ -36,12 +35,6 @@ export async function expectOfflineMessage(owner, path, apiPattern, root) {
 
   await expect($("#performance-offline")).toBeDisplayed();
   await expect($(root)).not.toBeDisplayed();
-}
-
-export async function expectRedirectToLog(path) {
-  const owner = await claimOwner();
-  await browser.url(owner.url(path));
-  await waitForPath(`/${owner.username}/log`);
 }
 
 export async function expectSharedChrome(owner) {

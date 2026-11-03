@@ -40,7 +40,6 @@ export const AREAS = {
     "performance-rpe-page",
     "performance-strengths-page",
     "performance-trends-page",
-    "performance-on-device",
     "reports-on-device",
     "component-harnesses",
   ],

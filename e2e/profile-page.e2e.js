@@ -44,7 +44,7 @@ describe("public profile page", () => {
     await expect($("#theme-toggle-btn")).toBeDisplayed();
   });
 
-  it("Grade Pyramid is never present -- no <climbing-tab-bar>, no pyramid markup, no performance bundle request", async () => {
+  it("has no Grade Pyramid: no <climbing-tab-bar>, no pyramid markup, no performance bundle request", async () => {
     await visitProfile(SEED);
     await expect($("climbing-entries-table")).toBeDisplayed();
 
@@ -75,7 +75,7 @@ describe("public profile page", () => {
     await expect($("climbing-entries-table")).toBeDisplayed();
   });
 
-  it("no discipline picker anymore -- combined view shows both disciplines as separate table sections", async () => {
+  it("has no discipline picker: the combined view shows both disciplines as separate table sections", async () => {
     await visitProfile(MIXED_SEED);
     await expect($("climbing-entries-table")).toBeDisplayed();
 
@@ -140,7 +140,7 @@ describe("public profile page", () => {
     await expect($("#filter-grade-tier-group")).not.toExist();
   });
 
-  it("filter panel status icons render real SVG content (#63 -- this page never loads entry-form.js, which used to be the only thing hydrating them)", async () => {
+  it("filter panel status icons render real SVG content, without the entry form (#63)", async () => {
     await visitProfile(MIXED_SEED);
     await expect($("climbing-entries-table")).toBeDisplayed();
 
@@ -161,7 +161,7 @@ describe("public profile page", () => {
     for (const text of ["Boulder", "Sport", "Flash", "Send"]) await expect(popover).toHaveTextContent(contains(text));
   });
 
-  it("notes overlay shows the entry's real notes text (#425 -- previously did nothing at all on this page)", async () => {
+  it("notes overlay shows the entry's real notes text (#425)", async () => {
     await visitProfile({ entries: [{ name: "Boulder Seed", notes: "A real note to display" }] });
     await expect($("climbing-entries-table")).toBeDisplayed();
 

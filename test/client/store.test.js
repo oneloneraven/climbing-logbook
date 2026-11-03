@@ -61,7 +61,6 @@ beforeEach(() => {
 function failingEntriesDb(err) {
   const cleared = [];
   const db = {
-    isCached: async () => true,
     load: async () => [],
     replace: async () => {
       throw err;
@@ -242,40 +241,6 @@ describe("loadEntriesFromCache", () => {
     storage.setItem("logbook_sync_cursors", JSON.stringify({ entries: 42 }));
     const blocked = createStore({ storage, openEntries: () => Promise.reject(new Error("blocked")) });
     expect(await blocked.loadEntriesFromCache()).toBe(false);
-    expect(cursors()).toEqual({});
-  });
-});
-
-describe("moving the localStorage cache to IndexedDB (#1164)", () => {
-  it("moves an existing cache over on first load, with no refetch", async () => {
-    storage.setItem("logbook_entries_cache", JSON.stringify(ENTRIES));
-    storage.setItem("logbook_sync_cursors", JSON.stringify({ entries: 42 }));
-    expect(await store.loadEntriesFromCache()).toBe(true);
-    expect(store.getEntries()).toEqual(ENTRIES);
-    expect(await storedEntries()).toEqual(ENTRIES);
-    expect(storage.getItem("logbook_entries_cache")).toBeNull();
-    expect(cursors()).toEqual({ entries: 42 });
-  });
-
-  it("moves it before a write, so a delta never lands on an empty database first", async () => {
-    storage.setItem("logbook_entries_cache", JSON.stringify(ENTRIES));
-    await store.mergeConfirmed("entries", [{ id: "e3", placeId: "p1", name: "New" }]);
-    expect((await storedEntries()).map(e => e.id)).toEqual(["e1", "e2", "e3"]);
-  });
-
-  it("never overwrites a database that already has rows", async () => {
-    await createStore({ storage, openEntries }).setEntries([ENTRIES[1]]);
-    storage.setItem("logbook_entries_cache", JSON.stringify(ENTRIES));
-    await createStore({ storage, openEntries }).loadEntriesFromCache();
-    expect(await storedEntries()).toEqual([ENTRIES[1]]);
-    expect(storage.getItem("logbook_entries_cache")).toBeNull();
-  });
-
-  it("discards a corrupt copy and resets the cursor, so the next delta refills the cache", async () => {
-    storage.setItem("logbook_entries_cache", "{not valid json");
-    storage.setItem("logbook_sync_cursors", JSON.stringify({ entries: 42 }));
-    expect(await store.loadEntriesFromCache()).toBe(false);
-    expect(storage.getItem("logbook_entries_cache")).toBeNull();
     expect(cursors()).toEqual({});
   });
 });

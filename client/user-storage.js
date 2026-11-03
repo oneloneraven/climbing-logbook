@@ -5,19 +5,6 @@ import { matchOwnerRoute } from "../shared/owner-routes.js";
 // Who last signed in on this origin: what the offline ownership check compares a page's owner against.
 export const SIGNED_IN_USER_KEY = "logbook_signed_in_user";
 
-// Every key holding one user's data. Each module still owns its own key
-// name; this list only exists so pre-#960 (un-namespaced) data can be
-// adopted into its owner's namespace once.
-export const PER_USER_KEYS = [
-  "logbook_entries_cache",
-  "logbook_places_cache",
-  "logbook_locations_cache",
-  "logbook_pending_queue",
-  "logbook_settings_cache",
-  "logbook_sync_cursors",
-  "logbook_sync_status",
-];
-
 export function normalizeUsername(raw) {
   try {
     return decodeURIComponent(raw).toLowerCase();
@@ -67,24 +54,5 @@ export function clearSignedInUser(storage) {
     storage.removeItem(SIGNED_IN_USER_KEY);
   } catch {
     /* nothing to clear */
-  }
-}
-
-// Moves pre-#960 un-namespaced data into `username`'s namespace, without
-// overwriting anything already there. Only ever called for a user the
-// server has just authorised for this page (see ownership-guard.js), so
-// legacy data can't be attributed to the wrong person.
-export function adoptLegacyUserData(storage, username) {
-  const owner = username.toLowerCase();
-  for (const base of PER_USER_KEYS) {
-    try {
-      const legacy = storage.getItem(base);
-      if (legacy === null) continue;
-      const scoped = `${base}:${owner}`;
-      if (storage.getItem(scoped) === null) storage.setItem(scoped, legacy);
-      storage.removeItem(base);
-    } catch {
-      /* leave this key where it is; the rest still move */
-    }
   }
 }

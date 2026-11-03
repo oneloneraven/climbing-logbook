@@ -42,11 +42,6 @@ export async function openEntriesDb(name, factory = indexedDB) {
   db.onversionchange = () => db.close();
 
   return {
-    async isCached() {
-      const tx = db.transaction(META, "readonly");
-      return (await request(tx.objectStore(META).get(NEXT_SEQ))) !== undefined;
-    },
-
     async load() {
       const tx = db.transaction([ROWS, META], "readonly");
       const [stored, nextSeq] = await Promise.all([

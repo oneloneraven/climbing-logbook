@@ -54,19 +54,11 @@ describe("climbing header", () => {
     await expect($("#footnote-overlay")).not.toBeDisplayed();
   });
 
-  it("renders on /register/", async () => {
+  it("renders on the sign-up, reset password and apex pages", async () => {
     await mockTurnstile();
-    await browser.url("/register/");
-    await expect(brandName()).toHaveTextContent("Climbing Logbook");
-  });
-
-  it("renders on /reset-password/", async () => {
-    await browser.url("/reset-password/");
-    await expect(brandName()).toHaveTextContent("Climbing Logbook");
-  });
-
-  it("renders on the apex marketing page", async () => {
-    await browser.url("/");
-    await expect(brandName()).toHaveTextContent("Climbing Logbook");
+    for (const path of ["/register/", "/reset-password/", "/"]) {
+      await browser.url(path);
+      await expect(brandName()).toHaveTextContent("Climbing Logbook", { message: path });
+    }
   });
 });

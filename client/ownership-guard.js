@@ -3,7 +3,7 @@
 import { isDemoUsername } from "./demo-mode.js";
 import { renderBlockedPage } from "./blocked-page.js";
 import { loginPageUrl } from "./login-url.js";
-import { adoptLegacyUserData, ownerOfPath, readSignedInUser, writeSignedInUser } from "./user-storage.js";
+import { ownerOfPath, readSignedInUser, writeSignedInUser } from "./user-storage.js";
 
 const SESSION_URL = "/-/api/auth/get-session";
 
@@ -34,9 +34,7 @@ export async function ownershipAllowsBoot({
 
   if (!controlled) {
     // Served by the network: the server's own ownership check passed for
-    // this URL's user, so that's who's signed in on this device. Data from
-    // before per-user storage (#960) belongs to them too.
-    if (recorded === null) adoptLegacyUserData(storage, owner);
+    // this URL's user, so that's who's signed in on this device.
     if (recorded !== owner) writeSignedInUser(storage, owner);
     return true;
   }
@@ -58,9 +56,6 @@ export async function ownershipAllowsBoot({
     return false;
   }
   if (sessionUser === owner) {
-    // The server has now authorised this user, so pre-#960 data is theirs,
-    // same as on the network-served path above.
-    if (recorded === null) adoptLegacyUserData(storage, owner);
     writeSignedInUser(storage, owner);
     return true;
   }

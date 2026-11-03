@@ -1,13 +1,6 @@
 import { $, browser, expect } from "@wdio/globals";
 import { daysAgo } from "./owner.js";
-import {
-  athlete,
-  chooseReportScale,
-  expectOfflineMessage,
-  expectRedirectToLog,
-  expectSharedChrome,
-  expectWiderWindowRefetch,
-} from "./wdio-performance.js";
+import { athlete, chooseReportScale, expectSharedChrome, expectWiderWindowRefetch } from "./wdio-performance.js";
 
 const FLASH_AND_SENDS = [
   { date: daysAgo(15), grade: "6B", firstAttempt: true, attemptsToSend: 1 },
@@ -56,11 +49,4 @@ describe("performance gap page", () => {
     const owner = await athlete();
     await expectWiderWindowRefetch(owner.url("/performance/gap"), "gap");
   });
-
-  it("shows the offline message instead of the chart when the device keeps no data and the server fails", async () => {
-    const owner = await athlete();
-    await expectOfflineMessage(owner, "/performance/gap", "**/-/api/performance/gap**", "#gap-root");
-  });
-
-  it("redirects to /log when Athlete Mode is off", () => expectRedirectToLog("/performance/gap"));
 });

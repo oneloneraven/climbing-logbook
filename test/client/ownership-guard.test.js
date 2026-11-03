@@ -40,27 +40,10 @@ describe("ownershipAllowsBoot", () => {
       expect(fetchImpl).not.toHaveBeenCalled();
     });
 
-    it("first run after the upgrade adopts un-namespaced data for that user", async () => {
-      const storage = memoryStorage({ logbook_entries_cache: "[1]", logbook_pending_queue: "[q]" });
-      await ownershipAllowsBoot({ loc: loc("/raven/log"), storage, controlled: false, doc: document });
-      expect(storage.dump()).toEqual({
-        "logbook_entries_cache:raven": "[1]",
-        "logbook_pending_queue:raven": "[q]",
-        logbook_signed_in_user: "raven",
-      });
-    });
-
-    it("a different user signing in switches the record, and never adopts the previous user's data", async () => {
-      const storage = memoryStorage({
-        logbook_signed_in_user: "alice",
-        "logbook_entries_cache:alice": "[a]",
-        logbook_entries_cache: "[legacy]",
-      });
+    it("a different user signing in switches the record, and leaves the previous user's data alone", async () => {
+      const storage = memoryStorage({ logbook_signed_in_user: "alice", "logbook_entries_cache:alice": "[a]" });
       expect(await ownershipAllowsBoot({ loc: loc("/bob/log"), storage, controlled: false, doc: document })).toBe(true);
-      const out = storage.dump();
-      expect(out.logbook_signed_in_user).toBe("bob");
-      expect(out["logbook_entries_cache:bob"]).toBeUndefined();
-      expect(out["logbook_entries_cache:alice"]).toBe("[a]");
+      expect(storage.dump()).toEqual({ logbook_signed_in_user: "bob", "logbook_entries_cache:alice": "[a]" });
     });
   });
 
@@ -151,8 +134,8 @@ describe("ownershipAllowsBoot", () => {
       expect(storage.dump().logbook_signed_in_user).toBe("raven");
     });
 
-    it("online, the session is this page's user and nobody's recorded: adopts un-namespaced data for them", async () => {
-      const storage = memoryStorage({ logbook_entries_cache: "[1]" });
+    it("online, the session is this page's user and nobody's recorded: records them", async () => {
+      const storage = memoryStorage();
       expect(
         await ownershipAllowsBoot({
           loc: loc("/raven/log"),
@@ -163,11 +146,11 @@ describe("ownershipAllowsBoot", () => {
           doc: document,
         }),
       ).toBe(true);
-      expect(storage.dump()).toEqual({ "logbook_entries_cache:raven": "[1]", logbook_signed_in_user: "raven" });
+      expect(storage.dump()).toEqual({ logbook_signed_in_user: "raven" });
     });
 
-    it("online, the session is someone else's: never adopts un-namespaced data", async () => {
-      const storage = memoryStorage({ logbook_entries_cache: "[1]" });
+    it("online, the session is someone else's: records nobody", async () => {
+      const storage = memoryStorage();
       await ownershipAllowsBoot({
         loc: loc("/bob/log"),
         storage,
@@ -177,7 +160,7 @@ describe("ownershipAllowsBoot", () => {
         doc: document,
         replace: vi.fn(),
       });
-      expect(storage.dump()).toEqual({ logbook_entries_cache: "[1]" });
+      expect(storage.dump()).toEqual({});
     });
 
     it("a failed session check refuses rather than guessing", async () => {

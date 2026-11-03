@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  adoptLegacyUserData,
   ownerOfPath,
-  PER_USER_KEYS,
   readSignedInUser,
-  SIGNED_IN_USER_KEY,
   userKey,
   writeSignedInUser,
   clearSignedInUser,
@@ -46,25 +43,5 @@ describe("signed-in user record", () => {
     expect(readSignedInUser(s)).toBe("raven");
     clearSignedInUser(s);
     expect(readSignedInUser(s)).toBeNull();
-  });
-});
-
-describe("adoptLegacyUserData", () => {
-  it("moves every pre-#960 per-user key into the user's namespace", () => {
-    const legacy = Object.fromEntries(PER_USER_KEYS.map(k => [k, `v-${k}`]));
-    const s = memoryStorage({ ...legacy, logbook_theme: "dark", [SIGNED_IN_USER_KEY]: "x" });
-    adoptLegacyUserData(s, "Raven");
-    const out = s.dump();
-    for (const k of PER_USER_KEYS) {
-      expect(out[k], k).toBeUndefined();
-      expect(out[`${k}:raven`], k).toBe(`v-${k}`);
-    }
-    expect(out.logbook_theme).toBe("dark");
-  });
-
-  it("never overwrites data already in the namespace, but still removes the legacy copy", () => {
-    const s = memoryStorage({ logbook_pending_queue: "old", "logbook_pending_queue:raven": "current" });
-    adoptLegacyUserData(s, "raven");
-    expect(s.dump()).toEqual({ "logbook_pending_queue:raven": "current" });
   });
 });

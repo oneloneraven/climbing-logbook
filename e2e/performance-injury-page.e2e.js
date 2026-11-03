@@ -1,7 +1,7 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import { daysAgo } from "./owner.js";
 import { expectEventually, textContents } from "./wdio-browser.js";
-import { athlete, expectOfflineMessage, expectRedirectToLog, expectSharedChrome } from "./wdio-performance.js";
+import { athlete, expectSharedChrome } from "./wdio-performance.js";
 
 const LEFT_CRIMP = { limb: "hand", side: "left", holdType: "crimp", movementStyle: "static", wallAngle: "overhang" };
 const contains = text => expect.stringContaining(text);
@@ -43,11 +43,4 @@ describe("performance injury page", () => {
       ["Painful Route 3", "Painful Route 2", "Painful Route 1"],
     );
   });
-
-  it("shows the offline message instead of the log when the device keeps no data and the server fails", async () => {
-    const owner = await consentingAthlete();
-    await expectOfflineMessage(owner, "/performance/injury", "**/-/api/performance/injury", "#injury-log-root");
-  });
-
-  it("redirects to /log when Athlete Mode is off", () => expectRedirectToLog("/performance/injury"));
 });

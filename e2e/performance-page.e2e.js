@@ -1,6 +1,16 @@
 import { $, browser, expect } from "@wdio/globals";
 import { waitForPath } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
+import { athlete, expectOfflineMessage } from "./wdio-performance.js";
+
+const REPORTS = [
+  { path: "/performance/pyramid", api: "**/-/api/performance/pyramid**", root: "climbing-grade-pyramid" },
+  { path: "/performance/gap", api: "**/-/api/performance/gap**", root: "#gap-root" },
+  { path: "/performance/rpe", api: "**/-/api/performance/rpe**", root: "#rpe-root" },
+  { path: "/performance/trends", api: "**/-/api/performance/volume**", root: "#trends-root" },
+  { path: "/performance/strengths", api: "**/-/api/performance/strengths", root: "#strengths-root" },
+  { path: "/performance/injury", api: "**/-/api/performance/injury", root: "#injury-log-root" },
+];
 
 describe("performance page", () => {
   it("renders the shared chrome and one tile per insight, linking to its own sub-page", async () => {
@@ -30,10 +40,17 @@ describe("performance page", () => {
     await expect(title).toHaveTextContent("Redpoint / Onsight Gap");
   });
 
-  it("redirects to /log when Athlete Mode is off", async () => {
+  it("every Performance page redirects to /log when Athlete Mode is off", async () => {
     const owner = await claimOwner();
-    await browser.url(owner.url("/performance"));
+    for (const path of ["/performance", ...REPORTS.map(report => report.path)]) {
+      await browser.url(owner.url(path));
+      await waitForPath(`/${owner.username}/log`);
+    }
+  });
 
-    await waitForPath(`/${owner.username}/log`);
+  it("every report shows the offline message instead of its view when the device keeps no data and the server fails", async () => {
+    const owner = await athlete();
+    await owner.grantPainInjuryConsent();
+    for (const { path, api, root } of REPORTS) await expectOfflineMessage(owner, path, api, root);
   });
 });

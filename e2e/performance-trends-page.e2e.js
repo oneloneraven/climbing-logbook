@@ -4,8 +4,6 @@ import {
   athlete,
   blockIndexedDb,
   chooseReportScale,
-  expectOfflineMessage,
-  expectRedirectToLog,
   expectSharedChrome,
   expectWiderWindowRefetch,
 } from "./wdio-performance.js";
@@ -84,13 +82,6 @@ describe("performance trends page", () => {
     const [, y, mo, d] = /^(\d{4})-(\d{2})-(\d{2})$/.exec(pickedDate);
     await expect($("#time-window-root")).toHaveTextContent(contains(`${MONTHS_SHORT[+mo - 1]} ${+d}, ${y}`));
   });
-
-  it("shows the offline message instead of the chart when the device keeps no data and the server fails", async () => {
-    const owner = await athlete();
-    await expectOfflineMessage(owner, "/performance/trends", "**/-/api/performance/volume**", "#trends-root");
-  });
-
-  it("redirects to /log when Athlete Mode is off", () => expectRedirectToLog("/performance/trends"));
 
   it("judges the window: more sends and a higher top grade stack a positive card above the summary (#1380)", async () => {
     const owner = await athlete();

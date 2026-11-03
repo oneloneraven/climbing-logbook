@@ -1,5 +1,5 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { browserFetch, expectEventually, waitForOpenedTab, waitForPath } from "./wdio-browser.js";
+import { expectEventually, waitForOpenedTab, waitForPath } from "./wdio-browser.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 const SEED = {
@@ -131,12 +131,6 @@ describe("view page", () => {
     await expect($("#map-svg")).toBeDisplayed();
     await expect($("#panel-logbook")).not.toBeDisplayed();
     await expect($("#discipline-btn-label")).toHaveTextContent("Combined");
-  });
-
-  it("the old per-discipline /map page is gone", async () => {
-    const owner = await claimOwner();
-    const res = await browserFetch(owner.url("/map"));
-    expect(res.status).toBe(404);
   });
 
   it("the menu's View public logbook opens the public profile in a new tab, and only while it's public", async () => {

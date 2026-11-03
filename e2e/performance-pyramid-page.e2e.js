@@ -1,5 +1,5 @@
 import { $, browser, expect } from "@wdio/globals";
-import { athlete, expectOfflineMessage, expectRedirectToLog, expectSharedChrome } from "./wdio-performance.js";
+import { athlete, expectSharedChrome } from "./wdio-performance.js";
 
 const contains = text => expect.stringContaining(text);
 
@@ -25,16 +25,4 @@ describe("performance pyramid page", () => {
     await $('.discipline-option[data-discipline="boulder"]').click();
     await expect($("#discipline-btn-label")).toHaveTextContent("Boulder");
   });
-
-  it("shows the offline message instead of a pyramid when the device keeps no data and the server fails", async () => {
-    const owner = await athlete();
-    await expectOfflineMessage(
-      owner,
-      "/performance/pyramid",
-      "**/-/api/performance/pyramid**",
-      "climbing-grade-pyramid",
-    );
-  });
-
-  it("redirects to /log when Athlete Mode is off", () => expectRedirectToLog("/performance/pyramid"));
 });

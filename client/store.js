@@ -7,19 +7,9 @@ import { isQuotaError } from "./storage-quota.js";
 import { resetCursor } from "./sync-cursors.js";
 import { ENTRIES_DB_BASE, openEntriesDb } from "./entries-db.js";
 
-const ENTRIES_CACHE_KEY = userKey("logbook_entries_cache");
 const PLACES_CACHE_KEY = userKey("logbook_places_cache");
 const LOCATIONS_CACHE_KEY = userKey("logbook_locations_cache");
 const ENTRIES_DB_NAME = userKey(ENTRIES_DB_BASE);
-
-function parseRows(json) {
-  try {
-    const rows = JSON.parse(json);
-    return Array.isArray(rows) ? rows : null;
-  } catch {
-    return null;
-  }
-}
 
 // Injectable: the Workers test pool has no localStorage or IndexedDB. A null openEntries caches no entries.
 export function createStore({
@@ -67,20 +57,9 @@ export function createStore({
         .catch(() => {});
   }
 
-  // The localStorage copy moves over only into an empty database, so it never overwrites newer rows.
   let entriesDb = null;
   function openEntriesCache() {
-    entriesDb ??= openEntries().then(async db => {
-      const legacy = storage.getItem(ENTRIES_CACHE_KEY);
-      if (legacy === null) return db;
-      if (!(await db.isCached())) {
-        const rows = parseRows(legacy);
-        if (rows) await db.replace(rows);
-        else resetCursor("entries", storage);
-      }
-      storage.removeItem(ENTRIES_CACHE_KEY);
-      return db;
-    });
+    entriesDb ??= openEntries();
     return entriesDb;
   }
 

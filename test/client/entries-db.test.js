@@ -17,10 +17,8 @@ beforeEach(async () => {
 
 describe("entries database (#1164)", () => {
   it("tells a never-written cache from an empty one", async () => {
-    expect(await db.isCached()).toBe(false);
     expect(await db.load()).toBeNull();
     await db.replace([]);
-    expect(await db.isCached()).toBe(true);
     expect(await db.load()).toEqual([]);
   });
 

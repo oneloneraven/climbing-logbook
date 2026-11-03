@@ -29,36 +29,6 @@ describe("per-user data", () => {
     expect(databases).not.toContain("logbook_entries");
   });
 
-  it("pre-#960 data is adopted by the user the server authorised, not left global", async () => {
-    await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
-    // Wait out the first visit's cold sync: rewriting mid-boot lets it record the user and skip adoption.
-    await waitForPath(`/${DEV_USER.username}/log`);
-    await expect($("climbing-entries-table")).toBeDisplayed();
-    await browser.waitUntil(async () => {
-      const keys = await storageSnapshot().catch(() => ({}));
-      return keys.logbook_signed_in_user === OWNER && !!keys[`logbook_sync_status:${OWNER}`];
-    });
-    await settle();
-    await browser.execute(owner => {
-      for (const k of Object.keys(localStorage)) {
-        if (k.endsWith(`:${owner}`)) {
-          localStorage.setItem(k.slice(0, -(owner.length + 1)), localStorage.getItem(k));
-          localStorage.removeItem(k);
-        }
-      }
-      localStorage.removeItem("logbook_signed_in_user");
-    }, OWNER);
-
-    await browser.refresh();
-    await expect($("climbing-entries-table")).toBeDisplayed();
-    // The table is in the static shell, so it shows before the ownership check has adopted the data.
-    await browser.waitUntil(async () => (await storageSnapshot()).logbook_signed_in_user === OWNER);
-    const keys = await storageSnapshot();
-    expect(keys.logbook_sync_status).toBeUndefined();
-    expect(keys[`logbook_sync_status:${OWNER}`]).toBeTruthy();
-    expect(new URL(await browser.getUrl()).pathname).toBe(`/${DEV_USER.username}/log`);
-  });
-
   it("another user's cached data on the same device never shows on this user's pages", async () => {
     await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await expect($("climbing-entries-table")).toBeDisplayed();

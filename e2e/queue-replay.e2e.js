@@ -22,37 +22,6 @@ async function openLog() {
 describe("queue replay", () => {
   beforeEach(() => signInDevUser("my.localhost"));
 
-  it("a queued add and delete, in the pre-#992 shape, replay to /-/api/entries", async () => {
-    const fetches = await recordFetches();
-    const placeId = await openLog();
-    const record = {
-      id: `queued-before-992-${Date.now()}`,
-      name: "Queued before #992",
-      grade: "6B",
-      placeId,
-      type: "boulder",
-      status: "send",
-    };
-    await setQueue([
-      { kind: "entry", op: "add", record },
-      { kind: "entry", op: "delete", record: { id: record.id } },
-    ]);
-    await browser.refresh();
-    await expect($("#sync-line-text")).toHaveTextContent("2 changes waiting to sync");
-
-    const since = fetches.all().length;
-    await $("#sync-now").click();
-    await expect($("#sync-line")).not.toBeDisplayed();
-
-    const writes = fetches
-      .all()
-      .slice(since)
-      .filter(f => f.method !== "GET" && f.url.includes("/-/api/"))
-      .map(f => `${f.method} ${new URL(f.url).pathname} ${f.status}`);
-    expect(writes).toEqual(["POST /-/api/entries 201", "DELETE /-/api/entries 204"]);
-    expect(await readQueue()).toEqual([]);
-  });
-
   it("a write queued while a sync is in flight is still queued afterwards", async () => {
     const placeId = await openLog();
     const record = {
