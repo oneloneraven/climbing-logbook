@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (#1262 spike, #1265, 2026-10-07).
+Accepted (#1262 spike, #1265, 2026-10-07). Its projects run on WebdriverIO since [ADR-0038](0038-webdriverio-for-end-to-end-tests.md), which adds a third.
 
 ## Context
 

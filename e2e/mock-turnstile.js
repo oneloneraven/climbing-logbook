@@ -8,10 +8,3 @@ export const TURNSTILE_STUB = `
   };
   if (typeof window.onTurnstileLoad === "function") window.onTurnstileLoad();
 `;
-
-// Cloudflare's real widget script sometimes hangs here and blocks page load, so stub the three methods pages call.
-export async function mockTurnstile(page) {
-  await page.route(TURNSTILE_SCRIPT, route =>
-    route.fulfill({ contentType: "application/javascript", body: TURNSTILE_STUB }),
-  );
-}

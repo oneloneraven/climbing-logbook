@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { AREAS } from "../../e2e/areas.js";
 
-const SPEC_FILE = /\.(spec|e2e)\.js$/;
+const SPEC_FILE = /\.e2e\.js$/;
 const specs = [
   ...new Set(
     readdirSync(join(process.cwd(), "e2e"))

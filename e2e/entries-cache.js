@@ -20,17 +20,9 @@ export function readCachedEntries(name) {
 
 export const entriesDatabase = username => `logbook_entries:${username.toLowerCase()}`;
 
-export function cachedEntries(page, username) {
-  return page.evaluate(readCachedEntries, entriesDatabase(username));
-}
-
 // A browser that won't keep site data in IndexedDB, as some privacy settings do.
 export function refuseIndexedDb() {
   IDBFactory.prototype.open = () => {
     throw new DOMException("IndexedDB is blocked", "SecurityError");
   };
-}
-
-export async function blockIndexedDb(page) {
-  await page.addInitScript(refuseIndexedDb);
 }

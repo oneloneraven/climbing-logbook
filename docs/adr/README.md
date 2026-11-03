@@ -70,8 +70,9 @@ GitHub, the same treatment every other doc in this repo already gets.
 | [0030](0030-test-against-the-real-worker-mock-only-what-it-cant-produce.md) | Test against the real Worker, mock only what it can't produce, measure coverage | Accepted |
 | [0031](0031-owner-reports-from-the-synced-store.md) | Owner reports and map counts are computed on the device, from the synced store | Accepted, supersedes 0018 |
 | [0032](0032-combined-view-on-the-owner-pages.md) | The combined view lives on the owner pages, not the public profile | Accepted |
-| [0033](0033-parallel-e2e-with-seeded-users.md) | Run the e2e suite in parallel, with users seeded straight into D1 | Accepted |
+| [0033](0033-parallel-e2e-with-seeded-users.md) | Run the e2e suite in parallel, with users seeded straight into D1 | Accepted, amended by 0038 |
 | [0034](0034-admin-host-behind-cloudflare-access.md) | Admin pages live on their own host, behind Cloudflare Access | Accepted |
 | [0035](0035-capacity-and-operational-targets.md) | Capacity and operational targets: design for 50,000 users | Accepted |
 | [0036](0036-pr-previews-via-cloudflare-previews.md) | PR previews via Cloudflare Previews | Accepted |
 | [0037](0037-rate-limiting-through-the-workers-binding.md) | Rate limiting through the Workers Rate Limiting binding | Accepted |
+| [0038](0038-webdriverio-for-end-to-end-tests.md) | WebdriverIO for end-to-end tests, in Chrome and Firefox | Accepted, amends 0033 |

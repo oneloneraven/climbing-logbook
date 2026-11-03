@@ -39,16 +39,13 @@ public-dev/
 # instead of bundling anything themselves.
 dist/
 
-# Playwright E2E (#218): local report/trace/result output, not source
+# E2E failure screenshots, not source
 test-results/
-playwright-report/
-blob-report/
 
 # Bootstrapped dev-session cookie (#297) -- generated fresh by
 # e2e/global-setup.js each run, not a real credential (local-only dev
 # user, never a real account), but still runtime state, not source.
 e2e/.auth/
-playwright/.cache/
 
 # OpenTofu
 infra/.terraform/

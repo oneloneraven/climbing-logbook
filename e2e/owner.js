@@ -1,5 +1,4 @@
 import { mkdirSync, readFileSync, rmdirSync, rmSync, writeFileSync } from "node:fs";
-import { expect, test as base } from "@playwright/test";
 import { OWNED_ORIGIN, ownedRouteUrl } from "./owned-route-url.js";
 import { PAIN_INJURY } from "../shared/health-consent.js";
 
@@ -112,27 +111,3 @@ export function createOwner(username, sessionCookie) {
     },
   };
 }
-
-export async function gotoSyncedLog(page, owner) {
-  await page.goto(owner.url(`/sync?returnTo=${encodeURIComponent(`/${owner.username}/log`)}`));
-  await page.waitForURL(`**/${owner.username}/log`);
-  await expect(page.locator("climbing-entries-table")).toBeVisible();
-  const settingsKey = `logbook_settings_cache:${owner.username}`;
-  await expect.poll(() => page.evaluate(key => localStorage.getItem(key) !== null, settingsKey)).toBe(true);
-  await page.waitForLoadState("networkidle");
-}
-
-export const test = base.extend({
-  owner: async ({ context }, use) => {
-    const { username, cookie } = claimFrom(OWNER_POOL_PATH, OWNER_NEXT_PATH);
-    await context.addCookies([{ ...cookie, domain: "my.localhost" }]);
-    await use(createOwner(username, cookie));
-  },
-  newOwner: async ({ context }, use) => {
-    const { username, cookie } = claimFrom(NEW_OWNER_POOL_PATH, NEW_OWNER_NEXT_PATH);
-    await context.addCookies([{ ...cookie, domain: "my.localhost" }]);
-    await use(createOwner(username, cookie));
-  },
-});
-
-export { expect };

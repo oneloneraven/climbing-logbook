@@ -265,7 +265,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
   `/` by owner pages only. At install it pre-caches every owner page's
   shell and assets for the build (resumable, reusing unchanged files), so
   any owner page opens offline from a cold launch, visited or not
-  (`e2e/offline-launch.spec.js`). Shells are cache-first per build; a new
+  (`e2e/offline-launch.e2e.js`). Shells are cache-first per build; a new
   build applies silently on the next launch. The public profile, help,
   apex and auth pages are never intercepted, and logging out clears the
   worker's caches. The worker serves page shells and static assets only.
@@ -302,7 +302,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
 - **Links in running text are underlined**, not told apart by colour alone
   (WCAG 1.4.1).
 - **Every page passes axe's WCAG 2.2 AA rules** at phone width in both
-  themes (`e2e/accessibility.spec.js`); a new page joins its list.
+  themes (`e2e/accessibility.e2e.js`); a new page joins its list.
 - **A button that opens or closes something uses `aria-expanded`; a
   button that switches a setting on or off uses `aria-pressed`.** Never
   both on the same button.
@@ -332,7 +332,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
 ### Verification
 
 See [ADR-0030](adr/0030-test-against-the-real-worker-mock-only-what-it-cant-produce.md)
-for the test layers: real-runtime Vitest, client unit tests, and Playwright
+for the test layers: real-runtime Vitest, client unit tests, and WebdriverIO
 against the real Worker, with mocks only for states the backend can't
 produce.
 

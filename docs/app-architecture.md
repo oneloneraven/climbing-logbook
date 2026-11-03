@@ -99,7 +99,7 @@ lists can't be probed rule by rule.
 | `infra/` | OpenTofu for every Cloudflare resource ([infra/README.md](../infra/README.md), [infra-architecture.md](infra-architecture.md)) |
 | `scripts/` | Build steps, seeding and one-off tools |
 | `test/` | Vitest: `workers` project (real Workers runtime, real D1), `client-dom` project (DOM tests) and `node` project (pure logic and repo checks) |
-| `e2e/` | Playwright, run against the production build |
+| `e2e/` | WebdriverIO, in Chrome and Firefox, run against the production build |
 
 `public/` and `dist/` are build output and gitignored.
 
@@ -647,10 +647,12 @@ Access.
 - `pnpm test:coverage` runs the same with a V8 coverage report in
   `coverage/`. CI runs it, publishes the report and enforces a floor on
   `server/` and `shared/` (`vitest.config.js`).
-- `pnpm run test:e2e` runs Playwright against the production build served
-  by `vite preview`, against the real Worker and D1. Only states the backend
+- `pnpm run test:e2e` runs WebdriverIO, in Chrome and Firefox
+  (`E2E_BROWSERS` picks them), against the production build served by
+  `vite preview`, against the real Worker and D1. Only states the backend
   can't produce on demand (a 5xx, a hung request, a full device) are
-  intercepted, one request at a time with `page.route()`.
+  intercepted, one request at a time with `browser.mock()` or
+  `holdRequests()` (`e2e/wdio-hold.js`).
 - `pnpm e2e:area <area...>` runs only the specs `e2e/areas.js` lists for
   those areas; a unit test fails if a spec isn't in an area.
 - [ADR-0030](adr/0030-test-against-the-real-worker-mock-only-what-it-cant-produce.md)
@@ -669,49 +671,56 @@ Two kinds of test:
 | Kind | How | Used for |
 |---|---|---|
 | Component harness | `e2e/fixtures/*-entry.js`, built by `pnpm run e2e:build-fixtures` into `/e2e-fixtures/`, mount a real component against made-up data | Component behaviour: map zoom, the pyramid |
-| Real route | `my.localhost` against the real Worker and D1: the `owner` fixture (`e2e/owner.js`) for a test that needs a user of its own, or `ownedRouteUrl()` and `addOwnedRouteSessionCookie()` (`e2e/owned-route-url.js`) for the seeded dev user | Page tests, routing, sessions, the service worker, per-user storage |
+| Real route | `my.localhost` against the real Worker and D1: `claimOwner()` (`e2e/wdio-owner.js`) for a test that needs a user of its own, or `ownedRouteUrl()` (`e2e/owned-route-url.js`) with `signInDevUser()` for the seeded dev user | Page tests, routing, sessions, the service worker, per-user storage |
 
 `e2e/global-setup.js` also seeds a pool of users ([ADR-0033](adr/0033-parallel-e2e-with-seeded-users.md)) (`OWNER_POOL_SIZE` in
 `e2e/owner.js`) straight into D1, with a session each whose cookie it signs
 with `BETTER_AUTH_SECRET` from `.dev.vars` (CI writes a test-only one). The
-`owner` fixture hands each test the next one, so a test can change settings
-and data without affecting any other. A second pool, through the `newOwner`
-fixture, hasn't been through the first-login setup. Its
-`seed()` and `settings()` go through the real API; record ids are prefixed
-with the username because ids are unique across users. A run with more
-`owner` tests than the pool holds fails with a message saying to raise it.
+pools are per browser. `claimOwner()` hands each test the next user, so a
+test can change settings and data without affecting any other. A second
+pool, through `claimNewOwner()`, hasn't been through the first-login setup.
+An owner's `seed()` and `settings()` go through the real API; record ids are
+prefixed with the username because ids are unique across users. A run that
+claims more owners than the pool holds fails with a message saying to raise
+it.
 
-The suite runs as two Playwright projects (`playwright.config.js`):
+The suite runs as three projects (`wdio.conf.js`, `e2e/shared-specs.js`,
+[ADR-0038](adr/0038-webdriverio-for-end-to-end-tests.md)), one after another
+(`scripts/run-e2e-wdio.mjs`):
 
-- **isolated** runs in parallel (`E2E_WORKERS`, default 4) with no session
-  by default, so each test signs in only as its own pool user.
-- **shared** runs one test at a time, after the isolated project:
-  `scripts/run-e2e.mjs` runs the two as separate Playwright runs, each with
-  its own `test-results/<project>` and `playwright-report/<project>`. It holds
-  the specs in `SHARED_SPECS`: those using the seeded dev user (its settings
-  are visible to every test that uses it), those writing D1 through
-  `wrangler` (the CLI fails on a database the Worker is writing to), and the
-  timing check, which fails under load.
+- **isolated** runs in parallel (`E2E_WORKERS`, default 4), each test in its
+  own browser user context with no session, so it signs in only as its own
+  pool user.
+- **shared** runs one test at a time, as the seeded dev user. It holds the
+  specs in `SHARED_SPEC_NAMES`: those using the seeded dev user (its
+  settings are visible to every test that uses it), those writing D1
+  through `wrangler` (the CLI fails on a database the Worker is writing
+  to), and the timing check, which fails under load.
+- **classic** holds the specs in `CLASSIC_SPEC_NAMES`, which need WebDriver
+  Classic commands such as the virtual authenticator. Parallel mode refuses
+  those, so each test gets a fresh session instead.
 
-A new spec belongs in isolated unless it does one of those things.
+A new spec belongs in isolated unless it does one of those things. A failed
+test saves a screenshot to `test-results/wdio/` and prints its last
+WebdriverIO commands.
 
 `gotoSyncedLog()` goes through a real `/sync` first, so a page starts from a
 synced device, as a returning owner's does. `owner.api()` writes as
-another device would: it bypasses `page.route()`.
+another device would: it bypasses `browser.mock()`.
 
 Things that have caught this suite out:
 
-- A route glob without a trailing `*` doesn't match a URL with a query
-  string, so `DELETE …/entries?id=` falls through to the real network.
-- `context.setOffline()` doesn't affect `route.fulfill()`. Fail a write with
-  `route.abort("failed")` instead.
-- `page.unroute(pattern)` removes every handler for that pattern. Toggle a
-  flag inside one handler, and pass everything else on with
-  `route.fallback()`.
-- `toBeVisible()` can't see clipping by a transformed ancestor; assert
-  `inert` for the entry form's off-screen page.
-- `force: true` skips the actionability checks, so it can click mid-animation.
-  Click the visible label instead.
+- Offline emulation (`goOffline()`) doesn't reach the service worker's own
+  fetches, in either browser. Check the worker's cache directly instead.
+- An element, once found, keeps pointing at its node. After a re-render it
+  reads as empty rather than failing, so look it up again or poll with
+  `expectEventually()`.
+- `browser.waitUntil()` only times out once its condition has returned at
+  least once, so a page-side wait that never settles hangs until Mocha's
+  timeout. Cap waits inside the page.
+- Firefox reports neither the worker's requests nor what it served, and
+  can't override reduced motion per test; those checks run in Chrome only,
+  or rely on the Firefox profile (`wdio.conf.js`).
 - Hold a response open with a promise the test resolves, never a timer.
 - A real sign-out ends that user's session: sign out as an `owner`, never
   as the shared dev user.

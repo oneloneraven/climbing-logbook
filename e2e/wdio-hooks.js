@@ -74,7 +74,7 @@ export async function screenshotFailure(test) {
   }
 }
 
-// Playwright's Desktop Chrome viewport, and the shared specs run as the seeded dev user, as its shared project does.
+// A desktop viewport, and the shared specs run as the seeded dev user.
 export const mochaHooks = {
   async beforeEach() {
     recentCommands.length = 0;

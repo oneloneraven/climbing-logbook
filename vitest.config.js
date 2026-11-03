@@ -89,7 +89,6 @@ export default defineConfig({
       {
         test: {
           name: "workers",
-          // Otherwise Playwright specs would load in the Workers pool.
           include: ["test/**/*.test.js"],
           exclude: [...DOM_TESTS, ...NODE_TESTS],
           setupFiles: ["./test/apply-migrations.js"],

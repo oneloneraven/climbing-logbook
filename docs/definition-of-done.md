@@ -24,7 +24,7 @@ PR ready. Each item points at the rule it comes from rather than restating it.
    ([coding-standards.md](coding-standards.md#verification)).
 5. **Screened.** Any new dependency or vendor has been checked and recorded
    ([ADR-0005](adr/0005-screen-dependencies-against-bds-boycott-lists.md)).
-6. **No slower.** `e2e/log-page-boot-perf.spec.js` still passes, and a change
+6. **No slower.** `e2e/log-page-boot-perf.e2e.js` still passes, and a change
    to the boot path has its local render time compared before and after. No
    throttled-network timings ([ADR-0026](adr/0026-local-preview-cant-validate-network-performance.md)).
 7. **Documented.** Docs and ADRs are updated where behaviour or a decision

@@ -12,8 +12,8 @@
     ".gitignore",
     ".git-blame-ignore-revs",
     "biome.json",
-    "playwright.config.js",
     "vitest.config.js",
+    "wdio.conf.js",
     "*.md"
   ],
   "noneForbidden": ["infra/", "migrations/"]

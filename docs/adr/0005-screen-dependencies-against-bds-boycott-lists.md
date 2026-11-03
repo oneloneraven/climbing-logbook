@@ -74,3 +74,9 @@ costs, same as any other tradeoff — but it must be surfaced, not skipped.
     backups to Hetzner (private, German, own EU data centres).
   - **OpenTofu** (Linux Foundation): replaces Terraform, whose owner IBM is a
     No Tech for Apartheid target.
+- **Checked 2026-11-03 for the e2e tooling (#1556, ADR-0038):**
+  - **WebdriverIO** (OpenJS Foundation): not listed. Replaces Playwright,
+    whose owner Microsoft is on both lists.
+  - **Chrome** (Google, a No Tech for Apartheid target) stays one of the
+    two browsers the suite runs in, under the free-tool exception: the app
+    has to work in the browser most people use.
