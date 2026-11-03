@@ -4,7 +4,6 @@ import { SHELL_PATHS } from "../shared/owner-routes.js";
 import { ownedRouteUrl } from "./owned-route-url.js";
 import {
   afterThisTest,
-  browserFetch,
   clearCookies,
   currentContext,
   goOffline,
@@ -13,7 +12,7 @@ import {
   waitForPath,
   waitForUrl,
 } from "./wdio-browser.js";
-import { signInDevUser } from "./wdio-owner.js";
+import { devUserAsAthlete, signInDevUser } from "./wdio-owner.js";
 
 const ORIGIN = "http://my.localhost:8787";
 const logPath = `/${DEV_USER.username}/log`;
@@ -71,15 +70,6 @@ async function recordWorkerRequests() {
 const BROWSER_ICONS = ["/-/favicon-", "/-/apple-touch-icon"];
 const isBrowserIcon = path => BROWSER_ICONS.some(icon => path.startsWith(icon));
 
-async function setAthleteMode(athleteMode) {
-  const res = await browserFetch(`${ORIGIN}/-/api/settings`, {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ athleteMode }),
-  });
-  if (!res.ok) throw new Error(`setting Athlete Mode: ${res.status}`);
-}
-
 // The scripts and stylesheets a cached shell names, for pages a test can't stay on long enough to watch load.
 const cachedShellAssets = shell =>
   browser.execute(async shell => {
@@ -115,8 +105,7 @@ describe("offline launch", () => {
 
   // Offline emulation misses the worker's own fetches, so check its cache as installed, before other pages add to it.
   it("after visiting only /log, everything every owner page loads is already in the worker's cache", async () => {
-    await setAthleteMode(true);
-    afterThisTest(() => setAthleteMode(false));
+    await devUserAsAthlete();
     await browser.addInitScript(() => performance.setResourceTimingBufferSize(10000));
     await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await waitForPath(logPath);
