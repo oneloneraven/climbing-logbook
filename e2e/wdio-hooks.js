@@ -16,8 +16,9 @@ function remember(line) {
 }
 
 export function actLikePlaywright() {
-  // Storage commands carry session cookies, which shouldn't reach CI logs.
-  const shown = (command, value) => (command.startsWith("storage") ? "" : JSON.stringify(value ?? "").slice(0, 300));
+  // Cookies and mocked session responses carry session tokens, which shouldn't reach CI logs.
+  const secret = command => command.startsWith("storage") || command === "networkProvideResponse";
+  const shown = (command, value) => (secret(command) ? "" : JSON.stringify(value ?? "").slice(0, 300));
   browser.on("command", ({ command, body }) => remember(`> ${command} ${shown(command, body)}`));
   browser.on("result", ({ command, result }) => remember(`< ${command} ${shown(command, result)}`));
   browser.overwriteCommand(
