@@ -9,7 +9,7 @@ const AXE_SOURCE = readFileSync(createRequire(import.meta.url).resolve("axe-core
 // @axe-core/webdriverio stops at WebdriverIO 9, so axe-core is injected directly, as that package does.
 export async function axeViolations(include = undefined) {
   await browser.execute(`if (!window.axe) { ${AXE_SOURCE} }`);
-  const violations = await browser.execute(
+  return browser.execute(
     (include, tags) =>
       window.axe
         .run(include ? { include: [include] } : document, { runOnly: { type: "tag", values: tags } })
@@ -17,5 +17,4 @@ export async function axeViolations(include = undefined) {
     include,
     WCAG_22_AA,
   );
-  return violations;
 }
