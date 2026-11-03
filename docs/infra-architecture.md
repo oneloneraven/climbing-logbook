@@ -82,8 +82,7 @@ creates the bucket, and is safe to re-run.
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `test.yml` | PR, unless it only touches `docs/`, `infra/` or root-level Markdown | `pnpm test`, then a `CLOUDFLARE_ENV=preview` build, so every PR proves it builds |
-| `e2e.yml` | PR, with the same exceptions as `test.yml`, plus Markdown help pages | WebdriverIO, in Chrome and Firefox, against the production-style build |
+| `test.yml` | PR, unless it only touches `docs/`, `infra/` or root-level Markdown | Lint, typecheck and `pnpm test`, then a `CLOUDFLARE_ENV=preview` build, so every PR proves it builds. Once lint and typecheck pass, WebdriverIO in Chrome and Firefox against the production-style build, skipped when only Markdown help pages change too. A new push to the PR cancels the run in progress |
 | `preview.yml` | PR, unless it only touches `docs/`, `infra/`, `test/`, `e2e/` or root-level Markdown | Builds with `CLOUDFLARE_ENV=preview`, runs `wrangler preview --name pr-<n>` ([ADR-0036](adr/0036-pr-previews-via-cloudflare-previews.md)), and comments the URL. Closing the PR deletes its Preview. A second job, one run at a time across all PRs, applies migrations to the shared preview database and reseeds it only when the seed scripts, their data or `migrations/` have changed since the last seed |
 | `require-release-label.yml` | PR | Requires one `release:` label, and rejects `release: none` outside the never-reaches-users paths (`docs/versioning.md`) |
 | `release.yml` | PR merged | Cuts the next `vX.Y.Z` tag from the label |
