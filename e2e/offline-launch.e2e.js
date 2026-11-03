@@ -186,6 +186,8 @@ describe("offline launch", () => {
 
   chromeOnly("pages that aren't owner pages are never served by the worker", async () => {
     await warm("/log");
+    // Signed in, /login/ would redirect to the log mid-check.
+    await clearCookies();
     const workerFetches = await recordWorkerRequests();
     for (const path of [`/${DEV_USER.username}`, "/help/", "/login/"]) {
       await browser.url(`${ORIGIN}${path}`);

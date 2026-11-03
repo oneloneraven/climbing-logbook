@@ -1,5 +1,5 @@
 import { $, browser, expect } from "@wdio/globals";
-import { afterThisTest, boundingBox, expectEventually } from "./wdio-browser.js";
+import { afterThisTest, boundingBox, expectEventually, waitUntilActionable } from "./wdio-browser.js";
 import { axeViolations } from "./wdio-axe.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
@@ -57,7 +57,8 @@ describe("status carousel (#1200)", () => {
     await owner.seed(SEED);
     await gotoSyncedLog(owner);
     await $("#add-btn").click();
-    await expect($(".status-picker")).toBeDisplayed();
+    // The taps and drags below are raw pointer actions, which don't wait for the form to finish opening.
+    await waitUntilActionable(arrow(1));
   });
 
   it("starts on Send, and tapping a neighbour or an arrow selects and centres it, wrapping round", async () => {
