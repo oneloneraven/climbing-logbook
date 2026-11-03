@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { browser, expect } from "@wdio/globals";
-import { settle, userContextPartition, waitForPath } from "./wdio-browser.js";
+import { OWNED_ORIGIN } from "./owned-route-url.js";
+import { afterThisTest, browserFetch, settle, userContextPartition, waitForPath } from "./wdio-browser.js";
 import { STORAGE_STATE_PATH } from "./global-setup.js";
 import {
   claimFrom,
@@ -36,6 +37,20 @@ async function signIn(poolPath, nextPath) {
 export async function signInDevUser(domain = "localhost") {
   const [cookie] = JSON.parse(readFileSync(STORAGE_STATE_PATH, "utf8")).cookies;
   await setSessionCookie(cookie, domain);
+}
+
+export async function updateDevUserSettings(fields) {
+  const res = await browserFetch(`${OWNED_ORIGIN}/-/api/settings`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(fields),
+  });
+  if (!res.ok) throw new Error(`updating the dev user's settings: ${res.status}`);
+}
+
+export async function devUserAsAthlete() {
+  await updateDevUserSettings({ athleteMode: true });
+  afterThisTest(() => updateDevUserSettings({ athleteMode: false }));
 }
 
 export const claimOwner = () => signIn(OWNER_POOL_PATH, OWNER_NEXT_PATH);
