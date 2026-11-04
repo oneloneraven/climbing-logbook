@@ -9,10 +9,8 @@ const respond = (request, statusCode, body) =>
     body: { type: "string", value: body },
   });
 
-// browser.mock can't delay an answer, so pause requests to this path (any query) over WebDriver BiDi until the test
-// releases them (only the first, with once): to the server, with the given JSON and status, or with what the server said when sent
-// (answerFromWhenSent, Playwright's route.fetch then a delayed fulfill). Don't mix it with browser.mock in a test:
-// a mock lets every other paused request go.
+// browser.mock can't delay an answer. answerFromWhenSent replies with what the server said when the request was made.
+// Don't mix this with browser.mock in a test: a mock lets every other paused request go.
 export async function holdRequests(pathname, { method, once = false, answerFromWhenSent = false } = {}) {
   const context = currentContext();
   const partition = answerFromWhenSent ? await userContextPartition() : undefined;

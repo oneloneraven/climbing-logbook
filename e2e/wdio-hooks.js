@@ -6,8 +6,6 @@ import { signInDevUser } from "./wdio-owner.js";
 const PAGE_REPLACED =
   /navigation canceled by concurrent navigation|Cannot find context with specified id|does not belong to the document|belongs to different document/;
 
-// Playwright rides out the page's own redirects and reloads, which WebDriver BiDi reports as errors,
-// and waits for an element to be actionable before clicking it.
 // A mocha timeout doesn't say where a test stuck, so a failed test prints the last commands it sent.
 const recentCommands = [];
 function remember(line) {
@@ -15,7 +13,9 @@ function remember(line) {
   if (recentCommands.length > 30) recentCommands.shift();
 }
 
-export function actLikePlaywright() {
+// Clicks wait until the element is actionable, and commands ride out the page's own redirects and reloads, which
+// WebDriver BiDi reports as errors.
+export function steadyCommands() {
   // Cookies and mocked session responses carry session tokens, which shouldn't reach CI logs.
   const secret = command => command.startsWith("storage") || command === "networkProvideResponse";
   const shown = (command, value) => (secret(command) ? "" : JSON.stringify(value ?? "").slice(0, 300));
