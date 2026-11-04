@@ -21,7 +21,7 @@ const BROWSERS = {
       },
     },
   },
-  safari: { browserName: "safari", webSocketUrl: true },
+  safari: { browserName: "safari", webSocketUrl: true, "wdio:experimentalBiDiCommands": true },
 };
 
 // Each worker would otherwise look "stable" up online again for every spec file, and a failed lookup loses the file.

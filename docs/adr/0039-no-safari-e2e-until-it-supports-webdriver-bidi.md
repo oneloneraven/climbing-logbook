@@ -19,5 +19,5 @@ A Safari-only harness over WebDriver Classic would be a second harness to mainta
 
 ## Consequences
 
-- WebKit-specific behaviour isn't covered automatically; Safari on iPhone and Mac is checked by hand when a change is likely to differ there.
-- The `safari` entry in `e2e/wdio-browsers.js` stays, so the spike can be repeated with `E2E_BROWSERS=safari`.
+- WebKit-specific behaviour isn't covered by an automated check.
+- The `safari` entry in `e2e/wdio-browsers.js` stays, asking for a BiDi session as Chrome and Firefox do, so the spike can be repeated with `E2E_BROWSERS=safari`.
