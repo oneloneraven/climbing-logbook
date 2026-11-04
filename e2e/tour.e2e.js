@@ -58,6 +58,7 @@ describe("tour", () => {
     await tap(button("Back"));
     await expectStep(3, "Where you climbed");
     await tap(next());
+    await expectStep(4, "How did it go?");
 
     await tap(next());
     await expectStep(5, "Working offline");
@@ -127,6 +128,7 @@ describe("tour", () => {
   it("Skip tour leaves from any step without changing anything", async () => {
     const owner = await startFromMyAccount();
     await tap(next());
+    await expectStep(2, "Log a climb");
     await tap(button("Skip tour"));
     await waitForPath(`/${owner.username}/account`);
   });
