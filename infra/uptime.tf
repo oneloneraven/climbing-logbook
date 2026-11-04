@@ -1,4 +1,4 @@
-# External uptime checks and the public status page (#1048). Better Stack's probe is a Cloudflare verified bot.
+# External uptime checks and the public status page. Better Stack's probe is a Cloudflare verified bot.
 locals {
   uptime_check_seconds = 180
 }

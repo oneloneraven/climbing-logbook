@@ -18,7 +18,7 @@ concurrency:
 jobs:
   tofu:
     runs-on: ubuntu-latest
-    # A PR plans with a read-only token; only main, through the infra environment, holds the one that can apply (#1069).
+    # A PR plans with a read-only token; only main, through the infra environment, holds the one that can apply.
     environment: ${{ github.event_name != 'pull_request' && 'infra' || '' }}
     permissions:
       # Pushes the generated-config branch.
@@ -50,13 +50,7 @@ jobs:
 
       - run: tofu validate
 
-      # #1075 -- apply runs unattended on every push to main, so the plan is
-      # the only thing a human ever reads. Plan to a file on every event,
-      # refuse any delete (a replacement is delete+create, so this catches
-      # those too), then apply exactly the plan that was checked -- never a
-      # fresh one computed after the check. On a PR the same guard turns the
-      # check red before merge. A deliberate removal isn't done here: run it
-      # locally with the plan in front of you (infra/README.md).
+      # Apply runs unattended, so it applies exactly the plan that was checked, and refuses any delete: infra/README.md.
       - name: Plan
         run: tofu plan -no-color -input=false -out=tfplan
 
@@ -134,7 +128,7 @@ jobs:
             }
           "
 
-      # Actions may not open PRs here (repo setting kept off on purpose, #1272), so a person opens it.
+      # Actions may not open PRs here (a repository setting kept off on purpose), so a person opens it.
       - name: Push generated config for a PR
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         working-directory: .

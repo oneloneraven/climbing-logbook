@@ -1,15 +1,3 @@
-# #527 -- Cloudflare's own audit (#380) of climbinglogbook.com flagged
-# min TLS 1.0 still allowed, HSTS disabled, and no `www` record --
-# real gaps for an app that handles login credentials. Managed here
-# rather than by hand in the dashboard, matching dns.tf's existing
-# Terraform-first convention for this zone.
-#
-# Resource/attribute names verified against the installed provider
-# (`cloudflare/cloudflare ~> 5.0`) schema before writing this, not
-# assumed from the audit's own raw API/curl script -- `cloudflare_zone_
-# setting` (singular) is the real v5 resource name, one instance per
-# setting (`setting_id`/`value`), not a single `zone_settings_override`
-# block.
 
 resource "cloudflare_zone_setting" "app_min_tls_version" {
   zone_id    = data.cloudflare_zone.app.id
@@ -17,20 +5,9 @@ resource "cloudflare_zone_setting" "app_min_tls_version" {
   value      = "1.2"
 }
 
-# #537 -- `full_strict` deliberately NOT managed here. First apply
-# (2026-08-25) 400'd: `full_strict` requires a valid, unexpired TLS
-# certificate actually installed at the origin (public CA or Cloudflare
-# Origin CA) -- confirmed against Cloudflare's own docs. 192.0.2.1
-# (dns.tf) is a non-routable placeholder with no server, let alone a
-# cert, behind it -- every request is intercepted by the Worker Route
-# before Cloudflare would ever reach origin, so there's nothing to
-# validate against. Not just low-urgency, genuinely unsettable given
-# this app's architecture -- same "N/A, no real origin" treatment the
-# original audit already gave Authenticated Origin Pulls. Revisit only
-# if this app ever gets a real origin server with its own TLS cert.
+# Not full_strict: it needs a certificate at the origin, and the placeholder origin has none (dns.tf).
 
-# HSTS -- the app is already all-HTTPS with Always Use HTTPS on, so this
-# is low-risk to enable. include_subdomains covers `my.` too.
+# include_subdomains covers my. and beta. too.
 resource "cloudflare_zone_setting" "app_hsts" {
   zone_id    = data.cloudflare_zone.app.id
   setting_id = "security_header"
@@ -45,10 +22,7 @@ resource "cloudflare_zone_setting" "app_hsts" {
   }
 }
 
-# DNSSEC -- `ds` (below) is a computed output; the DS record itself has
-# to be added at the domain registrar by hand (Terraform/Cloudflare have
-# no API into a third-party registrar) -- see infra/README.md's one-time
-# manual steps.
+# The DS record is added at the registrar by hand: infra/README.md.
 resource "cloudflare_zone_dnssec" "app" {
   zone_id = data.cloudflare_zone.app.id
   status  = "active"
@@ -59,10 +33,6 @@ output "app_dnssec_ds_record" {
   value       = cloudflare_zone_dnssec.app.ds
 }
 
-# `www.climbinglogbook.com` currently NXDOMAINs -- add a proxied CNAME
-# to the apex plus a 301 redirect, same ruleset pattern already proven
-# live in redirects.tf's ravendarque.com/logbook redirect (phase =
-# "http_request_dynamic_redirect", function-call expression syntax).
 resource "cloudflare_dns_record" "app_www" {
   zone_id = data.cloudflare_zone.app.id
   name    = "www.${var.app_zone_name}"
@@ -72,35 +42,26 @@ resource "cloudflare_dns_record" "app_www" {
   proxied = true
   comment = "#527 -- www redirects to the apex, doesn't serve traffic itself."
 
-  # #1075 -- same reason as dns.tf's records.
+  # prevent_destroy: docs/infra-architecture.md.
   lifecycle {
     prevent_destroy = true
   }
 }
 
-# #985 -- the apex's own pages. The app hosts (my./beta.) serve only the
-# app: /-/*, /service-worker.js and /:username/* (#982). A request there
-# for one of these 301s to the same path on the apex instead of serving a
-# copy that looks like part of someone's profile. An allowlist, not
-# "everything else", so the Worker never has to run for apex pages
-# (static assets stay free and unlimited; see #985 for the trade-off).
-# test/scripts/apex-redirect-rule.test.js fails if a top-level apex page
-# is missing here. Their names are also reserved usernames (#997), so none
-# can be a profile.
+# An allowlist, so the Worker never runs for apex pages; test/scripts/apex-redirect-rule.test.js checks it's complete.
 locals {
   app_hosts               = ["my.${var.app_zone_name}", "beta.${var.app_zone_name}"]
   apex_only_exact_paths   = ["/", "/help", "/login", "/register", "/reset-password", "/demo-picker.js"]
   apex_only_path_prefixes = ["/help/", "/login/", "/register/", "/reset-password/"]
 }
 
-# The zone's one ruleset for this phase (Cloudflare allows one entrypoint
-# per phase), so every redirect rule lives here.
+# Cloudflare allows one entrypoint per phase, so every redirect rule lives here.
 resource "cloudflare_ruleset" "app_www_redirect" {
   zone_id     = data.cloudflare_zone.app.id
   kind        = "zone"
   phase       = "http_request_dynamic_redirect"
   name        = "www to apex redirect"
-  description = "www.climbinglogbook.com -> climbinglogbook.com (#527); apex pages off the app hosts (#985)"
+  description = "www.climbinglogbook.com -> climbinglogbook.com (#527); apex pages off the app hosts"
 
   rules = [
     {
@@ -133,7 +94,7 @@ resource "cloudflare_ruleset" "app_www_redirect" {
   ]
 }
 
-# Turned on in the dashboard before this file existed (#1336).
+# Turned on in the dashboard before this file existed.
 import {
   to = cloudflare_zone_setting.app_always_use_https
   id = "${data.cloudflare_zone.app.id}/always_use_https"

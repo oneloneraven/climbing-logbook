@@ -8,14 +8,7 @@ output "turnstile_sitekey" {
   value       = cloudflare_turnstile_widget.register.id
 }
 
-# #934 -- beta explicitly called out below after a real, confirmed
-# incident (2026-09-23): #932 added beta.<zone> to this widget's own
-# `domains` list, switching beta's client-side code to send it real
-# tokens for the first time -- but this secret had never actually been
-# set for env.beta (Raven's own confirmation), so every real submission
-# on beta failed server-side verification ("Bot verification failed")
-# despite the widget itself succeeding client-side. Nothing here
-# previously said beta needed this step at all.
+# Set for beta too: a missing secret there failed every real submission while the widget looked fine.
 output "turnstile_secret" {
   description = "The Turnstile widget's server-side verification secret -- read manually (tofu output -raw turnstile_secret), piped straight into `wrangler secret put TURNSTILE_SECRET_KEY --env=production` AND `--env=beta` (both consume this same widget, both need the real secret set independently -- Workers secrets are per-environment, setting one never sets the other), never displayed. Not synced automatically by infra.yml, unlike the sitekey above."
   value       = cloudflare_turnstile_widget.register.secret

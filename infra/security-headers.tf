@@ -1,4 +1,4 @@
-# Security headers on every response (#1042). The Worker sends the CSP itself, so Cloudflare can nonce its injected script.
+# Security headers on every response. The Worker sends the CSP itself, so Cloudflare can nonce its injected script.
 resource "cloudflare_ruleset" "security_headers" {
   zone_id     = data.cloudflare_zone.app.id
   kind        = "zone"

@@ -12,10 +12,7 @@ terraform {
     }
   }
 
-  # State lives in an R2 bucket (S3-compatible API), bootstrapped once via
-  # scripts/bootstrap-state.mjs. Only the credentials (access_key/secret_key)
-  # are excluded here — supplied via AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-  # env vars at `tofu init` time, never committed.
+  # Credentials come from AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY at tofu init, never from this file.
   backend "s3" {
     bucket                      = "climbing-logbook-tfstate"
     key                         = "climbing-logbook/terraform.tfstate"

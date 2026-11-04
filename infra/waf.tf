@@ -1,6 +1,6 @@
-# Sign-in brute force is handled by the Workers Rate Limiting binding (#1049), not a WAF rule: a challenge rule can't count requests.
+# Sign-in brute force is handled by the Workers Rate Limiting binding, not a WAF rule: a challenge rule can't count requests.
 
-# Cloudflare Managed Free Ruleset (OWASP-based signatures), deployed by an execute rule in the managed phase (#529).
+# Cloudflare Managed Free Ruleset (OWASP-based signatures), deployed by an execute rule in the managed phase.
 resource "cloudflare_ruleset" "app_waf_managed" {
   zone_id     = data.cloudflare_zone.app.id
   kind        = "zone"
@@ -29,7 +29,7 @@ resource "cloudflare_ruleset" "app_waf_custom_rules" {
 
   rules = [
     {
-      # The bulk import posts text/csv (#224); nothing here uses multipart.
+      # The bulk import posts text/csv; nothing here uses multipart.
       description = "Block unexpected content types to the API"
       expression  = "starts_with(http.request.uri.path, \"/-/api/\") and (http.request.method eq \"POST\") and (not any(http.request.headers[\"content-type\"][*] contains \"application/json\")) and (not any(http.request.headers[\"content-type\"][*] contains \"text/csv\"))"
       action      = "block"

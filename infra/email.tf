@@ -1,4 +1,4 @@
-# support@ is the contact account emails give (#1280, #1365), a Proton Mail mailbox (#1444); it's never published on the site.
+# support@ is the contact address emails give; it's never published on the site.
 import {
   to = cloudflare_dns_record.proton_verification
   id = "${data.cloudflare_zone.app.id}/f777e54d1be62620b46ec8d26f914b66"
@@ -12,7 +12,7 @@ resource "cloudflare_dns_record" "proton_verification" {
   content = "\"protonmail-verification=fe96490b1f1ddc48374942ffa3fef4aecdcdddcf\""
 }
 
-# Email Routing was disabled in the dashboard (#1444): forget its zone settings rather than call disable again.
+# Email Routing was disabled in the dashboard: forget its zone settings rather than call disable again.
 removed {
   from = cloudflare_email_routing_dns.app
   lifecycle {
@@ -20,7 +20,7 @@ removed {
   }
 }
 
-# Only after Email Routing is off (#1444 phase 1): disabling it deletes the root MX and SPF, even edited ones.
+# Only after Email Routing is off: disabling it deletes the root MX and SPF, even edited ones.
 resource "cloudflare_dns_record" "proton_mx" {
   for_each = { "mail.protonmail.ch" = 10, "mailsec.protonmail.ch" = 20 }
   zone_id  = data.cloudflare_zone.app.id
@@ -49,7 +49,7 @@ resource "cloudflare_dns_record" "proton_dkim" {
   content  = "${each.key}.domainkey.drsvvi26oveh5kvolngnll7dtopfd2anzc73r2le4vdjz6rb4tw6q.domains.proton.ch"
 }
 
-# Made in the dashboard when Resend was set up; reject once only Resend sends as the domain (#1053).
+# Made in the dashboard when Resend was set up; reject once only Resend sends as the domain.
 import {
   to = cloudflare_dns_record.dmarc
   id = "${data.cloudflare_zone.app.id}/5abd7435f01c64cd75d6df3950588e7d"
@@ -63,7 +63,7 @@ resource "cloudflare_dns_record" "dmarc" {
   content = "\"v=DMARC1; p=reject; rua=mailto:bba2e499007448e7a1b0b7b949d184e9@dmarc-reports.cloudflare.net\""
 }
 
-# Resend's sending domain (#1336): the bounce MX and SPF on send., and the DKIM key it signs with.
+# Resend's sending domain: the bounce MX and SPF on send., and the DKIM key it signs with.
 import {
   to = cloudflare_dns_record.resend_bounce_mx
   id = "${data.cloudflare_zone.app.id}/787e5916c3fa5f2cb4291bb3701c8c91"

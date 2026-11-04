@@ -1,4 +1,4 @@
-# Bot Fight Mode, its JavaScript detections, and AI crawler blocking with a managed robots.txt (#300, #1336).
+# Bot Fight Mode, its JavaScript detections, and AI crawler blocking with a managed robots.txt.
 # The Terms of use promise AI crawlers are blocked; ai_training/ai_search/ai_user aren't in the provider yet (infra/README.md).
 import {
   to = cloudflare_bot_management.app

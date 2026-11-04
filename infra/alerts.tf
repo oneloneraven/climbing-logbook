@@ -1,4 +1,4 @@
-# Cloudflare alerts to Discord (#1052). The Worker errors alert is made in the dashboard: see docs/infra-architecture.md.
+# Cloudflare alerts to Discord. The Worker errors alert is made in the dashboard: see docs/infra-architecture.md.
 resource "cloudflare_notification_policy_webhooks" "discord_alerts" {
   account_id = var.cloudflare_account_id
   name       = "Discord #alerts"

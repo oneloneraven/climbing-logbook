@@ -49,6 +49,8 @@ Everything provisionable, in `infra/`:
 | Cloudflare alert destinations for Discord `#alerts` and `#monitoring`, and the DDoS and certificate alerts to `#monitoring` | `infra/alerts.tf` |
 | Security headers on every proxied response: `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` and `Reporting-Endpoints`. The CSP comes from the Worker instead (`server/lib/csp.js`): Cloudflare only adds its nonce to the bot-detection script it injects when the origin sends the CSP | `infra/security-headers.tf` |
 
+`prevent_destroy` marks the resources that can't be lost even briefly: a D1 database can't be restored, a destroy-then-create of a DNS record takes its hostname offline for the gap, and a replaced Turnstile widget gets a new secret, which is set by hand. Nothing else stops an unattended apply doing any of these.
+
 The zone is looked up by name (`var.app_zone_name`), not a hardcoded id.
 
 **Not in OpenTofu:**

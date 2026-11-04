@@ -2,7 +2,7 @@ resource "cloudflare_d1_database" "logbook" {
   account_id = var.cloudflare_account_id
   name       = var.d1_database_name
 
-  # Off until reads go through the Sessions API (#1205). The provider rejects an update without this block.
+  # Off until reads go through the Sessions API. The provider rejects an update without this block.
   read_replication = {
     mode = "disabled"
   }

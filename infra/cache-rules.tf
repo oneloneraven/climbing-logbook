@@ -1,14 +1,4 @@
-# #528 -- Cloudflare's own audit (#380) flagged the zone cache level as
-# `aggressive` with no explicit Cache Rules -- risks caching dynamic or
-# authenticated responses if the Worker ever misses an explicit
-# Cache-Control header. Cloudflare bypasses cache by default when
-# Set-Cookie is present, but that's an implicit safety net, not a
-# guarantee; these rules make it explicit and auditable.
-#
-# Attribute names (`edge_ttl.default`/`browser_ttl.default`, not
-# `.value` -- the audit's own raw curl script got this wrong) verified
-# against the installed provider (`cloudflare/cloudflare ~> 5.0`) schema
-# before writing this.
+# Explicit, so nothing dynamic or authenticated is cached even if the Worker misses a Cache-Control header.
 
 resource "cloudflare_zone_setting" "app_cache_level" {
   zone_id    = data.cloudflare_zone.app.id
@@ -25,14 +15,7 @@ resource "cloudflare_ruleset" "app_cache_rules" {
 
   rules = [
     {
-      # /-/api/* is this app's one API prefix (#984; /logbook/api/* until
-      # then, matched alongside it by #988 until #989) -- covers
-      # /-/api/auth/* (sign-in/sign-up/session) too, not just the resource
-      # routes (server/index.js's own routing).
-      # /login and /register (public/login/, public/register/) are
-      # static, unpersonalized pages -- no server-side personalization
-      # happens there, so they're left cacheable rather than bypassed
-      # on the audit's generic (and, for this app, inaccurate) guess.
+      # Auth is under /-/api/ too. /login and /register are static, so they stay cacheable.
       description = "Bypass cache - API and auth endpoints"
       expression  = "starts_with(http.request.uri.path, \"/-/api/\")"
       action      = "set_cache_settings"
