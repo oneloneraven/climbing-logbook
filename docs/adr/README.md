@@ -76,3 +76,4 @@ GitHub, the same treatment every other doc in this repo already gets.
 | [0036](0036-pr-previews-via-cloudflare-previews.md) | PR previews via Cloudflare Previews | Accepted |
 | [0037](0037-rate-limiting-through-the-workers-binding.md) | Rate limiting through the Workers Rate Limiting binding | Accepted |
 | [0038](0038-webdriverio-for-end-to-end-tests.md) | WebdriverIO for end-to-end tests, in Chrome and Firefox | Accepted, amends 0033 |
+| [0039](0039-no-safari-e2e-until-it-supports-webdriver-bidi.md) | No Safari e2e until Safari supports WebDriver BiDi | Accepted |
