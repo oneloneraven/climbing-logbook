@@ -138,7 +138,7 @@ async function boot() {
     store.loadLocationsFromCache();
   }
 
-  // Without the device's own copy, the climbs come from the server, so the table keeps loading until then (#1387).
+  // Without the device's own copy, the climbs come from the server, so the table keeps loading until then.
   const hasLocalCopy = IS_DEMO || (await store.loadEntriesFromCache());
 
   const sessionPromise = syncStatusIcon.track(adminAuth.checkSession());
@@ -159,8 +159,7 @@ async function boot() {
   if (locationsResult.status === "fulfilled") store.setLocations(locationsResult.value);
   else store.loadLocationsFromCache();
 
-  // After places and locations, so a new entry never renders before its place. On the session
-  // promise, not the login hint, which is missing on a device's first session.
+  // On the session promise, not the login hint, which a device's first session lacks.
   const entriesReconciled = sessionPromise.then(() => {
     if (!IS_DEMO && store.isLoggedIn()) return offlineSync.reconcileEntries();
   });

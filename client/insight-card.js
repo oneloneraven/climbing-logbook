@@ -1,7 +1,7 @@
 import { escapeHtml } from "./escape-html.js";
 import { haikuHtml } from "./haiku.js";
 
-// Emerald for good news, amber for a problem worth acting on, neutral for everything else (#1375).
+// Emerald for good news, amber for a problem worth acting on, neutral for everything else.
 const TONES = {
   positive: {
     card: "tone-positive",
@@ -17,7 +17,7 @@ const TONES = {
   },
 };
 
-// A haiku card is the poem alone; every other card has a title over its message (#1389).
+// A haiku card is the poem alone; every other card has a title over its message.
 function insightCardHtml({ tone, title, text, detail, link, haiku }) {
   const key = Object.hasOwn(TONES, tone) ? tone : "neutral";
   const { card, icon } = TONES[key];
@@ -35,7 +35,6 @@ function insightCardHtml({ tone, title, text, detail, link, haiku }) {
   </div>`;
 }
 
-// Every report's insights sit under its chart, stacked one card each.
 export function insightsHtml(insights) {
   const cards = insights.filter(Boolean).map(insightCardHtml).join("");
   return cards ? `<div class="flex flex-col gap-3 mt-5 mb-7" id="report-insights">${cards}</div>` : "";

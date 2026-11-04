@@ -11,7 +11,6 @@ export function isBetaHost(hostname) {
   return hostname.startsWith("beta.");
 }
 
-// true / false from the cache, or undefined when nothing's been cached yet.
 export function readCachedEnrollment(storage) {
   try {
     const cached = JSON.parse(storage.getItem(SETTINGS_CACHE_KEY));
@@ -35,7 +34,6 @@ function writeCachedEnrollment(storage, enrolled) {
   }
 }
 
-// undefined without a session; throws offline or on a server error.
 async function fetchEnrollment(fetchImpl) {
   const res = await fetchImpl(SETTINGS_URL, { credentials: "same-origin" });
   if (res.status === 401) return undefined;

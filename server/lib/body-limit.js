@@ -9,8 +9,7 @@ function tooLarge(limit) {
   return json({ error: message, message }, 413);
 }
 
-// Read under a byte cap before any route parses it, so a huge body costs nothing first (#1044).
-// The header is checked first, then the bytes are counted, so a missing or false Content-Length can't get past it.
+// Capped by header, then by counted bytes, so a missing or false Content-Length can't get a huge body parsed.
 export async function capRequestBody(request) {
   if (!request.body) return request;
   const limit = new URL(request.url).pathname === IMPORT_PATH ? BODY_LIMITS.import : BODY_LIMITS.json;

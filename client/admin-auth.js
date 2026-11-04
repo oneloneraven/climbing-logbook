@@ -202,7 +202,7 @@ export function createAdminAuth({ store, apiFetch, settingsUrl, updateAdminBar, 
 
   async function reconcileActiveType(sessionPromise, settingsPromise) {
     await Promise.all([sessionPromise, settingsPromise]);
-    // A discipline picked while settings loaded is newer than the stored one (#1318).
+    // A discipline picked while settings loaded is newer than the stored one.
     if (store.isActiveTypeChosen()) persistedDiscipline = store.getActiveType();
     else if (persistedDiscipline) store.setActiveType(persistedDiscipline);
   }
@@ -238,7 +238,7 @@ export function createAdminAuth({ store, apiFetch, settingsUrl, updateAdminBar, 
     getBetaOptIn: () => betaOptIn,
     setBetaOptIn,
     hasPainInjuryConsent: () => painInjuryConsent,
-    // "paused": agreed, but to wording that has since needed agreeing to again (#1392).
+    // "paused": agreed, but to wording that has since needed agreeing to again.
     painInjuryConsentState: () => (!painInjuryConsent ? "off" : painInjuryPaused ? "paused" : "on"),
     getPainInjuryConsentUpdate: () => painInjuryConsentUpdate,
     setPainInjuryConsent,

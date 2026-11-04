@@ -1,5 +1,4 @@
-// In the page too, because a worker-served shell never reaches the server. Synchronous when the
-// page came from the network; otherwise it asks, and refuses when offline.
+// In the page too, because a worker-served shell never reaches the server.
 import { isDemoUsername } from "./demo-mode.js";
 import { renderBlockedPage } from "./blocked-page.js";
 import { loginPageUrl } from "./login-url.js";
@@ -15,7 +14,6 @@ export function renderNotAvailableOffline(doc) {
   });
 }
 
-// Resolves true when the page should boot normally.
 export async function ownershipAllowsBoot({
   loc = window.location,
   storage = window.localStorage,
@@ -26,23 +24,20 @@ export async function ownershipAllowsBoot({
   replace = url => window.location.replace(url),
 } = {}) {
   const owner = ownerOfPath(loc.pathname);
-  // Not an owner page, or a public demo account (served with no session,
-  // owned-routes.js's isDemoOwnedPage) -- nothing to check.
+  // A demo account's pages are served with no session (owned-routes.js's isDemoOwnedPage).
   if (!owner || isDemoUsername(owner)) return true;
 
   const recorded = readSignedInUser(storage);
 
   if (!controlled) {
-    // Served by the network: the server's own ownership check passed for
-    // this URL's user, so that's who's signed in on this device.
+    // Served by the network, so the server's own ownership check passed for this URL's user.
     if (recorded !== owner) writeSignedInUser(storage, owner);
     return true;
   }
 
   if (recorded === owner) return true;
 
-  // Served by the service worker for someone this device hasn't recorded
-  // as signed in: ask the server who's signed in, never guess.
+  // Worker-served for someone this device hasn't recorded as signed in: ask the server, never guess.
   if (!online) {
     renderNotAvailableOffline(doc);
     return false;

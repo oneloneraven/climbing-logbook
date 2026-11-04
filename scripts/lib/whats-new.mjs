@@ -74,8 +74,7 @@ export function readHistory() {
   return historyFile;
 }
 
-// A tag's own lines win over the hand-written history for the same version. Also published as /-/releases.json.
-// History is ignored past the newest tag in this build, so a build can't list a release it doesn't have.
+// History past the newest tag in this build is ignored, so a build can't list a release it doesn't have.
 export function whatsNewReleases({ tagged = readTaggedReleases(), history = readHistory() } = {}) {
   const newest = tagged
     .map(release => release.version)

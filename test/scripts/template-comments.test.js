@@ -1,4 +1,4 @@
-// HTML comments ship to every visitor (#1088): templates use {# #}, and markup built in JS has none.
+// HTML comments ship to every visitor: templates use {# #}, and markup built in JS has none.
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";

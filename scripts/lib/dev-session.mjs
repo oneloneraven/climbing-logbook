@@ -1,5 +1,4 @@
-// Signs up and verifies a dev user (flipping emailVerified in D1) and returns its session cookie.
-// Used by local seeding, e2e setup and preview seeding. Safe to repeat.
+// Verifies the dev user by flipping emailVerified in D1, so it's safe to repeat.
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -137,7 +136,7 @@ export async function provisionUsers(baseUrl, usersWithCodes, options = {}) {
     options,
   );
 
-  // Signing up again would count against the address's email limit, so a restart within the hour would fail (#1357).
+  // Signing up again would count against the address's email limit, so a restart within the hour would fail.
   const existing = new Set(
     d1Query(`SELECT email FROM "user" WHERE email IN (${users.map(u => sqlString(u.email)).join(", ")})`, options).map(
       row => row.email,

@@ -1,4 +1,3 @@
-// Runs the e2e specs for one or more areas: pnpm e2e:area log tour
 import { AREAS } from "../e2e/areas.js";
 import { runE2eWdio } from "./run-e2e-wdio.mjs";
 
@@ -11,4 +10,4 @@ if (areas.length === 0 || unknown.length > 0) {
 }
 
 const names = [...new Set(areas.flatMap(area => AREAS[area]))];
-process.exit(runE2eWdio(names));
+process.exit(await runE2eWdio(names));

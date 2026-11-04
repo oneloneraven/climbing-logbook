@@ -1,4 +1,3 @@
-// Upserts by id, keeping existing rows in place, and drops rows flagged deleted. Returns a new array.
 export function mergeDelta(current, deltaRows) {
   const byId = new Map(current.map(row => [row.id, row]));
   for (const row of deltaRows) {

@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { APP_VERSION } from "../../shared/app-version.js";
 
-// Deploys build from the release tag's commit, so its tag is the version; any other build is "dev" (#1500).
+// Deploys build from the release tag's commit, so its tag is the version; any other build is "dev".
 export function buildVersion(
   describe = () =>
     execFileSync("git", ["describe", "--tags", "--exact-match", "--match", "v*", "HEAD"], {

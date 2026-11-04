@@ -48,8 +48,7 @@ export function filteredEntries(entries, places, { activeType, statusFilters, gr
   });
 }
 
-// By location, not name, so two crags that share a name stay separate. Ordered by the
-// unfiltered data, so filtering doesn't reshuffle sections.
+// By location, so same-named crags stay apart; in unfiltered order, so filtering doesn't reshuffle sections.
 export function groupByPlace(entries, allEntries, places) {
   const map = new Map();
   for (const e of entries) {

@@ -52,7 +52,7 @@ async function handleRequest(request, env, ctx, log) {
   if (pathname === "/-/csp-report" && method === "POST") return handleCspReport(request, env, log);
   if (pathname === "/-/api/health" && isRead) return forMethod(handleLiveness(env));
   if (pathname === "/-/api/health/ready" && isRead) return forMethod(await handleReadiness(env, log));
-  // Static pages come through the Worker so it can send their CSP (#1042); "/" also lets the admin host claim it.
+  // Static pages come through the Worker so it can send their CSP; "/" also lets the admin host claim it.
   if (isRead && STATIC_PAGE.test(pathname)) return env.ASSETS.fetch(request);
 
   if (hostname.startsWith("my.") && isRead) {
@@ -72,8 +72,7 @@ async function handleRequest(request, env, ctx, log) {
   const perHostAsset = perHostAssetPath(hostname, pathname);
   if (perHostAsset && (method === "GET" || method === "HEAD")) return handlePerHostAsset(request, env, perHostAsset);
 
-  // The incident kill switch (#1063): writes wait, reads carry on, and the app's offline queue keeps unsynced changes.
-  // Signing out stays open: refusing it would leave a session live on a device someone thinks they've left.
+  // Signing out stays open in the kill switch: refusing it would leave a session live on a device someone has left.
   if (env.READ_ONLY === "true" && !isRead && pathname.startsWith("/-/api/") && pathname !== "/-/api/auth/sign-out") {
     return readOnlyResponse();
   }
@@ -147,7 +146,7 @@ function readOnlyResponse() {
   );
 }
 
-// Test-only routes that throw, so the boundary can be checked on a preview (#1032).
+// Test-only routes that throw, so the boundary can be checked on a preview.
 const THROW_PATHS = new Set(["/-/test/throw", "/-/api/test/throw"]);
 const THROWABLE_ENVS = new Set(["development", "e2e", "preview"]);
 

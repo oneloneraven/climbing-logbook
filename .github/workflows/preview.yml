@@ -1,7 +1,6 @@
 name: Preview
 
-# A Cloudflare Preview of the separate preview Worker for each PR, deleted when it closes. Not a required check, so
-# it filters at the trigger.
+# Not a required check, so it filters at the trigger.
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]

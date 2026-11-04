@@ -39,7 +39,7 @@ function showError(message) {
 const turnstile = renderTurnstile("#turnstile-widget");
 
 const sourcePage = document.referrer || undefined;
-// Passed by the footer link from the page someone came from (#1500).
+// Passed by the footer link from the page someone came from.
 const appVersion = validAppVersion(new URLSearchParams(location.search).get("version"));
 preselectSection(document.getElementById("feedback-section"), sourcePage);
 

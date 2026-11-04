@@ -1,7 +1,4 @@
-// Creates the four scoped Cloudflare tokens CI uses and stores each straight in GitHub, never printing a value (#1069).
-//   node scripts/create-cloudflare-ci-tokens.mjs
-// Prompts for a Cloudflare API token that can create account tokens (Account API Tokens: Edit).
-// Rerun to rotate: each older token with the same name is revoked once its replacement is stored.
+// Usage: docs/scripts.md.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { stdin, stdout } from "node:process";

@@ -12,8 +12,7 @@ export function createThemeToggle() {
     const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
     document.documentElement.dataset.theme = next;
     localStorage.setItem("logbook_theme", next);
-    // setTimeout, not a microtask: replacing the button mid-dispatch detaches the click target, and
-    // the menu reads it as an outside click. Microtasks run between listeners, too early.
+    // Not a microtask: replacing the button mid-dispatch detaches the target, which the menu reads as an outside click.
     setTimeout(updateThemeToggleButton, 0);
   });
 }

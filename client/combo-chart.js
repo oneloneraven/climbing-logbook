@@ -67,7 +67,6 @@ function lineScale(positionOrder) {
 }
 
 // Complete literal class names: Tailwind only generates classes it finds verbatim in source.
-// No blue: it isn't in the palette.
 const LINE_COLORS = [
   { fill: "fill-foreground", stroke: "stroke-foreground" },
   { fill: "fill-tier-heuristic", stroke: "stroke-tier-heuristic" },

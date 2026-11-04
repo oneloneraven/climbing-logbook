@@ -1,7 +1,6 @@
 name: Deploy
 
-# A tag push (made by release.yml) deploys to beta. Production follows automatically only when the diff
-# touches migrations/ or infra/; otherwise promote.yml ships it (ADR-0020, docs/versioning.md).
+# Production follows only when the diff touches migrations/ or infra/; otherwise promote.yml ships it (ADR-0020).
 on:
   push:
     tags: ['v*']
@@ -29,8 +28,7 @@ jobs:
       - uses: $/.github/actions/setup-node-pnpm
       - run: pnpm run html:build
       - run: pnpm run tailwind:build
-      # wrangler deploy never applies D1 migrations. They run once, before either deploy, because beta and production
-      # share the database (ADR-0020). The restore point is logged first (docs/versioning.md, Database migrations).
+      # Once, before either deploy: beta and production share the database (ADR-0020).
       - name: Record D1 restore point before migrating
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DEPLOY_TOKEN }}
@@ -61,8 +59,7 @@ jobs:
               echo "direct=false" >> "$GITHUB_OUTPUT"
             fi
           fi
-      # CLOUDFLARE_ENV selects the environment at build time; deploy:build refuses to run without it,
-      # and wrangler checks --env=beta against it.
+      # deploy:build refuses to run without CLOUDFLARE_ENV, and wrangler checks --env=beta against it.
       - name: Deploy to beta
         id: deploy_beta
         if: github.event_name == 'push'

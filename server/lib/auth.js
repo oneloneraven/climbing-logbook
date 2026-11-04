@@ -70,7 +70,7 @@ async function refuseDemoDeletion(env, userId) {
   if (settings?.is_demo) throw new APIError("FORBIDDEN", { message: "The demo accounts can't be deleted." });
 }
 
-// Built per request, never cached: a shared instance carried one request's I/O into another (#1253).
+// Built per request, never cached: a shared instance carried one request's I/O into another.
 export const TRUST_DEVICE_DAYS = 28;
 
 const NOTICE_FOR_PATH = {
@@ -100,7 +100,6 @@ async function noticeEmailChanged(ctx, env, emailSender) {
   await emailSender.sendAccountNotice(change.email, "emailChanged", { url, newEmail: change.updateTo });
 }
 
-// The account change an auth request made, if any, and which page shows it (#1456).
 export function accountNoticeFor(ctx, user) {
   if (ctx.path === "/update-user") {
     const username = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";

@@ -1,4 +1,4 @@
-// CI: a PR that makes a release must say what climbers will notice, even if that's nothing (#1504).
+// A PR that makes a release must say what climbers will notice, even if that's nothing.
 import { hasWhatsNewHeading } from "./lib/whats-new.mjs";
 
 const { body = "", labels = [] } = JSON.parse(process.env.PR_JSON ?? "{}");

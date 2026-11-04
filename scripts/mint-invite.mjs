@@ -1,4 +1,4 @@
-// Prints a new beta invite code, the command that stores it, and the link to send: node scripts/mint-invite.mjs [--email <address>]
+// Usage: docs/scripts.md.
 import { mintInviteCode } from "../shared/invite-code.js";
 
 const i = process.argv.indexOf("--email");

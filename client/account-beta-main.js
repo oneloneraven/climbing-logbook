@@ -44,8 +44,7 @@ function render() {
   queueWarningEl.hidden = pending === 0;
   queueCountEl.textContent = `You have ${pending} ${pending === 1 ? "change" : "changes"} waiting to sync on this device.`;
 
-  // Needs the server: offline, the button waits for a connection rather
-  // than failing when pressed.
+  // Offline, the button waits for a connection rather than failing when pressed.
   const online = navigator.onLine;
   offlineNoteEl.hidden = online;
   confirmBtn.disabled = saving || !online;

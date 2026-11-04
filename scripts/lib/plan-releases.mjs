@@ -13,7 +13,7 @@ export function nextVersion(version, bump) {
   return `v${major}.${minor}.${patch + 1}`;
 }
 
-// Oldest first, so a run whose waiting predecessor was cancelled still tags that predecessor's PR, in order (#1512).
+// Oldest first, so a run whose waiting predecessor was cancelled still tags that predecessor's PR, in order.
 export function planReleases({ commits, latestVersion, isTagged, prFor }) {
   const plan = [];
   let version = latestVersion;
@@ -28,8 +28,7 @@ export function planReleases({ commits, latestVersion, isTagged, prFor }) {
   return plan;
 }
 
-// git(args) returns trimmed stdout. A latest tag that isn't on this commit's history would make the range
-// reach back to the merge-base and re-tag old releases, so that stops the run instead.
+// A latest tag off this commit's history would make the range re-tag old releases, so that stops the run.
 export function planFromRepo({ git, prFor, mergeSha, bumpInput }) {
   const latestTag = git(["tag", "-l", "v*", "--sort=-v:refname"]).split("\n")[0];
   if (bumpInput) {

@@ -48,8 +48,6 @@ async function previousCopy(cachesImpl, currentName, item) {
   return null;
 }
 
-// Resolves to { fetched, copied, missing } (lists of URLs). `missing` empty
-// means the cache now holds every item.
 export async function fillPrecache({ list, cacheName, origin, username, cachesImpl = caches, fetchImpl = fetch }) {
   const cache = await cachesImpl.open(cacheName);
   const result = { fetched: [], copied: [], missing: [] };

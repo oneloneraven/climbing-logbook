@@ -15,7 +15,6 @@ export async function usageOf(env, userId) {
   return row ?? { entries: 0, places: 0, locations: 0 };
 }
 
-// Null when the additions fit; otherwise the response to send.
 export async function checkAccountLimits(env, userId, additions) {
   const usage = await usageOf(env, userId);
   for (const [table, adding] of Object.entries(additions)) {

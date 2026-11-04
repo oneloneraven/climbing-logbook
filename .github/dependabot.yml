@@ -1,7 +1,6 @@
 version: 2
 updates:
-  # Covers pnpm-lock.yaml -- Dependabot's "npm" ecosystem type supports
-  # npm/yarn/pnpm lockfiles, there's no separate "pnpm" type.
+  # Covers pnpm lockfiles: there's no separate pnpm type.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:

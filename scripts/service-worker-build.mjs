@@ -1,5 +1,4 @@
-// Bundles client/sw/ into /service-worker.js. BUILD_ID hashes every served file, so the worker's
-// bytes (and so an update) change exactly when served content does.
+// BUILD_ID hashes every served file, so the worker's bytes change exactly when served content does.
 import { build as esbuild } from "esbuild";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";

@@ -47,7 +47,7 @@ const params = new URLSearchParams(location.search);
 const reportedUsername = params.get("logbook") || undefined;
 const reportedEntryId = (reportedUsername && params.get("climb")) || undefined;
 
-// Passed by the footer link from the page someone came from (#1500).
+// Passed by the footer link from the page someone came from.
 const appVersion = validAppVersion(params.get("version"));
 if (reportedUsername) {
   const about = document.getElementById("report-about");
@@ -58,7 +58,7 @@ if (reportedUsername) {
   document.getElementById("report-issue-section").value = "public_logbook";
 }
 
-// Set by the error page, so the report links to the log line (#1032).
+// Set by the error page, so the report links to the log line.
 const errorRef = /^[A-Za-z0-9-]{1,64}$/.test(params.get("ref") ?? "") ? params.get("ref") : undefined;
 if (errorRef && !reportedUsername) {
   const about = document.getElementById("report-about");

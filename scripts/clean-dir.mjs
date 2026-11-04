@@ -1,5 +1,4 @@
-// Empties a generated output directory, so a page deleted from its source can't linger in the next build.
-//   node scripts/clean-dir.mjs <dir>
+// So a page deleted from its source can't linger in the next build.
 import { rmSync } from "node:fs";
 
 const GENERATED = new Set(["public", "public-dev"]);

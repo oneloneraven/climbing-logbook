@@ -1,6 +1,4 @@
-// Writes static/-/brand-lockup.svg from Bebas Neue outlines (so it never depends on the web font)
-// and the generated block in climbing-header.js. Run after changing the text, font or geometry.
-//   node scripts/generate-brand-lockup.mjs
+// From the font's outlines, so the lockup never depends on the web font: docs/scripts.md.
 import { openSync } from "fontkit";
 import { readFileSync, writeFileSync } from "node:fs";
 

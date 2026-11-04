@@ -54,7 +54,6 @@ const findLiveLocation = (env, id, userId) =>
         .first()
     : null;
 
-// Renames a location or changes its country; every climb there follows (#159).
 export async function handlePut(request, env, userId) {
   const parsed = await parseJsonBody(request);
   if (!parsed.ok) return parsed.response;
@@ -76,7 +75,6 @@ export async function handlePut(request, env, userId) {
   return resource.respondWithRow(env, userId, id, 200);
 }
 
-// Deletes a location and its areas, moving all their climbs to one place elsewhere first (#160).
 export async function handleDelete(request, env, userId) {
   const url = new URL(request.url);
   const location = await findLiveLocation(env, url.searchParams.get("id"), userId);

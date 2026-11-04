@@ -107,7 +107,7 @@ export async function seedPlace(
   return place.id;
 }
 
-// New logbooks start private (#1281), so a test about public logbooks makes one public first.
+// New logbooks start private, so a test about public logbooks makes one public first.
 export async function createPublicSession(options) {
   const session = await createAuthedSession(options);
   await env.LOGBOOK_DB.prepare(
@@ -118,8 +118,7 @@ export async function createPublicSession(options) {
   return session;
 }
 
-// The local Rate Limiting binding counts in wall-clock minutes, so a test that counts requests waits for a fresh
-// minute when too little of this one is left (#1326, #1330).
+// The local rate limiter counts in wall-clock minutes, so a counting test waits for a fresh one if this is nearly over.
 export async function startInFreshRateLimitWindow(neededMs = 15_000) {
   const leftMs = 60_000 - (Date.now() % 60_000);
   if (leftMs < neededMs) await new Promise(resolve => setTimeout(resolve, leftMs + 100));

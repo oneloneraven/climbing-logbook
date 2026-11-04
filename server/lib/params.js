@@ -1,6 +1,6 @@
 import { json } from "./json.js";
 
-// A bare Number() let "abc" through as NaN and a negative LIMIT mean "no limit" in SQLite.
+// Stricter than Number(): "abc" would be NaN, and a negative LIMIT means no limit in SQLite.
 /**
  * @param {URL} url
  * @param {string} name

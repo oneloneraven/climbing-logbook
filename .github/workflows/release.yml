@@ -1,7 +1,6 @@
 name: Release
 
-# Tags every merged PR labelled release: major, minor or patch (docs/versioning.md). Only a tag is pushed, never a commit
-# to main; workflow_dispatch is a manual override.
+# Only a tag is pushed, never a commit to main (docs/versioning.md).
 on:
   pull_request:
     types: [closed]
@@ -50,8 +49,7 @@ jobs:
           cat "$RUNNER_TEMP/plan.json"
           echo "count=$(jq length "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
 
-      # A tag pushed with the default GITHUB_TOKEN doesn't trigger deploy.yml; the App's token does, so it's minted only now
-      # and handed to git push alone.
+      # A tag pushed with GITHUB_TOKEN doesn't trigger deploy.yml, so the App's token is minted now, for git push alone.
       - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         if: steps.plan.outputs.count != '0'
         id: app-token

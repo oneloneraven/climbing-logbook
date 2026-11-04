@@ -9,8 +9,7 @@ const respond = (request, statusCode, body) =>
     body: { type: "string", value: body },
   });
 
-// browser.mock can't delay an answer. answerFromWhenSent replies with what the server said when the request was made.
-// Don't mix this with browser.mock in a test: a mock lets every other paused request go.
+// browser.mock can't delay an answer; don't mix them in a test, as a mock lets every other paused request go.
 export async function holdRequests(pathname, { method, once = false, answerFromWhenSent = false } = {}) {
   const context = currentContext();
   const partition = answerFromWhenSent ? await userContextPartition() : undefined;

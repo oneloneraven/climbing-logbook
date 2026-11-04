@@ -82,7 +82,6 @@ function pyramidBarRow(row, { ideal, scaleMax, type, promoted = false, viewScale
     </div>`;
 }
 
-// The tier with the smallest share of its 8-4-2-1 target, or null when every tier has met it.
 function furthestFromTarget(top4) {
   const short = top4
     .map((row, i) => ({ ...row, ideal: PYRAMID_IDEAL_BY_POSITION[i] }))
@@ -133,7 +132,7 @@ function pyramidInsight(health, top4) {
   };
 }
 
-// The scale's lowest grade, for the empty haiku's last line: "From Font 3 upwards" (#1389).
+// The scale's lowest grade, for the empty haiku's last line: "From Font 3 upwards".
 function lowestGradePhrase(scaleId) {
   const scale = SCALES[scaleId];
   if (!scale?.labels?.length) return "the lowest grade";
@@ -144,7 +143,7 @@ function lowestGradePhrase(scaleId) {
 const EMPTY_PYRAMID = { top4: [], hasSends: false, promotedGrade: null };
 
 export class ClimbingGradePyramid extends HTMLElement {
-  // Null until the page hands over a report: unknown, not empty (#1387).
+  // Null until the page hands over a report: unknown, not empty.
   #pyramidData = null;
   #wired = false;
   #viewScaleId = null;

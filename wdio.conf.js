@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { SevereServiceError } from "webdriverio";
 import globalSetup from "./e2e/global-setup.js";
 import { CLASSIC_SPEC_NAMES, SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
+import { pinned, resolveBrowsersOnce, selectedBrowsers } from "./e2e/wdio-browsers.js";
 import { steadyCommands } from "./e2e/wdio-hooks.js";
 
 const BASE_URL = "http://localhost:8787";
@@ -33,30 +34,6 @@ function stopServer() {
   } catch {}
 }
 
-const BROWSERS = {
-  chrome: {
-    browserName: "chrome",
-    "wdio:experimentalBiDiCommands": true,
-    browserVersion: "stable",
-    "goog:chromeOptions": { args: ["--headless=new", "--no-sandbox", "--hide-scrollbars"] },
-  },
-  firefox: {
-    browserName: "firefox",
-    "wdio:experimentalBiDiCommands": true,
-    browserVersion: "stable",
-    "moz:firefoxOptions": {
-      args: ["-headless"],
-      prefs: {
-        "ui.prefersReducedMotion": 1,
-        "ui.useOverlayScrollbars": 1,
-        "security.webauth.webauthn_enable_softtoken": true,
-        "security.webauth.webauthn_enable_usbtoken": false,
-      },
-    },
-  },
-  safari: { browserName: "safari" },
-};
-
 const specPath = name => `./e2e/${name}.e2e.js`;
 const sharedSpecs = SHARED_SPEC_NAMES.map(specPath);
 const classicSpecs = CLASSIC_SPEC_NAMES.map(specPath);
@@ -64,17 +41,15 @@ const shared = process.env.E2E_PROJECT === "shared";
 const classic = process.env.E2E_PROJECT === "classic";
 const only = process.env.E2E_SPECS?.split(",").map(specPath);
 
-const selected = (process.env.E2E_BROWSERS ?? "chrome,firefox").split(",").map(name => name.trim());
+const selected = selectedBrowsers();
+const resolved = await resolveBrowsersOnce(selected);
 
 export const config = {
   runner: "local",
   specs: only ?? (shared ? sharedSpecs : classic ? classicSpecs : ["./e2e/**/*.e2e.js"]),
   exclude: shared || classic ? [] : [...sharedSpecs, ...classicSpecs],
   maxInstances: shared || selected.includes("safari") ? 1 : Number(process.env.E2E_WORKERS ?? 4),
-  capabilities: selected.map(name => {
-    if (!BROWSERS[name]) throw new Error(`Unknown browser in E2E_BROWSERS: ${name}`);
-    return BROWSERS[name];
-  }),
+  capabilities: selected.map(name => pinned(name, resolved)),
   baseUrl: BASE_URL,
   logLevel: "warn",
   // Firefox in CI needs longer than the 5s default.

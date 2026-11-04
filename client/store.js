@@ -34,8 +34,7 @@ export function createStore({
     for (const fn of subscribers) fn();
   }
 
-  // A cache that can't be written is dropped, and its cursor reset, so a stale copy never pairs with a newer cursor.
-  // False then: the caller mustn't advance that cursor.
+  // A cache that can't be written is dropped with its cursor, so a stale copy never pairs with a newer cursor.
   function persist(table, key, rows) {
     try {
       storage.setItem(key, JSON.stringify(rows));

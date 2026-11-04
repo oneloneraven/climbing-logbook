@@ -1,6 +1,4 @@
-// Seeds the three demo accounts with raw SQL: their names are reserved, so they can't sign up.
-// Tags cluster so the Strengths and Injury reports have a real signal. Fixed IDs, so safe to re-run.
-//   node scripts/seed-demo-accounts.mjs [--remote] [--env preview]
+// Raw SQL, as the demo names are reserved and can't sign up: docs/scripts.md.
 import { applyMigrations, d1ExecuteInChunks } from "./lib/dev-session.mjs";
 import { BOULDER_GRADES, DEFAULT_SCALE_BY_TYPE, LEAD_GRADES, SCALES } from "../shared/grade-data.js";
 import { DEMO_PERSONAS } from "../shared/demo-personas.js";
@@ -61,8 +59,7 @@ const DOMINANT_MOVE_COMBO = {
   movementStyle: "static",
   wallAngle: "overhang",
 };
-// The demo tells a story the Strengths report can find: strong on steep ground, weak on slab, slopers hard
-// even on easy climbs, and crimps and heel hooks only hard at the limit.
+// A story the Strengths report can find: strong on steep ground, weak on slab, slopers hard even when easy.
 const WALL_ANGLES_BY_BAND = {
   hard: ["overhang", "roof", "overhang", "dihedral"],
   middle: ["vert", "overhang", "vert", "chimney"],
@@ -128,7 +125,7 @@ function buildPersonaSql(persona) {
   statements.push(
     `INSERT OR REPLACE INTO settings (user_id, athlete_mode, active_discipline, logbook_public, is_demo, is_internal, created_at, updated_at) VALUES (${sqlStr(userId)}, 1, 'boulder', 1, 1, 1, ${now}, ${now});`,
   );
-  // Synthetic data about fictional people, so their demo injury pages work (#1120).
+  // Synthetic data about fictional people, so their demo injury pages work.
   statements.push(
     `INSERT OR IGNORE INTO consents (id, user_id, purpose, wording_version, granted_at) VALUES (${sqlStr(`demo-${username}-consent`)}, ${sqlStr(userId)}, ${sqlStr(PAIN_INJURY.purpose)}, ${sqlStr(PAIN_INJURY.version)}, ${now});`,
   );

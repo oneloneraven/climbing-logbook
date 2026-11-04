@@ -2,16 +2,6 @@
 layout: app-layout.njk
 title: Syncing – Climbing Logbook
 bundle: sync
-staticShellNote: |-
-  Genuinely static shell (#498/ADR-0019), same pattern as public/
-         log/index.html -- see that file's own comment for why every path
-         below is absolute and client/sync-main.js reads the username from
-         location.pathname itself rather than this file being templated.
-         No <climbing-tab-bar> here -- unlike /log, /map, /performance,
-         this page isn't one of the three real destinations; it's a
-         transient stop nothing should navigate into deliberately, so
-         there's nothing to highlight as "current" and no other page is
-         usable yet anyway.
 headerClass: mb-6
 ---
 <div class="max-w-[960px] mx-auto">

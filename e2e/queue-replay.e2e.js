@@ -44,8 +44,7 @@ describe("queue replay", () => {
     await expect($("#sync-now")).not.toBeDisplayed();
     await expect($("#sync-line-spinner")).toBeDisplayed();
 
-    // What entry-form.js does when a save can't reach the server. A delete
-    // of the same entry, so the shared dev data ends up unchanged.
+    // A delete of the same entry, so the shared dev data ends up unchanged.
     await browser.execute(
       (key, item) => {
         const queue = JSON.parse(localStorage.getItem(key) ?? "[]");

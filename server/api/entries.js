@@ -147,7 +147,7 @@ function replaceChildRowStatements(env, table, entryId, records, buildRow, guard
   ];
 }
 
-// Checked inside the write too, so a withdrawal mid-request can't leave pain details behind (#1120).
+// Checked inside the write too, so a withdrawal mid-request can't leave pain details behind.
 function moveStatements(env, entryId, record) {
   const consented = { sql: ENTRY_OWNER_CONSENTED, binds: ENTRY_OWNER_CONSENTED_BINDS(entryId) };
   return [
@@ -184,7 +184,7 @@ async function fetchChildRowsChunked(env, table, ids) {
   return results;
 }
 
-// Pain details are health data, so they're only read back with the owner's consent (#1120).
+// Pain details are health data, so they're only read back with the owner's consent.
 export async function attachChildRows(rows, env, userId, { evenWithoutConsent = false } = {}) {
   if (rows.length === 0) return rows;
   const ids = rows.map(r => r.id);
@@ -376,7 +376,7 @@ export async function handleDelete(request, env, userId) {
   const id = new URL(request.url).searchParams.get("id");
   if (!id) return json({ error: "Missing required field: id" }, 400);
 
-  // There's no undo, so nothing the climb said is kept: the row stays only as a sync tombstone (#1051).
+  // There's no undo, so nothing the climb said is kept: the row stays only as a sync tombstone.
   await env.LOGBOOK_DB.batch([
     env.LOGBOOK_DB.prepare(
       `UPDATE entries SET deleted_at = ?, ${STRIP_ENTRY_CONTENT}, sync_cursor = ${nextCursorSql("entries")}, updated_at = datetime('now') WHERE id = ? AND user_id = ?`,

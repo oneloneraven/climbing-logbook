@@ -17,8 +17,7 @@ async function isBanned(env, kind, value) {
   return !!row;
 }
 
-// A banned email gets sign-up's generic "check your email" reply (Better Auth turns a 403 into it); a banned
-// username reads like any other unavailable one.
+// Banned emails and usernames get the same replies as any other: Better Auth turns this 403 into "check your email".
 async function refuseBanned(env, { email, username }) {
   if (await isBanned(env, "email", email)) {
     throw new APIError("FORBIDDEN", { message: "This email address can't be used.", code: "BANNED" });

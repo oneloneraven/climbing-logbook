@@ -53,7 +53,7 @@ export async function usageFigures(env) {
   };
 }
 
-// Biggest first, by climbs and then places; locations of the same name in one country count together.
+// Locations of the same name in one country count together.
 function groupByCountry(rows) {
   const countries = new Map();
   for (const row of rows) {

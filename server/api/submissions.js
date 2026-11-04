@@ -28,8 +28,7 @@ function ownPageOrNothing(url) {
   }
 }
 
-// A report can point at a public logbook, and at one climb in it. Anything that doesn't resolve is dropped, so a
-// report can't be used to find out whether a private logbook or a climb exists.
+// Anything that doesn't resolve is dropped, so a report can't reveal whether a private logbook or a climb exists.
 /**
  * @param {any} env
  * @param {{ reportedUsername?: string, reportedEntryId?: string }} reported

@@ -14,7 +14,6 @@ export async function listForUser(env, table, userId, rowToJson, { excludeDelete
   return results.map(rowToJson);
 }
 
-// The ownership check behind every write: does this id belong to this user.
 export async function findOwnedRow(env, table, id, userId, { excludeDeleted = false, includeDeletedAt = false } = {}) {
   const where = excludeDeleted ? "WHERE id = ? AND user_id = ? AND deleted_at IS NULL" : "WHERE id = ? AND user_id = ?";
   const columns = includeDeletedAt ? "id, deleted_at" : "id";

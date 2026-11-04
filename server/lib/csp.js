@@ -4,7 +4,7 @@ export function contentSecurityPolicy(nonce) {
     `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
-    // Help > What's new reads beta's release list (#1506).
+    // Help > What's new reads beta's release list.
     "connect-src 'self' https://beta.climbinglogbook.com",
     "frame-src https://challenges.cloudflare.com",
     "object-src 'none'",
@@ -16,10 +16,10 @@ export function contentSecurityPolicy(nonce) {
   ].join("; ");
 }
 
-// Report-only until the soak is clean (#1042), then "Content-Security-Policy".
+// Report-only until the soak is clean, then "Content-Security-Policy".
 export const CSP_HEADER = "Content-Security-Policy-Report-Only";
 
-// Cloudflare only nonces its injected bot-detection script when the origin sends the CSP, so the Worker does (#1042).
+// Cloudflare only nonces its injected bot-detection script when the origin sends the CSP, so the Worker does.
 export function withContentSecurityPolicy(response) {
   if (!response.headers.get("Content-Type")?.includes("text/html")) return response;
   const withHeader = new Response(response.body, response);

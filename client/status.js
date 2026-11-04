@@ -1,6 +1,5 @@
 import { STATUS_ICONS } from "./status-icons.js";
 
-// Sport's terms for the same statuses.
 const FLASH_LABEL = { boulder: ["Flash", "Flashes"], sport: ["Onsight", "Onsights"] };
 const SEND_LABEL = { boulder: ["Send", "Sends"], sport: ["Redpoint", "Redpoints"] };
 const NAME_LABEL = { boulder: "Problem name", sport: "Route name" };

@@ -9,7 +9,6 @@ import "./components/climbing-tab-bar.js";
 
 const SETTINGS_URL = "/-/api/settings";
 
-// Everything a page with the tab bar and discipline picker sets up the same way.
 export function createAppShell({
   render,
   noCacheForDemo = false,

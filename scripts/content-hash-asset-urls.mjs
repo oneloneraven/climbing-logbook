@@ -1,5 +1,4 @@
-// Rewrites each ?v= in the built HTML to that file's content hash, so a deploy changes only the URLs
-// of changed files (ADR-0028). 11ty renders before Vite emits, so it can't do this itself.
+// 11ty renders before Vite emits, so it can't put content hashes in the ?v= URLs itself (ADR-0028).
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

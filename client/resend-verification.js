@@ -1,4 +1,4 @@
-// The Worker checks Turnstile and the per-address limit before Better Auth sends anything (#1053, #1335).
+// The Worker checks Turnstile and the per-address limit before Better Auth sends anything.
 export async function resendVerificationEmail(email, turnstile) {
   try {
     const turnstileToken = await turnstile.waitForResponse();

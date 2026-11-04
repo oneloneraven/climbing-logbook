@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-// Reports existing usernames the current policy would reject; never renames anyone.
-// Run after a reserved or blocked list grows. Exits 1 on any failure. Demo accounts are skipped.
-//   node scripts/audit-usernames.mjs [--remote] [--env preview]
+// Usage: docs/scripts.md.
 import { execFileSync } from "node:child_process";
 import { DEMO_USERNAMES } from "../shared/demo-personas.js";
 import { checkUsername } from "../shared/username-policy.js";

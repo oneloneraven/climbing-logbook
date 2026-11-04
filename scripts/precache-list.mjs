@@ -1,6 +1,4 @@
-// The service worker's pre-cache list, built from the output: each owner shell plus everything it loads.
 // hash is on items whose URL doesn't name its content, so an install can reuse unchanged copies.
-// A listed file missing from the output fails the build.
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";

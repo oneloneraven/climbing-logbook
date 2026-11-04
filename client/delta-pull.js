@@ -3,7 +3,6 @@ import { BACKGROUND_FETCH_TIMEOUT_MS, isUnload } from "./sync-status-icon.js";
 import { forgetSync } from "./sync-status.js";
 
 // No response at all is reported, since onLine can read true on a dead link.
-// True once the server's answer is merged: a page with no copy of its own needs to know it really loaded (#1387).
 export async function pullDelta({ store, url, table, onFailure }) {
   let res;
   try {

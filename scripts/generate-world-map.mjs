@@ -1,5 +1,4 @@
-// Writes static/-/world-map-{greenwich,americas,oceania}.json. Design: docs/app-architecture.md, Generated data.
-//   node scripts/generate-world-map.mjs
+// Design: docs/app-architecture.md, Generated data.
 
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -44,8 +43,7 @@ for (const { name, centralMeridian } of VARIANTS) {
   const corePolygons = landGeo.features[0].geometry.coordinates.filter(p => !isSeamSliver(p));
   const coreLandGeo = { type: "Feature", geometry: { type: "MultiPolygon", coordinates: corePolygons } };
 
-  // d3 draws a line exactly on the seam at one edge only. Two spellings of the seam, seamLng and
-  // seamLng - 360, land on both edges.
+  // d3 draws a line on the seam at one edge only, so it's given both spellings of the seam.
   const seamMeridianA = meridianLatSamples.map(lat => [seamLng, lat]);
   const seamMeridianB = meridianLatSamples.map(lat => [seamLng - 360, lat]);
   const variantGraticuleGeo = {

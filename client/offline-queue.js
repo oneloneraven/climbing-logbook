@@ -1,10 +1,9 @@
-// Returns new arrays.
 export function applyPendingQueue(queue, entries, places, locations) {
   let nextEntries = entries;
   let nextPlaces = places;
   let nextLocations = locations;
 
-  // A deleted place's climbs move with it (#160), and show as pending until the move syncs.
+  // A deleted place's climbs move with it, and show as pending until the move syncs.
   const moveEntries = (fromPlaceIds, toPlaceId) => {
     nextEntries = nextEntries.map(e =>
       fromPlaceIds.includes(e.placeId) ? { ...e, placeId: toPlaceId, _pending: true } : e,
