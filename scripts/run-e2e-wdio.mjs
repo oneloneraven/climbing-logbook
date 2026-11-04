@@ -3,8 +3,10 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { CLASSIC_SPEC_NAMES, SHARED_SPEC_NAMES } from "../e2e/shared-specs.js";
+import { resolveBrowsersOnce, selectedBrowsers } from "../e2e/wdio-browsers.js";
 
-export function runE2eWdio(names) {
+export async function runE2eWdio(names) {
+  await resolveBrowsersOnce(selectedBrowsers());
   const projectOf = name =>
     SHARED_SPEC_NAMES.includes(name) ? "shared" : CLASSIC_SPEC_NAMES.includes(name) ? "classic" : "isolated";
   let failed = false;
@@ -18,4 +20,4 @@ export function runE2eWdio(names) {
   return failed ? 1 : 0;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) process.exit(runE2eWdio());
+if (process.argv[1] === fileURLToPath(import.meta.url)) process.exit(await runE2eWdio());
