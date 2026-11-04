@@ -8,7 +8,7 @@ const waitForUrlEnding = ending => waitForUrl(url => url.href.endsWith(ending), 
 describe("a visitor with nothing stored", () => {
   it("the home page's demo links start the tour, and the visit stores nothing", async () => {
     await browser.url("/");
-    await $('role/button[name="View a demo first"]').click();
+    await $("#demo-picker-wrap").$('role/button[name="View a demo first"]').click();
     const link = $("a*=Intermediate");
     await expect(link).toHaveAttribute("href", "/intermediatedemo/log?tour=1&returnTo=%2Fintermediatedemo%2Flog");
 
@@ -28,7 +28,7 @@ describe("a visitor with nothing stored", () => {
   it("the demo's menu has Take the tour, which returns to the page it started from", async () => {
     await browser.url("http://my.localhost:8787/beginnerdemo/view/map");
     await $("#header-menu-btn").click();
-    const link = $('role/link[name="Take the tour"]');
+    const link = $("#header-menu-popover").$('role/link[name="Take the tour"]');
     await expect(link).toBeDisplayed();
     await expect($("#header-menu-bottom-row")).toHaveElementClass("border-t");
 

@@ -16,7 +16,7 @@ describe("report and hide", () => {
 
     await browser.url(owner.url(""));
     await $("#header-menu-btn").click();
-    const logbookLink = $('role/link[name="Report this logbook"]');
+    const logbookLink = $("#header-menu-popover").$('role/link[name="Report this logbook"]');
     const logbookHref = new URL(await logbookLink.getAttribute("href"), await browser.getUrl());
     expect(logbookHref.pathname).toBe("/help/report-an-issue/");
     expect(logbookHref.searchParams.get("logbook")).toBe(owner.username);

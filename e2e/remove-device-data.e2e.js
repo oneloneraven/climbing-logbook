@@ -41,7 +41,7 @@ describe("remove device data", () => {
     await expect($("#remove-data-warning")).not.toBeDisplayed();
     await expect($$("#remove-data-row button")).toBeElementsArrayOfSize(1);
 
-    await $('role/button[name="Clear device data"]').click();
+    await $("#remove-data-row").$('role/button[name="Clear device data"]').click();
     await waitForPath("/-/login/");
 
     expect(await userKeys(owner)).toEqual([]);

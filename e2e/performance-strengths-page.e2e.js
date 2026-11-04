@@ -32,8 +32,14 @@ describe("performance strengths page", () => {
     await expect($("#report-insights")).toHaveTextContent(contains("Slab is your weak angle"));
     await expect($("#report-insights")).toHaveTextContent(contains("Deadpoint: only at your limit"));
     await expect($("#strengths-angles")).toBeDisplayed();
-    await expect($('role/img[name="Your level on each wall angle"]')).toHaveTextContent(contains("Slab · 6A"));
-    await expect($('role/img[name="What makes climbs hard for you"]')).toHaveTextContent(contains("Deadpoint"));
-    await expect($('role/table[name="Where your cruxes are"]')).toHaveTextContent(contains("Crimp"));
+    await expect($("#strengths-root").$('role/img[name="Your level on each wall angle"]')).toHaveTextContent(
+      contains("Slab · 6A"),
+    );
+    await expect($("#strengths-root").$('role/img[name="What makes climbs hard for you"]')).toHaveTextContent(
+      contains("Deadpoint"),
+    );
+    await expect($("#strengths-root").$('role/table[name="Where your cruxes are"]')).toHaveTextContent(
+      contains("Crimp"),
+    );
   });
 });

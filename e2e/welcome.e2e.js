@@ -173,7 +173,9 @@ describe("welcome", () => {
 
     await tap(exactText("Turn it on"));
     await expect(next()).toBeDisabled();
-    await $(`role/checkbox[name=${JSON.stringify(PAIN_INJURY_WORDING.statement)}]`).click();
+    await $("#welcome-health-statement-row")
+      .$(`role/checkbox[name=${JSON.stringify(PAIN_INJURY_WORDING.statement)}]`)
+      .click();
     const grant = fetches.next("/-/api/consent/pain-injury", "POST");
     await tap(next());
     expect(JSON.parse((await grant).body)).toEqual({ version: expect.any(String) });

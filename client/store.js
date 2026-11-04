@@ -76,18 +76,24 @@ export function createStore({
   }
 
   // Always persisted, or a locally deleted entry reappears from cache.
+  // Counts each change to a table's confirmed rows, so a pull can tell when newer data overtook it.
+  const confirmedVersions = { entries: 0, places: 0, locations: 0 };
+
   function setEntries(next) {
+    confirmedVersions.entries++;
     entries = confirmedEntries = next;
     notify();
     return persistEntries(db => db.replace(next));
   }
   function setPlaces(next) {
+    confirmedVersions.places++;
     places = next;
     const cached = persist("places", PLACES_CACHE_KEY, places);
     notify();
     return cached;
   }
   function setLocations(next) {
+    confirmedVersions.locations++;
     locations = next;
     const cached = persist("locations", LOCATIONS_CACHE_KEY, locations);
     notify();
@@ -105,6 +111,7 @@ export function createStore({
       const { key, set } = TABLES[table];
       return set(mergeDelta(readCached(key), rows));
     }
+    confirmedVersions.entries++;
     entries = confirmedEntries = mergeDelta(confirmedEntries, rows);
     notify();
     return persistEntries(db => db.apply(rows));
@@ -200,6 +207,7 @@ export function createStore({
     getLocations: () => locations,
     setLocations,
     mergeConfirmed,
+    confirmedVersion: table => confirmedVersions[table],
     loadEntriesFromCache,
     loadPlacesFromCache,
     loadLocationsFromCache,

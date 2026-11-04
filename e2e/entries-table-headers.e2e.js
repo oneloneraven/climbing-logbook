@@ -1,9 +1,11 @@
 import { $, $$, expect } from "@wdio/globals";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
+const openGroup = () => $("[data-location-id]:has(> .place-header + :not(.hidden))");
+
 // Browsers disagree on whether the headers' uppercase styling is part of the name, so match on the text.
 async function columnHeader(name) {
-  for (const header of await $$("role/columnheader")) {
+  for (const header of await openGroup().$$("role/columnheader")) {
     if ((await header.getProperty("textContent")).includes(name)) return header;
   }
   throw new Error(`No column header for ${name}`);
@@ -16,7 +18,7 @@ describe("entries table headers", () => {
     await gotoSyncedLog(owner);
     await $$(".place-header")[0].click();
 
-    const headers = $$("role/columnheader");
+    const headers = openGroup().$$("role/columnheader");
     await expect(headers).toBeElementsArrayOfSize(7);
     for (const header of await headers) {
       expect((await header.getProperty("textContent")).trim()).not.toBe("");
@@ -43,12 +45,12 @@ describe("entries table headers", () => {
 
     const filter = $("#filter-btn");
     await expect(filter).not.toHaveAttribute("aria-pressed");
-    await expect($('role/button[name="Filter"]')).toHaveId("filter-btn");
+    await expect($(".filter-wrap").$('role/button[name="Filter"]')).toHaveId("filter-btn");
 
     await filter.click();
     await expect(filter).toHaveAttribute("aria-expanded", "true");
     await $('#filter-status-group label:has(input[data-filter="archived"])').click();
-    await expect($('role/button[name="Filter, filters applied"]')).toHaveId("filter-btn");
+    await expect($(".filter-wrap").$('role/button[name="Filter, filters applied"]')).toHaveId("filter-btn");
     await expect(filter).not.toHaveAttribute("aria-pressed");
   });
 });

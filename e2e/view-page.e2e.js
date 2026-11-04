@@ -140,7 +140,9 @@ describe("view page", () => {
     await $("#header-menu-btn").click();
     const link = $("#public-logbook-link");
     await expect(link).toBeDisplayed();
-    await expect($('role/link[name="View public logbook (opens in a new tab)"]')).toHaveId("public-logbook-link");
+    await expect($("#header-menu-popover").$('role/link[name="View public logbook (opens in a new tab)"]')).toHaveId(
+      "public-logbook-link",
+    );
 
     await link.click();
     const profile = await waitForOpenedTab();

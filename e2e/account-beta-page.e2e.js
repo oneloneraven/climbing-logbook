@@ -3,7 +3,7 @@ import { currentPath, goOffline, recordFetches, waitForPath } from "./wdio-brows
 import { claimOwner } from "./wdio-owner.js";
 
 const contains = text => expect.stringContaining(text);
-const joinButton = () => $('role/button[name="Join Check our beta"]');
+const joinButton = () => $("#beta-actions").$('role/button[name="Join Check our beta"]');
 
 async function expectSavedOnClick(fetches, button, body) {
   const patch = fetches.next("/-/api/settings", "PATCH");
@@ -37,7 +37,9 @@ describe("account beta page", () => {
     await expect($("#beta-leave")).toHaveTextContent(contains("Logbook Beta PWA will say you're not enrolled"));
     await expect($("#beta-join")).not.toBeDisplayed();
 
-    await expectSavedOnClick(fetches, $('role/button[name="Leave Check our beta"]'), { betaOptIn: false });
+    await expectSavedOnClick(fetches, $("#beta-actions").$('role/button[name="Leave Check our beta"]'), {
+      betaOptIn: false,
+    });
     await waitForPath(`/${owner.username}/log`);
   });
 
@@ -94,7 +96,10 @@ describe("account beta page", () => {
   it("links to the full help page and back to My Account", async () => {
     const owner = await claimOwner();
     await browser.url(owner.url("/account/beta"));
-    await expect($('role/link[name="Read more about Check our beta"]')).toHaveAttribute("href", "/help/beta-channel/");
+    await expect($("main").$('role/link[name="Read more about Check our beta"]')).toHaveAttribute(
+      "href",
+      "/help/beta-channel/",
+    );
     await expect($("#back-to-account-link")).toHaveAttribute("href", `/${owner.username}/account`);
   });
 });
