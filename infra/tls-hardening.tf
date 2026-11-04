@@ -61,7 +61,7 @@ resource "cloudflare_ruleset" "app_www_redirect" {
   kind        = "zone"
   phase       = "http_request_dynamic_redirect"
   name        = "www to apex redirect"
-  description = "www.climbinglogbook.com -> climbinglogbook.com (#527); apex pages off the app hosts"
+  description = "www.climbinglogbook.com -> climbinglogbook.com (#527); apex pages off the app hosts (#985)"
 
   rules = [
     {
