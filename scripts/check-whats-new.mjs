@@ -1,5 +1,5 @@
 // A PR that makes a release must say what climbers will notice, even if that's nothing.
-import { hasWhatsNewHeading } from "./lib/whats-new.mjs";
+import { hasWhatsNewHeading, placeholdersIn, whatsNewFromPrBody } from "./lib/whats-new.mjs";
 
 const { body = "", labels = [] } = JSON.parse(process.env.PR_JSON ?? "{}");
 if (!labels.some(({ name }) => /^release: (major|minor|patch)$/.test(name))) {
@@ -9,6 +9,13 @@ if (!labels.some(({ name }) => /^release: (major|minor|patch)$/.test(name))) {
 if (!hasWhatsNewHeading(body ?? "")) {
   console.log(
     "::error::This PR makes a release, so its description needs a \"## What's new\" heading: one plain sentence per change climbers will notice, shown on Help > What's new. Leave it empty only if they won't notice anything. See docs/definition-of-done.md.",
+  );
+  process.exit(1);
+}
+const placeholders = placeholdersIn(whatsNewFromPrBody(body ?? ""));
+if (placeholders.length) {
+  console.log(
+    `::error::Leave "What's new" empty when climbers won't notice anything; "${placeholders[0]}" would be shown to them as a change.`,
   );
   process.exit(1);
 }

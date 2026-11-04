@@ -47,6 +47,13 @@ describe("whatsNewFromPrBody (#917)", () => {
     ).toEqual(["A change."]);
   });
 
+  it.each([
+    ["a horizontal rule", "---\nSigned off."],
+    ["the footer without its emoji", "Generated with [Claude Code](https://claude.com/claude-code)"],
+  ])("stops at %s after a last What's new section", (_, after) => {
+    expect(whatsNewFromPrBody(`## What's new\n\nA change.\n\n${after}\n`)).toEqual(["A change."]);
+  });
+
   it("skips a comment that spans several lines", () => {
     expect(whatsNewFromPrBody("## What's new\n<!-- one\ntwo -->\nA change.\n")).toEqual(["A change."]);
   });
@@ -169,6 +176,12 @@ describe("check-whats-new.mjs (#1504)", () => {
 
   it("passes a released PR with the heading, even left empty", () => {
     expect(run("release: patch", withHeading).status).toBe(0);
+  });
+
+  it.each(["Nothing user-facing.", "None", "- n/a", "Nothing"])("fails a placeholder instead of an empty section: %j", line => {
+    const result = run("release: patch", `${withHeading}\n${line}\n\n## Definition of done\n`);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("empty");
   });
 
   it("doesn't check release: none", () => {
