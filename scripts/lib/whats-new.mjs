@@ -3,6 +3,7 @@ import historyFile from "./whats-new-history.json" with { type: "json" };
 import { compareVersions, groupByMonth, recentReleases } from "../../shared/whats-new-months.js";
 
 const HEADING = /^##\s+What['’]s new\s*$/im;
+const ATTRIBUTION = /^🤖 Generated with /;
 
 export function hasWhatsNewHeading(body = "") {
   return HEADING.test(body.replace(/\r\n/g, "\n"));
@@ -14,7 +15,7 @@ export function whatsNewFromPrBody(body = "") {
   const start = text.search(HEADING);
   if (start === -1) return [];
   const section = text.slice(start).split("\n").slice(1);
-  const end = section.findIndex(line => /^#{1,2}\s/.test(line));
+  const end = section.findIndex(line => /^#{1,2}\s/.test(line) || ATTRIBUTION.test(line.trim()));
   const changes = [];
   let inComment = false;
   for (const line of end === -1 ? section : section.slice(0, end)) {
@@ -46,7 +47,7 @@ export function parseTags(output) {
         changes: body
           .split("\n")
           .map(line => line.trim())
-          .filter(Boolean),
+          .filter(line => line && !ATTRIBUTION.test(line)),
       };
     });
 }

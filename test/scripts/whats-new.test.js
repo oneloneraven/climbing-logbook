@@ -7,6 +7,7 @@ import {
   hasWhatsNewHeading,
   readHistory,
   readTaggedReleases,
+  parseTags,
   tagMessage,
   whatsNew,
   whatsNewFromPrBody,
@@ -38,6 +39,12 @@ describe("whatsNewFromPrBody (#917)", () => {
     expect(whatsNewFromPrBody("Closes #1\n\n## What's new\n\n<!-- comment -->\n\n## Definition of done\n")).toEqual([]);
     expect(whatsNewFromPrBody("Closes #1")).toEqual([]);
     expect(whatsNewFromPrBody(undefined)).toEqual([]);
+  });
+
+  it("stops at the PR's attribution footer when What's new is the last section", () => {
+    expect(
+      whatsNewFromPrBody("## What's new\n\nA change.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n"),
+    ).toEqual(["A change."]);
   });
 
   it("skips a comment that spans several lines", () => {
@@ -166,5 +173,12 @@ describe("check-whats-new.mjs (#1504)", () => {
 
   it("doesn't check release: none", () => {
     expect(run("release: none", "Closes #1").status).toBe(0);
+  });
+});
+
+describe("parseTags", () => {
+  it("drops an attribution footer that an earlier release wrote into its tag", () => {
+    const output = "v2.140.4\u00002026-10-27\u0000A change.\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\u0000\n";
+    expect(parseTags(output)).toEqual([{ version: "v2.140.4", date: "2026-10-27", changes: ["A change."] }]);
   });
 });
