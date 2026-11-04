@@ -1,6 +1,6 @@
 import { $, browser, expect } from "@wdio/globals";
 import { boundingBox, browserFetch, tap, waitForPath, waitForUrl } from "./wdio-browser.js";
-import { claimOwner } from "./wdio-owner.js";
+import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 const DEMO = "http://my.localhost:8787/intermediatedemo";
 const dialog = () => $('[role="dialog"][aria-labelledby="tour-title"]');
@@ -112,6 +112,7 @@ describe("tour", () => {
 
   it("the tour doesn't run on your own logbook", async () => {
     const owner = await claimOwner();
+    await gotoSyncedLog(owner);
     await browser.url(owner.url("/log?tour=1"));
     await expect($("#add-btn")).toBeDisplayed();
     await expect(dialog()).not.toExist();
