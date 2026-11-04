@@ -4,7 +4,8 @@ import { compareVersions, groupByMonth, recentReleases } from "../../shared/what
 
 const HEADING = /^##\s+What['’]s new\s*$/im;
 const ATTRIBUTION = /^(🤖\s*)?Generated with /;
-const SECTION_END = line => /^#{1,2}\s/.test(line) || /^(-{3,}|\*{3,}|_{3,})$/.test(line.trim()) || ATTRIBUTION.test(line.trim());
+const SECTION_END = line =>
+  /^#{1,2}\s/.test(line) || /^(-{3,}|\*{3,}|_{3,})$/.test(line.trim()) || ATTRIBUTION.test(line.trim());
 const PLACEHOLDER = /^(none|nothing( user-facing)?|n\/a|-)\.?$/i;
 
 export function hasWhatsNewHeading(body = "") {

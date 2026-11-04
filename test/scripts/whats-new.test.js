@@ -43,7 +43,9 @@ describe("whatsNewFromPrBody (#917)", () => {
 
   it("stops at the PR's attribution footer when What's new is the last section", () => {
     expect(
-      whatsNewFromPrBody("## What's new\n\nA change.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n"),
+      whatsNewFromPrBody(
+        "## What's new\n\nA change.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+      ),
     ).toEqual(["A change."]);
   });
 
@@ -178,11 +180,14 @@ describe("check-whats-new.mjs (#1504)", () => {
     expect(run("release: patch", withHeading).status).toBe(0);
   });
 
-  it.each(["Nothing user-facing.", "None", "- n/a", "Nothing"])("fails a placeholder instead of an empty section: %j", line => {
-    const result = run("release: patch", `${withHeading}\n${line}\n\n## Definition of done\n`);
-    expect(result.status).toBe(1);
-    expect(result.stdout).toContain("empty");
-  });
+  it.each(["Nothing user-facing.", "None", "- n/a", "Nothing"])(
+    "fails a placeholder instead of an empty section: %j",
+    line => {
+      const result = run("release: patch", `${withHeading}\n${line}\n\n## Definition of done\n`);
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("empty");
+    },
+  );
 
   it("doesn't check release: none", () => {
     expect(run("release: none", "Closes #1").status).toBe(0);
@@ -191,7 +196,8 @@ describe("check-whats-new.mjs (#1504)", () => {
 
 describe("parseTags", () => {
   it("drops an attribution footer that an earlier release wrote into its tag", () => {
-    const output = "v2.140.4\u00002026-10-27\u0000A change.\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\u0000\n";
+    const output =
+      "v2.140.4\u00002026-10-27\u0000A change.\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\u0000\n";
     expect(parseTags(output)).toEqual([{ version: "v2.140.4", date: "2026-10-27", changes: ["A change."] }]);
   });
 });
