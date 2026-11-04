@@ -1,4 +1,4 @@
-// Oldest first. A version that needs consent again asks anyone who agreed to an earlier one (#1121).
+// Oldest first. A version that needs consent again asks anyone who agreed to an earlier one.
 export const PAIN_INJURY_HISTORY = [
   {
     version: "2026-10-13",
@@ -57,7 +57,6 @@ export const PAIN_INJURY_OLDEST_VALID_VERSION = (
 ).version;
 export const PAIN_INJURY_WORDING = { points: CURRENT.points, statement: CURRENT.statement };
 
-// Null unless the user agreed to older wording; then what's changed, and whether they need to agree again.
 export function painInjuryConsentUpdate(agreedVersion) {
   if (!agreedVersion) return null;
   const newer = PAIN_INJURY_HISTORY.filter(({ version }) => version > agreedVersion);

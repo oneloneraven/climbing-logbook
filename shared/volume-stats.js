@@ -129,7 +129,7 @@ export function windowHalves(buckets) {
 const daysIn = ({ start, end }) => (parseISODate(end).getTime() - parseISODate(start).getTime()) / DAY_MS + 1;
 const within = (date, { start, end }) => Boolean(date) && date >= start && date <= end;
 
-// Per day, not per half: a custom window's oldest bucket can be shorter than the rest (#1380).
+// Per day, not per half: a custom window's oldest bucket can be shorter than the rest.
 export function volumeTrend(entries, buckets, type) {
   const halves = windowHalves(buckets);
   if (!halves) return null;
@@ -166,7 +166,7 @@ export function volumeTrend(entries, buckets, type) {
   return kind && { kind, pct, sameGrade, topBefore, topAfter };
 }
 
-// Copy from #1389; grades are named in the scale the viewer picked.
+// Grades are named in the scale the viewer picked.
 export function volumeTrendInsight(trend, type, viewScaleId) {
   if (!trend) return null;
   const grade = pair => reportGradeLabel(pair.grade, pair.gradeScale, type, viewScaleId) ?? pair.grade;

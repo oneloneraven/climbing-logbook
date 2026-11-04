@@ -1,6 +1,5 @@
 import { matchOwnerRoute } from "./owner-routes.js";
 
-// The report and feedback forms' "Which part of the app?" value for the page someone came from, or "" if unknown.
 export function feedbackSection(referrer) {
   let url;
   try {

@@ -7,7 +7,6 @@ export function pluralizeHoldType(holdType) {
 
 const WALL_ANGLE_ADJECTIVE = { slab: "slab", vert: "vertical", overhang: "overhanging", roof: "roof" };
 
-// "left hand on overhanging crimps": one tagged move, as the insight cards name it.
 export function describeMove({ side, limb, wallAngle, holdType }) {
   return `${side} ${limb} on ${WALL_ANGLE_ADJECTIVE[wallAngle] ?? wallAngle} ${pluralizeHoldType(holdType)}`;
 }

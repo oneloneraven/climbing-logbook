@@ -43,7 +43,7 @@ function firstLastIndicesWithData(hasDataFlags) {
   return indices.length >= 2 ? [indices[0], indices[indices.length - 1]] : null;
 }
 
-// What the window's effort and grade did, as facts; the page words it in the viewer's scale (#1389).
+// What the window's effort and grade did, as facts; the page words it in the viewer's scale.
 // Gated on sends with an Exertion rating: unrated sends say nothing about effort.
 export function effortRead(
   { maxGradeByBucket, avgExertionByBucket, rpeCountByBucket, overallAvgExertion, ratedSends },
