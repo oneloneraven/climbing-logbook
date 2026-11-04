@@ -3,7 +3,8 @@ import { BACKGROUND_FETCH_TIMEOUT_MS, isUnload } from "./sync-status-icon.js";
 import { forgetSync } from "./sync-status.js";
 
 // No response at all is reported, since onLine can read true on a dead link.
-export async function pullDelta({ store, url, table, onFailure }) {
+export async function pullDelta({ store, url, table, onFailure }, retried = false) {
+  const version = store.confirmedVersion(table);
   let res;
   try {
     res = await fetch(`${url}?since=${getCursor(table)}`, {
@@ -22,6 +23,8 @@ export async function pullDelta({ store, url, table, onFailure }) {
     }
     if (!res.ok) return false;
     const { [table]: rows, cursor } = await res.json();
+    // Data confirmed while this was in flight is newer than its rows, and its cursor would wind the table back.
+    if (store.confirmedVersion(table) !== version) return retried || pullDelta({ store, url, table, onFailure }, true);
     if (await store.mergeConfirmed(table, rows)) setCursor(table, cursor);
     return true;
   } catch {

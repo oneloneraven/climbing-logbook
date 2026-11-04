@@ -11,6 +11,7 @@ function fakeStore({ cached }) {
     applyPendingQueue: () => {},
     getEntries: () => entries,
     mergeConfirmed: async () => true,
+    confirmedVersion: () => 0,
   };
 }
 

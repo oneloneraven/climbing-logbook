@@ -99,8 +99,11 @@ export function createStore({
     locations: { key: LOCATIONS_CACHE_KEY, set: setLocations },
   };
 
+  const confirmedVersions = { entries: 0, places: 0, locations: 0 };
+
   // Onto the confirmed rows, not the in-memory view, so pending flags never get persisted.
   async function mergeConfirmed(table, rows) {
+    confirmedVersions[table]++;
     if (table !== "entries") {
       const { key, set } = TABLES[table];
       return set(mergeDelta(readCached(key), rows));
@@ -200,6 +203,7 @@ export function createStore({
     getLocations: () => locations,
     setLocations,
     mergeConfirmed,
+    confirmedVersion: table => confirmedVersions[table],
     loadEntriesFromCache,
     loadPlacesFromCache,
     loadLocationsFromCache,
