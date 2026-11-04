@@ -1,9 +1,11 @@
 import { $, $$, expect } from "@wdio/globals";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
+const openGroup = () => $("[data-location-id]:has(> .place-header + :not(.hidden))");
+
 // Browsers disagree on whether the headers' uppercase styling is part of the name, so match on the text.
 async function columnHeader(name) {
-  for (const header of await $$("[data-location-id]")[0].$$("role/columnheader")) {
+  for (const header of await openGroup().$$("role/columnheader")) {
     if ((await header.getProperty("textContent")).includes(name)) return header;
   }
   throw new Error(`No column header for ${name}`);
@@ -16,7 +18,7 @@ describe("entries table headers", () => {
     await gotoSyncedLog(owner);
     await $$(".place-header")[0].click();
 
-    const headers = $$("[data-location-id]")[0].$$("role/columnheader");
+    const headers = openGroup().$$("role/columnheader");
     await expect(headers).toBeElementsArrayOfSize(7);
     for (const header of await headers) {
       expect((await header.getProperty("textContent")).trim()).not.toBe("");

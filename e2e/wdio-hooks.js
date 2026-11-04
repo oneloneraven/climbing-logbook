@@ -53,10 +53,10 @@ export function steadyCommands() {
   });
   // Firefox checks every element under the start nodes, forcing a repaint for each hidden one.
   for (const command of ["$", "$$"]) {
-    browser.overwriteCommand(command, (find, selector) => {
+    browser.overwriteCommand(command, (find, selector, ...rest) => {
       if (typeof selector === "string" && selector.startsWith("role/"))
         throw new Error(`Look up ${selector} inside the region it's in, not the whole page`);
-      return find(selector);
+      return find(selector, ...rest);
     });
   }
   browser.overwriteCommand("browsingContextLocateNodes", async (locateNodes, params) => {
