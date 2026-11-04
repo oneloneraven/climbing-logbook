@@ -101,8 +101,10 @@ function render() {
     .join("");
   // Redrawing an unchanged list would replace the buttons, losing focus on every sync.
   if (html === renderedList) return;
+  const focused = listEl.contains(document.activeElement) ? document.activeElement.dataset.edit : undefined;
   listEl.innerHTML = html;
   renderedList = html;
+  if (focused) listEl.querySelector(`[data-edit="${CSS.escape(focused)}"]`)?.focus();
 }
 
 function placeOptions(excludeIds) {

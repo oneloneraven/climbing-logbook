@@ -160,6 +160,24 @@ describe("account places page", () => {
     await expect(edit).toBeFocused();
   });
 
+  it("a pull that changes another place keeps focus on the edit button you're on (#1660)", async () => {
+    const owner = await seededOwner();
+    await gotoSyncedLog(owner);
+    const releasePull = await holdRequests("/-/api/locations", { method: "GET", once: true });
+    await browser.url(owner.url("/account/places"));
+    await expect(location(owner, "l1")).toHaveTextContent(contains("3 climbs"));
+    await releasePull.caught();
+    await browser.execute(button => button.focus(), await $(`[data-edit="${owner.ownId("l1")}"]`));
+
+    await releasePull({
+      locations: [{ id: owner.ownId("l2"), name: "Magic Wood (Averstal)", country: "Switzerland" }],
+      cursor: 0,
+    });
+
+    await expect(location(owner, "l2")).toHaveTextContent(contains("Magic Wood (Averstal)"));
+    await expect($(`[data-edit="${owner.ownId("l1")}"]`)).toBeFocused();
+  });
+
   it("offline, a rename shows at once and syncs by itself once the connection is back (#159)", async () => {
     const owner = await seededOwner();
     await openPlaces(owner);
