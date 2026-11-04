@@ -13,15 +13,6 @@ function remember(line) {
   if (recentCommands.length > 30) recentCommands.shift();
 }
 
-// WebdriverIO passes nested start nodes, such as <html> and its #document, and Firefox walks each in full.
-async function outermost(startNodes) {
-  const nested = await browser.execute(
-    (...nodes) => nodes.map(node => nodes.some(other => other !== node && other.contains(node))),
-    ...startNodes.map(({ sharedId }) => ({ "element-6066-11e4-a52e-4f735466cecf": sharedId })),
-  );
-  return startNodes.filter((_, i) => !nested[i]);
-}
-
 // Commands ride out the page's own redirects and reloads, which WebDriver BiDi reports as errors.
 export function steadyCommands() {
   // Cookies and mocked session responses carry session tokens, which shouldn't reach CI logs.
@@ -62,9 +53,7 @@ export function steadyCommands() {
   browser.overwriteCommand("browsingContextLocateNodes", async (locateNodes, params) => {
     for (let attempt = 1; ; attempt++) {
       try {
-        if (params.locator.type !== "accessibility" || !(params.startNodes?.length > 1))
-          return await locateNodes(params);
-        return await locateNodes({ ...params, startNodes: await outermost(params.startNodes) });
+        return await locateNodes(params);
       } catch (error) {
         if (attempt === 10 || !PAGE_REPLACED.test(error.message)) throw error;
         await new Promise(resolve => setTimeout(resolve, 100));
