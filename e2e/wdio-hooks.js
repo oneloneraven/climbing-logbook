@@ -13,8 +13,7 @@ function remember(line) {
   if (recentCommands.length > 30) recentCommands.shift();
 }
 
-// Clicks wait until the element is actionable, and commands ride out the page's own redirects and reloads, which
-// WebDriver BiDi reports as errors.
+// Commands ride out the page's own redirects and reloads, which WebDriver BiDi reports as errors.
 export function steadyCommands() {
   // Cookies and mocked session responses carry session tokens, which shouldn't reach CI logs.
   const secret = command => command.startsWith("storage") || command === "networkProvideResponse";
@@ -30,8 +29,7 @@ export function steadyCommands() {
     },
     { attachToElement: true },
   );
-  // WebdriverIO opens the next test's window while this one runs, taking focus, and Firefox only turns keys like
-  // Enter into clicks in a focused window.
+  // Firefox only turns keys like Enter into clicks in a focused window, and the next test's window takes focus.
   browser.overwriteCommand("keys", async (keys, value) => {
     await browser.browsingContextActivate({ context: currentContext() });
     return keys(value);

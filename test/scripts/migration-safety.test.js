@@ -1,15 +1,11 @@
-// Expand-and-contract (docs/versioning.md, "Database migrations"). Beta and
-// production share one D1 database (ADR-0020) and migrations apply before the
-// new code deploys, so a migration that drops or renames something the
-// running Worker still reads breaks production until the code catches up.
+// Expand and contract: docs/versioning.md, Database migrations.
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const MIGRATIONS_DIR = join(import.meta.dirname, "../../migrations");
 
-// Migrations up to here were applied before the rule existed; editing an
-// applied migration only to add a marker would change nothing but its bytes.
+// Applied before the rule existed, and an applied migration isn't edited.
 const LAST_MIGRATION_BEFORE_RULE = 20;
 
 const OVERRIDE = /^--\s*destructive-migration:\s*\S.{9,}$/m;

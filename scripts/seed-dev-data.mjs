@@ -1,5 +1,4 @@
-// Seeds the local dev user's logbook. --large adds many places; --scenario empty|single-discipline.
-//   node scripts/seed-dev-data.mjs [baseUrl] [--large] [--scenario <name>]
+// Usage: docs/scripts.md.
 import { bootstrapDevSession, resetDatabase } from "./lib/dev-session.mjs";
 import { seedLargeLogbookData, seedLogbookData } from "./lib/seed-data.mjs";
 

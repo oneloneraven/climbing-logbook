@@ -1,5 +1,4 @@
-// The production, beta and preview build: client assets and the Worker in one pass (ADR-0021).
-// The environment comes from CLOUDFLARE_ENV at build time, which is required. Also serves e2e via vite preview.
+// Client assets and the Worker in one pass (ADR-0021); CLOUDFLARE_ENV picks the environment and is required.
 import { defineConfig } from "vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { CLIENT_ENTRIES } from "./vite.entries.mjs";

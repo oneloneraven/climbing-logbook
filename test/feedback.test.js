@@ -138,7 +138,7 @@ describe("handleFeedback", () => {
     expect(res.status).toBe(201);
   });
 
-  // 5 an hour per connection, counted by a Durable Object (#1049).
+  // 5 an hour per connection, counted by a Durable Object.
   async function withLimiting(run) {
     env.RATE_LIMITING_ENABLED = "true";
     try {

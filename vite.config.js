@@ -1,5 +1,4 @@
-// Dev server only; production builds use vite.deploy.config.js. Not wrangler dev: it ignores my.
-// hosts and rewrites the origin to the production route, which breaks Better Auth's origin check.
+// Dev server only, and not wrangler dev: it ignores my. hosts and rewrites the origin, breaking Better Auth's check.
 import { defineConfig } from "vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { CLIENT_ENTRIES } from "./vite.entries.mjs";

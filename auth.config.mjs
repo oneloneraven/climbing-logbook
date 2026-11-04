@@ -1,8 +1,4 @@
-// CLI-only: better-auth generate reads this to write the auth schema migration. The CLI isn't a
-// dependency (it pins an old, vulnerable better-auth), so install it only while regenerating:
-//   pnpm add -D @better-auth/cli better-sqlite3
-//   pnpm exec better-auth generate --config auth.config.mjs --output migrations/<next>_<name>.sql -y
-//   pnpm remove @better-auth/cli better-sqlite3
+// Only for better-auth generate, which writes the auth schema migration: docs/scripts.md.
 import { betterAuth } from "better-auth";
 import { twoFactor, username } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";

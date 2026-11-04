@@ -35,8 +35,7 @@ async function signCookieValue(value, secret) {
   return encodeURIComponent(`${value}.${btoa(String.fromCharCode(...new Uint8Array(signature)))}`);
 }
 
-// Writes verified users, their password logins and a session each straight into D1, and returns each session's Set-Cookie.
-// A user with onboarded: false hasn't been through the first-login setup.
+// Straight into D1, so a run doesn't sign up hundreds of users through the API.
 export async function seedUsers(users, { secret, ...d1Options }) {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + SESSION_DAYS * 24 * 60 * 60 * 1000).toISOString();

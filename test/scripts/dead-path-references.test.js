@@ -1,7 +1,4 @@
-// Comments and docs that point at repo paths which no longer exist (#1088).
-// ADRs and migrations are exempt: ADRs are never edited after acceptance
-// (docs/adr/README.md), and any change under migrations/, even a comment,
-// makes the next release deploy straight to production (deploy.yml).
+// ADRs and migrations are exempt: ADRs aren't edited after acceptance, and any migrations/ change deploys to production.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -35,21 +32,14 @@ const EXEMPT = ["docs/adr/", "migrations/", "test/scripts/dead-path-references"]
 const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
 const trackedFiles = new Set(tracked);
 
-// "client/store.js/admin-auth.js" names two files; the second is relative to
-// the first's directory unless it starts with a top-level directory itself.
+// "client/store.js/admin-auth.js" names two files, the second relative to the first's directory.
 function splitJoined(token) {
   const parts = token.split(/(?<=\.(?:js|mjs|md|njk|json|css|sql|tf))\//);
   const dir = parts[0].slice(0, parts[0].lastIndexOf("/") + 1);
   return parts.map((part, i) => (i === 0 || TOP_LEVEL.some(d => part.startsWith(`${d}/`)) ? part : dir + part));
 }
 
-// Decided from git, not the filesystem, so a clean checkout and a local one
-// agree: a path is live if git tracks it (or a file under it), or if it's
-// gitignored generated output (public/, e2e/.auth/). A token without an
-// extension is often a path wrapped across a comment line ("shared/entry-"
-// then "schema.js"), so a prefix of a tracked path counts too.
-// Asks about a file inside the path too: a directory rule ("e2e/.auth/")
-// only matches the bare path when that directory exists on disk.
+// From git, not the filesystem, so a clean checkout and a local one agree.
 function isGitIgnored(path) {
   try {
     execFileSync("git", ["check-ignore", "--no-index", path, `${path}/_`], { cwd: ROOT, stdio: "ignore" });

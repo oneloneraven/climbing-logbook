@@ -1,4 +1,4 @@
-// Saves the beta samples outside any repo, replacing the last pull so they age out with the table: node scripts/pull-beta-samples.mjs [file]
+// Usage: docs/scripts.md.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";

@@ -17,9 +17,7 @@ import { devUserAsAthlete, signInDevUser } from "./wdio-owner.js";
 const ORIGIN = "http://my.localhost:8787";
 const logPath = `/${DEV_USER.username}/log`;
 
-// Only Chromium's WebDriver BiDi shows the service worker's own requests (under the worker's context), and only its
-// Resource Timing marks what the worker served (deliveryType "cache-storage"). Firefox exposes neither, so the
-// tests that check where a response came from run in Chrome only (#1597).
+// Firefox's BiDi doesn't show the worker's requests, nor its Resource Timing what the worker served.
 const chromeOnly = browser.capabilities.browserName === "chrome" ? it : it.skip;
 
 // A fresh device's first /log goes via /sync, so wait until it settles.
@@ -55,8 +53,7 @@ async function watchNetwork(event, onEvent) {
   afterThisTest(() => browser.off(event, onEvent));
 }
 
-// Chromium reports the worker's requests under its own context, not the tab's.
-// No context at all is the browser's own, such as favicons.
+// Chromium reports the worker's requests under its own context; no context at all is the browser's own.
 async function recordWorkerRequests() {
   const tab = currentContext();
   const paths = [];
@@ -228,8 +225,7 @@ describe("offline launch", () => {
     await warm("/log");
     expect(await cachedPaths()).toContain("/log/index.html");
 
-    // Stubbed: a real sign-out would end the shared dev session. The login page's session check is told
-    // there's none, as after a real sign-out, or it would bounce back to /log.
+    // Stubbed, as a real sign-out would end the shared dev session.
     const signOut = await browser.mock("**/-/api/auth/sign-out");
     signOut.respond({}, { fetchResponse: false });
     await $("#header-menu-btn").click();

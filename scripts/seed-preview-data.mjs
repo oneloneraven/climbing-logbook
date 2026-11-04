@@ -1,5 +1,4 @@
-// Rebuilds the shared preview D1 from main (#1291): drops every table, migrates and seeds. The account comes from repo secrets; previews are public.
-//   PREVIEW_DEV_EMAIL=... PREVIEW_DEV_PASSWORD=... PREVIEW_BETA_INVITE_CODE=... node scripts/seed-preview-data.mjs <preview-url>
+// Usage: docs/scripts.md.
 import { execFileSync } from "node:child_process";
 import { applyMigrations, bootstrapDevSession, dropAllTables } from "./lib/dev-session.mjs";
 import { seedLogbookData } from "./lib/seed-data.mjs";
@@ -38,7 +37,7 @@ async function waitForServer(url, timeoutMs = 60_000) {
 }
 
 async function seed() {
-  // get-session answers 200 without a session; every resource route 401s (#992).
+  // get-session answers 200 without a session; every resource route 401s.
   await waitForServer(`${baseUrl}/-/api/auth/get-session`);
 
   console.log(`Rebuilding the preview database (${D1_OPTIONS.database})...`);

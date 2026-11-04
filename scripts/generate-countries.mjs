@@ -1,5 +1,4 @@
-// Prints the COUNTRIES array for shared/countries.js; paste it in. Pins sit on geographic centres.
-//   node scripts/generate-countries.mjs > /tmp/countries.js
+// Usage: docs/scripts.md.
 
 import countries from "world-countries";
 import { EXCLUDED_CCA2 } from "./lib/country-exclusions.mjs";

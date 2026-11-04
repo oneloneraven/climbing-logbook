@@ -1,6 +1,4 @@
-// Starts Vite and the Tailwind watcher, seeds data and opens the login page; Ctrl+C stops it all.
-// Vite, not wrangler dev: wrangler dev rewrites the origin to the production route and ignores my. hosts.
-//   pnpm dev [--no-seed] [--no-open]
+// Vite, not wrangler dev, which rewrites the origin to the production route and ignores my. hosts.
 
 import { spawn, spawnSync } from "node:child_process";
 import { platform } from "node:os";

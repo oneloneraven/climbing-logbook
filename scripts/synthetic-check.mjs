@@ -1,7 +1,4 @@
-// Signs in on the apex and checks the session cookie really reaches my., matching Domain like a browser.
-// Needs SYNTHETIC_USER_EMAIL and SYNTHETIC_USER_PASSWORD (infra/README.md). Read-only.
-// APEX_URL/APP_URL override the hosts; locally the cookie is host-only, so the check rightly refuses it.
-//   node scripts/synthetic-check.mjs
+// Usage: docs/scripts.md.
 
 const APEX = process.env.APEX_URL || "https://climbinglogbook.com";
 const APP = process.env.APP_URL || "https://my.climbinglogbook.com";

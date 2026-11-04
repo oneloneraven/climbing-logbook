@@ -1,5 +1,4 @@
-// Rasterises static/-/beta/icon*.svg to the committed PNGs. CHROMIUM_PATH overrides the browser.
-//   node scripts/generate-beta-icons.mjs
+// Usage: docs/scripts.md.
 import { readFileSync } from "node:fs";
 import { headlessChrome } from "./lib/headless-chrome.mjs";
 

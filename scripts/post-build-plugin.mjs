@@ -1,5 +1,4 @@
-// One plugin, because Rollup runs writeBundle hooks in parallel and the service worker must be
-// built after the URLs get their hashes.
+// One plugin: Rollup runs writeBundle hooks in parallel, and the worker must be built after the URLs get hashes.
 import { contentHashAssetUrls } from "./content-hash-asset-urls.mjs";
 import { buildServiceWorker } from "./service-worker-build.mjs";
 

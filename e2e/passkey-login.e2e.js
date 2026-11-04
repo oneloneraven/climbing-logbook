@@ -33,8 +33,7 @@ async function logInWithPasskey(owner) {
   await waitForPath(`/${owner.username}/log`);
 }
 
-// Only Chrome's virtual authenticator answers an autofill request by itself; Firefox's waits for a pick from its own
-// autofill list, which WebDriver can't reach, so that test runs in Chrome only (#1598).
+// Firefox's virtual authenticator waits for a pick from its own autofill list, which WebDriver can't reach.
 const chromeOnly = browser.capabilities.browserName === "chrome" ? it : it.skip;
 
 describe("logging in with a passkey", () => {

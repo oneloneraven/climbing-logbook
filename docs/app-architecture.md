@@ -636,6 +636,9 @@ in dev. The admin pages are at `http://admin.localhost:5173/reports` once
 `.dev.vars` has `ADMIN_ACCESS_CHECK=off`, since nothing local stands in for
 Access.
 
+The other scripts people run by hand, for seeding, generated files and
+operations, are in [scripts.md](scripts.md).
+
 ## Testing
 
 - `pnpm test` runs three Vitest projects: `workers` (the real Workers

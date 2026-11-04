@@ -5,7 +5,7 @@ import { blockIndexedDb } from "./wdio-performance.js";
 
 const contains = text => expect.stringContaining(text);
 
-// A device that keeps no copy waits on the server, so every view shows its loading state first (#1387).
+// A device that keeps no copy waits on the server, so every view shows its loading state first.
 async function serverOnlyAthlete(entries) {
   const owner = await claimOwner();
   await owner.settings({ athleteMode: true });

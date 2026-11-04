@@ -1,5 +1,4 @@
-// Runs the isolated specs, then the shared ones, then the classic ones: the timing and install specs fail under the
-// isolated specs' load (#1320).
+// Isolated, then shared, then classic: the timing and install specs fail under the isolated specs' load.
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { CLASSIC_SPEC_NAMES, SHARED_SPEC_NAMES } from "../e2e/shared-specs.js";

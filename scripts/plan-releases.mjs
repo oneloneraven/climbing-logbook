@@ -1,4 +1,3 @@
-// CI (release.yml): prints, as JSON, the tags to create for merged PRs on main since the latest tag (#1512).
 import { execFileSync } from "node:child_process";
 import { planFromRepo } from "./lib/plan-releases.mjs";
 
