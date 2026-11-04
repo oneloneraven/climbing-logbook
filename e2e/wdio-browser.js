@@ -3,10 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { browser, expect } from "@wdio/globals";
 
-// Playwright bounds navigation waits only by the test's timeout, not the 5s assertion timeout.
 export const NAVIGATION_TIMEOUT = 30000;
 
-// Like Playwright's waitForURL, this also waits for the new page's load event.
+// Also waits for the new page's load event, so the next command meets a loaded page.
 export async function waitForUrl(matches, description = "the expected URL") {
   let last = "nothing";
   await browser
@@ -27,7 +26,7 @@ export const currentPath = () => browser.execute(() => location.pathname);
 
 export const waitForPath = path => waitForUrl(url => url.pathname === path, path);
 
-// Stands in for Playwright's networkidle: the page has loaded and fetched nothing new for half a second.
+// The page has loaded and fetched nothing new for half a second.
 export async function settle() {
   let last = -1;
   await browser.waitUntil(
@@ -44,7 +43,7 @@ export async function settle() {
   );
 }
 
-// What Playwright's page.request does: a request outside the page that carries the browser's cookies for that host.
+// A request from outside the page that carries the browser's cookies for that host.
 export async function browserFetch(url, init = {}, partition = undefined) {
   const { hostname } = new URL(url);
   const { cookies } = await browser.storageGetCookies({ partition: partition ?? (await userContextPartition()) });
@@ -55,7 +54,7 @@ export async function browserFetch(url, init = {}, partition = undefined) {
   return fetch(url, { ...init, headers: { ...init.headers, cookie } });
 }
 
-// Call before navigating. Like Playwright's waitForResponse, the records outlast navigations.
+// Call before navigating: the records outlast navigations.
 export async function recordFetches() {
   const fetches = [];
   const script = await browser.addInitScript(emit => {
@@ -71,7 +70,7 @@ export async function recordFetches() {
   script.on("data", record => fetches.push(record));
   return {
     all: () => [...fetches],
-    // Start waiting before the action that sends it, as with Playwright's waitForResponse.
+    // Start waiting before the action that sends it.
     next(urlPart, method) {
       const since = fetches.length;
       const find = () => fetches.slice(since).find(f => f.url.includes(urlPart) && f.method === method);
@@ -84,15 +83,14 @@ export async function recordFetches() {
   };
 }
 
-// A re-rendered element leaves the old node alive, so look it up again as a Playwright locator does.
+// A re-rendered element leaves the old node alive, so look it up again.
 export async function requery(element) {
   if (typeof element.selector !== "string") return element;
   const parent = element.parent?.selector ? await requery(element.parent) : browser;
   return element.index === undefined ? parent.$(element.selector) : (await parent.$$(element.selector))[element.index];
 }
 
-// Playwright's actionability: no transition running, the element has stopped moving, and it's what a pointer at its
-// centre would hit.
+// No transition running, the element has stopped moving, and it's what a pointer at its centre would hit.
 export async function waitUntilActionable(element) {
   await browser.waitUntil(() =>
     browser.execute(
@@ -111,7 +109,7 @@ export async function waitUntilActionable(element) {
         }),
     ),
   );
-  // Looked up afresh each time, as a Playwright locator is: the page may have redrawn it meanwhile.
+  // Looked up afresh each time: the page may have redrawn it meanwhile.
   let current = await requery(element);
   await current.waitForStable();
   await browser.waitUntil(
@@ -125,7 +123,7 @@ export async function waitUntilActionable(element) {
           return target === hit || target.contains(hit);
         };
         if (isHit()) return true;
-        // Scrolled again on every try, as Playwright does: the page may have moved it since.
+        // Scrolled again on every try: the page may have moved it since.
         target.scrollIntoView({ block: "center", inline: "center" });
         return isHit();
       }, current);
@@ -168,7 +166,7 @@ export const textContents = (selector, { visibleOnly = false } = {}) =>
     visibleOnly,
   );
 
-// Playwright's expect.poll: retry the read until it matches, then assert once more for the failure message.
+// Asserts once more after the retries, for the failure message.
 export async function expectEventually(read, expected) {
   await browser
     .waitUntil(async () => {
@@ -223,7 +221,7 @@ export async function clearCookies() {
   await browser.storageDeleteCookies({ partition: await userContextPartition() });
 }
 
-// Playwright's waitForEvent("download"): this test's downloads land in their own folder.
+// This test's downloads land in their own folder.
 export function temporaryFolder() {
   const folder = mkdtempSync(join(tmpdir(), "e2e-"));
   afterThisTest(() => rmSync(folder, { recursive: true, force: true }));
@@ -279,7 +277,7 @@ export async function chooseFile(input, file) {
   await browser.inputSetFiles({ context: currentContext(), element: { sharedId: element.elementId }, files: [file] });
 }
 
-// Playwright's framenavigated: every page this test's tab starts loading, however briefly it stays.
+// Every page this test's tab starts loading, however briefly it stays.
 export async function recordNavigations() {
   const context = currentContext();
   const urls = [];
@@ -292,8 +290,7 @@ export async function recordNavigations() {
   return urls;
 }
 
-// Takes this test's tab offline. Unlike Playwright's setOffline, the service worker's own fetches still reach the
-// network: neither browser applies BiDi network conditions to workers. Returns a function that brings the connection back.
+// The service worker's own fetches still reach the network: neither browser applies BiDi network conditions to workers.
 export async function goOffline() {
   const restore = await browser.emulate("onLine", false);
   let online = false;

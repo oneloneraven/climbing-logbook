@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { SevereServiceError } from "webdriverio";
 import globalSetup from "./e2e/global-setup.js";
 import { CLASSIC_SPEC_NAMES, SHARED_SPEC_NAMES } from "./e2e/shared-specs.js";
-import { actLikePlaywright } from "./e2e/wdio-hooks.js";
+import { steadyCommands } from "./e2e/wdio-hooks.js";
 
 const BASE_URL = "http://localhost:8787";
 const SERVER_COMMAND =
@@ -77,7 +77,7 @@ export const config = {
   }),
   baseUrl: BASE_URL,
   logLevel: "warn",
-  // Firefox in CI runs slower than the Chromium Playwright's 5s default was tuned on.
+  // Firefox in CI needs longer than the 5s default.
   waitforTimeout: 10000,
   framework: "mocha",
   reporters: ["spec"],
@@ -106,7 +106,7 @@ export const config = {
     }
     await globalSetup(undefined, { browsers: selected.length });
   },
-  before: actLikePlaywright,
+  before: steadyCommands,
   onComplete() {
     stopServer();
   },

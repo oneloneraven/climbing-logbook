@@ -55,7 +55,7 @@ async function watchNetwork(event, onEvent) {
   afterThisTest(() => browser.off(event, onEvent));
 }
 
-// Playwright's request.serviceWorker(): Chromium reports the worker's requests under its own context, not the tab's.
+// Chromium reports the worker's requests under its own context, not the tab's.
 // No context at all is the browser's own, such as favicons.
 async function recordWorkerRequests() {
   const tab = currentContext();

@@ -22,7 +22,6 @@ async function openAddForm() {
   await $("#entry-nav-forward").click();
 }
 
-// The real settings, changed as Playwright's route.fetch then fulfill did.
 async function serveSettingsWith(owner, healthConsent) {
   const settings = await (await owner.api("GET", "settings")).json();
   const mock = await browser.mock("**/-/api/settings", { method: "GET" });

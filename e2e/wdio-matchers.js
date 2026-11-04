@@ -3,7 +3,7 @@ import { requery } from "./wdio-browser.js";
 
 const normalise = text => text.replace(/\s+/g, " ").trim();
 
-// Playwright's toHaveText reads textContent; WebdriverIO's reads the rendered text, which is empty for hidden elements.
+// WebdriverIO's toHaveText reads the rendered text, which is empty for hidden elements.
 expect.extend({
   async toHaveTextContent(target, expected) {
     const element = await target;
