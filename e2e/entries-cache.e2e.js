@@ -1,5 +1,5 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { entriesDatabase, readCachedEntries } from "./entries-cache.js";
+import { cachedEntries } from "./entries-cache.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 const SEED = {
@@ -8,7 +8,6 @@ const SEED = {
     { type: "boulder", grade: "7A", name: "Second Seed" },
   ],
 };
-const cachedEntries = owner => browser.execute(readCachedEntries, entriesDatabase(owner.username));
 
 describe("entries cache", () => {
   it("a new entry is cached in IndexedDB and still there after a reload", async () => {
@@ -25,7 +24,7 @@ describe("entries cache", () => {
     await $("#entry-submit-btn").click();
     await saved.waitForResponse();
     await expect($("#entry-overlay")).not.toBeDisplayed();
-    await browser.waitUntil(async () => (await cachedEntries(owner)).some(e => e.name === entryName));
+    await browser.waitUntil(async () => (await cachedEntries(owner.username)).some(e => e.name === entryName));
 
     const entries = await browser.mock("**/-/api/entries**");
     entries.abort();

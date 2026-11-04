@@ -1,5 +1,5 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { entriesDatabase, readCachedEntries } from "./entries-cache.js";
+import { cachedEntries, entriesDatabase } from "./entries-cache.js";
 import { boundingBox, currentPath, openTab, waitForPath } from "./wdio-browser.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
@@ -11,7 +11,6 @@ const QUEUED = JSON.stringify([
 
 const userKeys = owner =>
   browser.execute(suffix => Object.keys(localStorage).filter(key => key.endsWith(suffix)), `:${owner.username}`);
-const cachedEntries = owner => browser.execute(readCachedEntries, entriesDatabase(owner.username));
 const contains = text => expect.stringContaining(text);
 
 async function openAccountPage({ queue = null } = {}) {
@@ -34,7 +33,7 @@ async function openAccountPage({ queue = null } = {}) {
 describe("remove device data", () => {
   it("Clear device data takes the logbook off the device and logs out, keeping device-level choices", async () => {
     const owner = await openAccountPage();
-    expect(await cachedEntries(owner)).toHaveLength(1);
+    expect(await cachedEntries(owner.username)).toHaveLength(1);
     expect((await userKeys(owner)).length).toBeGreaterThan(0);
     await expect($("#remove-data-row .row-card-title")).toHaveTextContent("Clear my data from this device");
     await expect($("#remove-data-description")).toHaveTextContent(contains("Nothing is deleted from your account"));
@@ -46,7 +45,7 @@ describe("remove device data", () => {
     await waitForPath("/-/login/");
 
     expect(await userKeys(owner)).toEqual([]);
-    expect(await cachedEntries(owner)).toBeNull();
+    expect(await cachedEntries(owner.username)).toBeNull();
     const databases = (await browser.execute(() => indexedDB.databases())).map(db => db.name);
     expect(databases).not.toContain(entriesDatabase(owner.username));
     expect(await browser.execute(() => localStorage.getItem("logbook_theme"))).toBe("light");
@@ -97,7 +96,7 @@ describe("remove device data", () => {
     await expect($("#remove-data-error")).toHaveTextContent(contains("Couldn't log you out, so nothing was cleared"));
     await expect($("#remove-data-btn")).toBeEnabled();
     expect((await userKeys(owner)).length).toBeGreaterThan(0);
-    expect(await cachedEntries(owner)).toHaveLength(1);
+    expect(await cachedEntries(owner.username)).toHaveLength(1);
     expect(await currentPath()).toBe(`/${owner.username}/account`);
   });
 

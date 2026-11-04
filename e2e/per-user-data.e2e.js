@@ -1,6 +1,6 @@
 import { $, browser, expect } from "@wdio/globals";
 import { DEV_USER } from "../scripts/lib/dev-session.mjs";
-import { entriesDatabase, readCachedEntries } from "./entries-cache.js";
+import { cachedEntries } from "./entries-cache.js";
 import { ownedRouteUrl } from "./owned-route-url.js";
 import { settle, waitForPath } from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
@@ -9,7 +9,6 @@ const OWNER = DEV_USER.username.toLowerCase();
 
 const storageSnapshot = () =>
   browser.execute(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
-const cachedEntries = () => browser.execute(readCachedEntries, entriesDatabase(OWNER));
 
 describe("per-user data", () => {
   beforeEach(() => signInDevUser("my.localhost"));
@@ -17,7 +16,7 @@ describe("per-user data", () => {
   it("an owner page records the signed-in user and keeps its data under that user's namespace", async () => {
     await browser.url(ownedRouteUrl(DEV_USER.username, "/log"));
     await expect($("climbing-entries-table")).toBeDisplayed();
-    await browser.waitUntil(async () => (await cachedEntries().catch(() => null))?.length > 0);
+    await browser.waitUntil(async () => (await cachedEntries(OWNER).catch(() => null))?.length > 0);
     await waitForPath(`/${DEV_USER.username}/log`);
     await settle();
 
@@ -52,7 +51,7 @@ describe("per-user data", () => {
     await expect($("climbing-entries-table")).toBeDisplayed();
     expect(await browser.execute(() => document.body.textContent)).not.toContain("Someone else's secret climb");
     const keys = await storageSnapshot();
-    expect((await cachedEntries()) ?? []).not.toContainEqual(expect.objectContaining({ id: "alien-entry-1" }));
+    expect((await cachedEntries(OWNER)) ?? []).not.toContainEqual(expect.objectContaining({ id: "alien-entry-1" }));
     expect(keys[`logbook_pending_queue:${OWNER}`] ?? "").not.toContain("alien-entry-1");
     expect(keys.logbook_signed_in_user).toBe(OWNER);
   });

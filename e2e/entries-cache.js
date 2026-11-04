@@ -1,3 +1,5 @@
+import { browser } from "@wdio/globals";
+
 // Null when there's no cache; aborting the upgrade stops the read from creating an empty database.
 export function readCachedEntries(name) {
   return new Promise((resolve, reject) => {
@@ -19,6 +21,8 @@ export function readCachedEntries(name) {
 }
 
 export const entriesDatabase = username => `logbook_entries:${username.toLowerCase()}`;
+
+export const cachedEntries = username => browser.execute(readCachedEntries, entriesDatabase(username));
 
 // A browser that won't keep site data in IndexedDB, as some privacy settings do.
 export function refuseIndexedDb() {

@@ -1,5 +1,5 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { entriesDatabase, readCachedEntries } from "./entries-cache.js";
+import { cachedEntries } from "./entries-cache.js";
 import { clearCookies, expectEventually, recordFetches } from "./wdio-browser.js";
 import { holdRequests } from "./wdio-hold.js";
 import { gotoLog } from "./wdio-log.js";
@@ -262,7 +262,7 @@ describe("Offline queue (client/offline-sync.js)", () => {
     await expect(sections()).not.toHaveTextContent(contains("Edited By Other Device"));
     await expect($("#sync-line")).not.toBeDisplayed();
 
-    const cached = await browser.execute(readCachedEntries, entriesDatabase(owner.username));
+    const cached = await cachedEntries(owner.username);
     expect(cached.some(e => e._pending || e._pendingDelete)).toBe(false);
   });
 

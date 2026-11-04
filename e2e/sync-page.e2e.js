@@ -1,5 +1,5 @@
 import { $, browser, expect } from "@wdio/globals";
-import { entriesDatabase, readCachedEntries } from "./entries-cache.js";
+import { cachedEntries } from "./entries-cache.js";
 import { recordNavigations, settle, waitForPath } from "./wdio-browser.js";
 import { holdRequests } from "./wdio-hold.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
@@ -12,7 +12,6 @@ const SEED = {
 };
 
 const storedJson = (key, username) => browser.execute(k => JSON.parse(localStorage.getItem(k)), `${key}:${username}`);
-const cachedEntries = owner => browser.execute(readCachedEntries, entriesDatabase(owner.username));
 const syncUrl = owner => owner.url(`/sync?returnTo=${encodeURIComponent(`/${owner.username}/log`)}`);
 
 async function seededOwner() {
@@ -28,7 +27,7 @@ describe("sync page", () => {
     await browser.url(syncUrl(owner));
     await waitForPath(`/${owner.username}/log`);
 
-    const cached = await cachedEntries(owner);
+    const cached = await cachedEntries(owner.username);
     expect(cached.map(e => e.name).toSorted()).toEqual(["Boulder Seed", "Sport Seed"]);
   });
 
@@ -75,7 +74,7 @@ describe("sync page", () => {
     const urls = entriesRequests.calls.map(call => call.request.url);
     expect(urls.some(url => url.includes(`?since=${seededCursor}`))).toBe(true);
     expect(urls.some(url => url.includes("?limit="))).toBe(false);
-    const cached = await cachedEntries(owner);
+    const cached = await cachedEntries(owner.username);
     expect(cached.map(e => e.name)).toContain("Drifted In");
   });
 
@@ -96,7 +95,7 @@ describe("sync page", () => {
     };
     await browser.waitUntil(backFromSync, { timeoutMsg: "never went through /sync and back to /log" });
     await waitForPath(`/${owner.username}/log`);
-    const cached = await cachedEntries(owner);
+    const cached = await cachedEntries(owner.username);
     expect(cached.map(e => e.name)).toContain("After Purge");
   });
 
@@ -136,7 +135,7 @@ describe("sync page", () => {
     await browser.url(syncUrl(owner));
     await waitForPath(`/${owner.username}/log`);
 
-    expect(await cachedEntries(owner)).toHaveLength(2);
+    expect(await cachedEntries(owner.username)).toHaveLength(2);
     await expect($("climbing-entries-table")).toHaveTextContent(expect.stringContaining("Test Crag"));
   });
 
