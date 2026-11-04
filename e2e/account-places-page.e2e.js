@@ -144,6 +144,22 @@ describe("account places page", () => {
     await expect(location(owner, "l2")).toHaveTextContent(contains("4 climbs"));
   });
 
+  it("a pull that changes nothing leaves the list alone, so focus stays on its edit button (#1660)", async () => {
+    const owner = await seededOwner();
+    await gotoSyncedLog(owner);
+    const releasePull = await holdRequests("/-/api/locations", { method: "GET", once: true, answerFromWhenSent: true });
+    await browser.url(owner.url("/account/places"));
+    await expect(location(owner, "l1")).toHaveTextContent(contains("3 climbs"));
+    await releasePull.caught();
+    const edit = $(`[data-edit="${owner.ownId("l1")}"]`);
+    await browser.execute(button => button.focus(), await edit);
+
+    await releasePull();
+    await settle();
+
+    await expect(edit).toBeFocused();
+  });
+
   it("offline, a rename shows at once and syncs by itself once the connection is back (#159)", async () => {
     const owner = await seededOwner();
     await openPlaces(owner);

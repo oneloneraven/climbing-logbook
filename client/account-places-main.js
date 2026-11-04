@@ -80,11 +80,13 @@ const locationById = id => store.getLocations().find(location => location.id ===
 const areaLabel = area => area || "No area";
 const climbsPhrase = n => `${n} ${n === 1 ? "climb" : "climbs"}`;
 
+let renderedList = null;
+
 function render() {
   const locations = store.getLocations().toSorted((x, y) => x.name.localeCompare(y.name));
   emptyEl.hidden = locations.length > 0;
   listEl.hidden = locations.length === 0;
-  listEl.innerHTML = locations
+  const html = locations
     .map(location => {
       const areas = areasOf(location.id);
       const country = COUNTRY_BY_NAME[location.country];
@@ -97,6 +99,10 @@ function render() {
       </div>`;
     })
     .join("");
+  // Redrawing an unchanged list would replace the buttons, losing focus on every sync.
+  if (html === renderedList) return;
+  listEl.innerHTML = html;
+  renderedList = html;
 }
 
 function placeOptions(excludeIds) {
