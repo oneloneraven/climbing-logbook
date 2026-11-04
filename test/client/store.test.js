@@ -100,6 +100,14 @@ describe("entries/places/locations", () => {
     expect(await storedEntries()).toEqual([]);
   });
 
+  it("counts every change to a table's confirmed rows, and only that table's", async () => {
+    await store.setEntries(ENTRIES);
+    await store.mergeConfirmed("entries", [{ id: "x" }]);
+    store.setPlaces(PLACES);
+    await store.mergeConfirmed("locations", LOCATIONS);
+    expect(["entries", "places", "locations"].map(store.confirmedVersion)).toEqual([2, 1, 1]);
+  });
+
   it("caches nothing without a database, and says so", async () => {
     const uncached = createStore({ storage, openEntries: null });
     expect(await uncached.setEntries(ENTRIES)).toBe(false);
