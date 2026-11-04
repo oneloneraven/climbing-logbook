@@ -1,8 +1,6 @@
 name: Synthetic production check
 
-# Checks production after every successful Deploy and every 30 minutes (the e2e suite only sees PR previews, ADR-0011).
-# Needs SYNTHETIC_USER_EMAIL and SYNTHETIC_USER_PASSWORD (infra/README.md, Synthetic monitoring account).
-# It files one issue, only after two consecutive real-deploy failures, and notifies rather than rolls back.
+# The e2e suite only sees PR previews (ADR-0011). Account set-up: infra/README.md, Synthetic monitoring account.
 on:
   # Runs repo code from main and reads nothing from the triggering run.
   workflow_run: # zizmor: ignore[dangerous-triggers]

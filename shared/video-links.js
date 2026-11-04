@@ -1,5 +1,4 @@
-// Known share and tracking parameters, removed so a stored link can't identify who shared it (#1328). Only these
-// go: removing anything else could break playback, and a removed parameter can't be got back. Add to it as needed.
+// Only known trackers go, so a stored link can't identify its sharer; removing anything else could break playback.
 export const TRACKING_PARAMS = new Set([
   "fbclid",
   "gclid",

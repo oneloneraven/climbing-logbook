@@ -63,7 +63,7 @@ export function gapHeadline(flashMaxByBucket, sendMaxByBucket, type, viewScaleId
     type === "boulder"
       ? "This report only shows sends from Font 3/VB upwards."
       : `This report only shows sends ${scaleName} can show.`;
-  // A grade the chosen scale can't show is left out, as it is on the chart (#1382).
+  // A grade the chosen scale can't show is left out, as it is on the chart.
   const label = pair => reportGradeLabel(pair.grade, pair.gradeScale, type, viewScaleId);
   const shown = pairs => pairs.filter(pair => pair !== null && label(pair) !== null);
   const best = pairs =>
@@ -106,7 +106,7 @@ export function gapHeadline(flashMaxByBucket, sendMaxByBucket, type, viewScaleId
 
 const steps = n => `${n} grade step${n === 1 ? "" : "s"}`;
 
-// Which way the gap moved between the window's halves, never how big it is (#1380); copy from #1389.
+// Which way the gap moved between the window's halves, never how big it is.
 export function gapTrend(flashMaxByBucket, sendMaxByBucket, type, viewScaleId = DEFAULT_VIEW_SCALE_BY_TYPE[type]) {
   const half = Math.floor(sendMaxByBucket.length / 2);
   if (half === 0) return null;

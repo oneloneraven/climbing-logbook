@@ -1,7 +1,6 @@
 name: Promote to production
 
-# Deploys a chosen, already-tagged commit to production only (ADR-0020). Tags are cumulative snapshots of main,
-# so promoting the latest tag includes everything beta has accumulated.
+# Tags are cumulative snapshots of main, so the latest includes everything beta has (ADR-0020).
 on:
   workflow_dispatch:
     inputs:
@@ -48,8 +47,7 @@ jobs:
       - uses: $/.github/actions/setup-node-pnpm
       - run: pnpm run html:build
       - run: pnpm run tailwind:build
-      # Idempotent, and beta and production share the database (ADR-0020). The restore point is logged first
-      # (docs/versioning.md, Database migrations).
+      # Idempotent, and beta and production share the database (ADR-0020).
       - name: Record D1 restore point before migrating
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DEPLOY_TOKEN }}
@@ -58,8 +56,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DEPLOY_TOKEN }}
         run: pnpm exec wrangler d1 migrations apply climbing-logbook --remote
-      # CLOUDFLARE_ENV selects the environment at build time; deploy:build refuses to run without it,
-      # and --env="" pins deploy-time validation to env.production.
+      # deploy:build refuses to run without CLOUDFLARE_ENV, and --env="" pins validation to env.production.
       - name: Deploy to production
         id: deploy_production
         run: pnpm run deploy:build && pnpm exec wrangler deploy --env="" --tag "$TAG"

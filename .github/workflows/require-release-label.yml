@@ -1,7 +1,6 @@
 name: Require release label
 
-# Blocks a PR until it carries a release label (major, minor, patch or none; docs/versioning.md), and a
-# "What's new" section when it makes a release. Drafts are skipped; ready_for_review runs it, so the label is on first.
+# Drafts are skipped and ready_for_review runs it, so the label goes on first (docs/versioning.md).
 on:
   pull_request:
     types: [opened, reopened, edited, labeled, unlabeled, synchronize, ready_for_review]

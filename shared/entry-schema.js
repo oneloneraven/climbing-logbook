@@ -15,7 +15,7 @@ export const VALID_GRADES = {
 
 export const VALID_SPORT_STYLES = ["lead", "top_rope"];
 
-// Only links to these, and their subdomains, are accepted: the one field that renders as a link (#1047).
+// Only links to these, and their subdomains, are accepted: the one field that renders as a link.
 const VIDEO_HOSTS = [
   "youtu.be",
   "youtube-nocookie.com",
@@ -39,7 +39,7 @@ export function isVideoHost(hostname) {
 export const VALID_LIMBS = ["hand", "foot", "knee"];
 export const VALID_SIDES = ["left", "right"];
 export const VALID_WALL_ANGLES = ["slab", "vert", "overhang", "roof"];
-// Where the hardest move is: the base of the Strengths / Weaknesses report (#1523).
+// Where the hardest move is: the base of the Strengths / Weaknesses report.
 export const ENTRY_WALL_ANGLES = ["slab", "vert", "overhang", "roof", "chimney", "dihedral"];
 
 export const HOLD_TYPES_BY_LIMB = {

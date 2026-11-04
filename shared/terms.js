@@ -1,4 +1,4 @@
-// Oldest first. A change that matters gets 14 days' notice: until `effective`, agreeing can wait (#1354).
+// Oldest first. A change that matters gets 14 days' notice: until `effective`, agreeing can wait.
 export const TERMS_HISTORY = [
   {
     version: "2026-10-07",
@@ -19,7 +19,6 @@ export const TERMS_VERSION = TERMS_HISTORY[TERMS_HISTORY.length - 1].version;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-// Null when the agreed version is the latest; otherwise what's changed since, and whether agreeing can still wait.
 export function termsUpdate(agreedVersion, now = today()) {
   const newer = TERMS_HISTORY.filter(({ version }) => !agreedVersion || version > agreedVersion);
   if (newer.length === 0) return null;

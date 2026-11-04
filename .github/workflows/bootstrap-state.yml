@@ -1,8 +1,6 @@
 name: Bootstrap OpenTofu state bucket
 
-# Manual only — this creates the R2 bucket that OpenTofu's remote state
-# lives in. Never runs automatically. Safe to re-run any time, including
-# full disaster recovery: it's a no-op if the bucket already exists.
+# Manual only, and a no-op if the state bucket exists, so it's safe to re-run in disaster recovery.
 on:
   workflow_dispatch:
 

@@ -1,7 +1,6 @@
 name: Dependency review
 
-# Fails a PR that adds a dependency with a known high or critical advisory, or a copyleft licence the project's
-# noncommercial licence can't carry. It only looks at what the PR changes, so existing dependencies don't block.
+# Only what the PR changes is checked, so existing dependencies don't block it.
 on:
   pull_request:
 

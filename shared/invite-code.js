@@ -1,6 +1,6 @@
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
 
-// 128 random bits as lowercase base32, so a code can't be guessed (#1073).
+// 128 random bits as lowercase base32, so a code can't be guessed.
 export function mintInviteCode() {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   let bits = 0;

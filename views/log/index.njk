@@ -3,12 +3,6 @@ layout: app-layout.njk
 title: Logbook – Climbing Logbook
 discipline: true
 bundle: log
-staticShellNote: |-
-  Genuinely static shell (#348), same pattern as public/map/index.html
-         and public/performance/index.html -- see either file's own comment
-         for why every path below is absolute and client/log-main.js reads
-         the username from location.pathname itself rather than this file
-         being templated.
 ---
 {% from "tab-bar.njk" import tabBar %}
 <div class="max-w-[960px] mx-auto">

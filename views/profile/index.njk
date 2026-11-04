@@ -2,16 +2,6 @@
 layout: app-layout.njk
 title: Climbing Logbook
 bundle: profile
-staticShellNote: |-
-  Genuinely static shell (#351), same pattern as public/map,
-         public/performance, public/log -- see any of those files' own
-         comment for why every path below is absolute and
-         client/profile-main.js reads the username from location.pathname
-         itself rather than this file being templated. Unlike those three
-         (owner-only, session-gated), server/api/public-profile.js's own gate
-         (logbook_public + anti-enumeration 404) runs *before* this shell is
-         ever served -- a private or nonexistent username never reaches this
-         file at all.
 menu: profile
 ---
 <div class="max-w-[960px] mx-auto">

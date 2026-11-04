@@ -1,4 +1,3 @@
-// The sections someone can pick on the report-an-issue and feedback forms (views/help/{report-an-issue,feedback}).
 export const SUBMISSION_SECTIONS = {
   logbook: "Logbook",
   map: "Map",

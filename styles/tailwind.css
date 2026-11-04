@@ -447,8 +447,7 @@
   --pyramid-status-promoted: #a16207;
   --color-error-text: #b91c1c;
 }
-/* Fluid: 28.8px at a 312px viewport up to 38.4px at 600px. All px, never length/length, which */
-/* Firefox treated as invalid. Every part of the lockup scales from this one value. */
+/* All px, never length/length, which Firefox treated as invalid. */
 :root {
   --brand-scale: clamp(28.8px, calc(28.8px + (100vw - 312px) * 0.0333), 38.4px);
 }
@@ -458,8 +457,7 @@ climbing-header { display: block; }
 climbing-discipline-picker { display: block; }
 climbing-burger-menu { display: block; }
 climbing-page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
-/* The ring is masked to the button's shape. The glow is a separate unmasked element, because a */
-/* mask also clips the element's own box-shadow. */
+/* The glow is a separate element: a mask also clips the element's own box-shadow. */
 #header-menu-btn { position: relative; }
 .menu-sync-ring, .menu-sync-glow {
   position: absolute;
@@ -602,7 +600,7 @@ climbing-status-picker:has(input:focus-visible) .status-picker-frame {
   outline-offset: 2px;
 }
 
-/* Hidden for its first 300ms, so a fast load never flashes it; visible anywhere animations don't run (#1387). */
+/* Hidden for its first 300ms, so a fast load never flashes it; visible anywhere animations don't run. */
 .loading-spinner {
   animation: loading-appear 300ms step-end both;
 }
@@ -633,7 +631,7 @@ climbing-status-picker:has(input:focus-visible) .status-picker-frame {
   }
 }
 
-/* Haiku read as poems: italic, gold, under a large quote mark (#1379). */
+/* Haiku read as poems: italic, gold, under a large quote mark. */
 .haiku {
   position: relative;
   padding-left: 1.9rem;
@@ -653,7 +651,7 @@ climbing-status-picker:has(input:focus-visible) .status-picker-frame {
   color: var(--color-accent);
 }
 
-/* The hardest-move read-back (#1522): each word tinted by what the beta interpreter read it as. */
+/* The hardest-move read-back: each word tinted by what the beta interpreter read it as. */
 .beta-mark { color: inherit; border-radius: 4px; padding: .05em .18em; }
 .beta-terrain { background: color-mix(in srgb, #3b82f6 22%, transparent); }
 .beta-feature, .beta-hold { background: color-mix(in srgb, #f59e0b 26%, transparent); }

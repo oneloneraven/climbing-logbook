@@ -22,11 +22,7 @@ menu: help
     --pf-skeleton-shine: color-mix(in srgb, var(--color-border) 60%, transparent);
     --pf-font: var(--font-sans);
   }
-  /* #885 -- plain, unlayered CSS on purpose: these must beat the `btn`
-     and `flex` utilities' display (Tailwind utilities are layered, and
-     unlayered CSS always wins over layered). Same 600px breakpoint as the
-     layout's own flex-col collapse. Above it the toggle doesn't exist and
-     the list is always visible. */
+  /* Unlayered, so it beats the layered btn and flex utilities' display. */
   #help-nav-btn { display: none; }
   @media (max-width: 600px) {
     #help-nav { gap: 1rem; }

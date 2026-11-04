@@ -232,6 +232,14 @@ workers.dev host, so `OWNER_PAGES_ON_ANY_HOST` serves owner pages on it;
 public profiles aren't routed there, as `/:username` would swallow
 `/login/` and the other apex pages.
 
+Every owner page, and the public profile, is a static shell: one HTML file
+serves every user, so it can be cached per page type (ADR-0028).
+Its paths are absolute, and its script reads the username from
+`location.pathname`. `sync` has no tab bar, as it's a stop on the way to a
+page rather than a destination. The public profile's privacy check runs on
+the server before its shell is served, so a private or unknown username
+never reaches it.
+
 **Other pages:** the public profile (`client/profile-main.js`), `/help/*`
 (`client/help-main.js`, with its own bundles for the report-an-issue and
 feedback forms), and the apex's standalone pages, each its own small
