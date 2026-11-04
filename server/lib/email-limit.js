@@ -5,9 +5,7 @@ const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 export const EMAIL_LIMITS = { perHour: 3, perDay: 10 };
 
-// One per counted thing (an address's hash, or a form and connection): it keeps that thing's recent requests, so an
-// hourly or daily limit holds across every edge and isolate without a D1 write (#1053, #1049). The name predates its
-// second use; renaming a Durable Object class takes a migration.
+// One per counted thing, so a limit holds across every edge and isolate without a D1 write; renaming it needs a migration.
 export class RecipientEmailLimiter extends DurableObject {
   /** @returns {Promise<{ ok: true } | { ok: false, retryAfterMs: number }>} */
   async take(now, limits = EMAIL_LIMITS) {
@@ -32,8 +30,7 @@ export async function addressKey(address) {
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Counted per request, whether or not the address has an account, so hitting the limit says nothing about who's
-// registered. Null when the email can go; otherwise the response that says why it can't.
+// Counted whether or not the address has an account, so hitting the limit says nothing about who's registered.
 export async function emailLimitResponse(env, address) {
   if (env.RATE_LIMITING_ENABLED !== "true" || typeof address !== "string" || !address.trim()) return null;
   const limiter = env.EMAIL_LIMITER.get(env.EMAIL_LIMITER.idFromName(await addressKey(address)));
@@ -48,7 +45,6 @@ export async function emailLimitResponse(env, address) {
   });
 }
 
-// An hourly limit on anything, by name; null when the request can go.
 export async function hourlyLimitResponse(env, name, limits, { message, surface, log }) {
   if (env.RATE_LIMITING_ENABLED !== "true") return null;
   const result = await env.EMAIL_LIMITER.get(env.EMAIL_LIMITER.idFromName(name)).take(Date.now(), limits);

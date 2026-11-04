@@ -1,6 +1,4 @@
-// Every write to a user's entries, places or locations bumps its sync_cursor (deletes and admin hides included), so
-// the highest of them names the current state of that user's public data. A hard delete must not lower it to a
-// value an older, different state was cached under (#1051).
+// The highest sync_cursor names the public data's state; a hard delete mustn't lower it to an older state's value.
 export async function dataVersion(env, userId) {
   const row = await env.LOGBOOK_DB.prepare(
     `SELECT (SELECT max(sync_cursor) FROM entries WHERE user_id = ?1) AS e,
@@ -35,9 +33,7 @@ function marked(response, state) {
   return copy;
 }
 
-// The expensive part of a public read, cached at the edge under the data's version: a change makes a new key, so
-// nothing stale is ever served and nothing needs purging. Whether the logbook is public is checked before this, on
-// every request, so making it private takes effect at once (#1059).
+// Keyed by the data's version, so a change makes a new key and nothing needs purging; visibility is checked first.
 export async function cachedPublic(request, env, ctx, userId, resource, produce) {
   const asked = new URL(request.url).searchParams;
   const params = new URLSearchParams([...asked].filter(([name]) => READ_PARAMS.has(name)));

@@ -3,11 +3,10 @@ import { clientKey, rateLimited } from "./rate-limits.js";
 
 const MESSAGE = "Too many attempts. Wait a minute and try again.";
 
-// Per connection on every auth POST, and per target account on sign-in, so guesses spread across many IPs still slow
-// down (#1049).
 // This GET writes a challenge to D1 for anyone, so it's limited like the POSTs.
 const LIMITED_GETS = new Set(["/-/api/auth/passkey/generate-authenticate-options"]);
 
+// Per connection, and per target account on sign-in, so guesses spread across many IPs still slow down.
 export async function limitAuthRequest(request, env, log) {
   const { pathname } = new URL(request.url);
   if (request.method !== "POST" && !LIMITED_GETS.has(pathname)) return null;

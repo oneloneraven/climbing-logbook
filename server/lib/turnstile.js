@@ -7,7 +7,7 @@ const DUMMY_SECRET_RESPONSES = {
   "3x0000000000000000000000000000000AA": { success: false, "error-codes": ["timeout-or-duplicate"] },
 };
 
-// The reason a sign-up fails its bot check, or null when it passes. Fails closed, with its own code for an outage.
+// Fails closed, with its own code for an outage.
 export async function turnstileFailure(env, body, action = "sign up") {
   const token = body?.turnstileToken;
   if (typeof token !== "string" || !token) {

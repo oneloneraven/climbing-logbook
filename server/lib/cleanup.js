@@ -11,14 +11,14 @@ const deleteSomeOf = (table, where) =>
 
 const DELETED_ENTRY = "entry_id IN (SELECT id FROM entries WHERE deleted_at IS NOT NULL)";
 
-// A deleted climb stays as a sync tombstone, but nothing it said is kept (#1051).
+// A deleted climb stays as a sync tombstone, but nothing it said is kept.
 export const STRIP_ENTRY_CONTENT = "name = '', notes = NULL, video = NULL, date = NULL, hardest_beta = NULL";
 
 // A user's newest row is kept, so the next write's cursor (MAX + 1) never drops below one a device has seen.
 const PURGEABLE_TOMBSTONE = `deleted_at IS NOT NULL AND deleted_at < ?
   AND sync_cursor < (SELECT MAX(sync_cursor) FROM entries AS newest WHERE newest.user_id = entries.user_id)`;
 
-// Daily (wrangler.jsonc `triggers`): expired sessions and links, leftovers of deleted climbs, and old tombstones.
+// Run daily by wrangler.jsonc `triggers`.
 export async function cleanUp(env, log, now = Date.now()) {
   const sessionCutoff = new Date(now - SESSION_GRACE_DAYS * DAY_MS).toISOString();
   const linkCutoff = new Date(now).toISOString();

@@ -12,7 +12,7 @@ const COLOURS = {
 const BODY_FONT = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif";
 const DISPLAY_FONT = "'Bebas Neue', Impact, 'Arial Narrow Bold', 'Helvetica Neue', Arial, sans-serif";
 const LOCKUP_PATH = "/-/email-lockup.png";
-// Joined at runtime so the public repo never holds the address as a scrapeable literal (#1365).
+// Joined at runtime so the public repo never holds the address as a scrapeable literal.
 const SUPPORT_ADDRESS = ["support", "climbinglogbook.com"].join("@");
 const SEND_ONLY = `Replies to this address aren't read. For help, email ${SUPPORT_ADDRESS}.`;
 

@@ -71,7 +71,7 @@ function windowedReport(build, loadEntries = listEntries) {
   };
 }
 
-// Volume reads pain flags, for its "watch the load" insight (#1380).
+// Volume reads pain flags, for its "watch the load" insight.
 export const handleGetVolume = windowedReport(buildVolumeReport, listEntriesWithChildRows);
 export const handleGetGap = windowedReport(buildGapReport);
 export const handleGetEffort = windowedReport(buildEffortReport);

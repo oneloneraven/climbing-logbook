@@ -60,7 +60,7 @@ const resource = createD1ResourceHandlers({
 
 export const { handleGet, handlePost } = resource;
 
-// Renames an area; its climbs follow because they point at the place, not its name (#159).
+// Renames an area; its climbs follow because they point at the place, not its name.
 export async function handlePut(request, env, userId) {
   const parsed = await parseJsonBody(request);
   if (!parsed.ok) return parsed.response;
@@ -84,7 +84,6 @@ export async function handlePut(request, env, userId) {
   return resource.respondWithRow(env, userId, id, 200);
 }
 
-// Deletes an area, moving its climbs to another place first (#160).
 export async function handleDelete(request, env, userId) {
   const url = new URL(request.url);
   const place = await findLivePlace(env, url.searchParams.get("id"), userId);

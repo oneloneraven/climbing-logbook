@@ -1,13 +1,12 @@
 import { json } from "./json.js";
 
-// One answer for every bad code, so a guess can't tell an unknown code from one pinned to someone else (#1073).
+// One answer for every bad code, so a guess can't tell an unknown code from one pinned to someone else.
 const INVALID_INVITE = {
   message: "That invite code isn't valid for this email address, or it's already been used.",
   code: "INVALID_INVITE_CODE",
 };
 
-// Wraps Better Auth's handler: a failing plugin before-hook skips hooks.after, so only
-// the real response can say whether to release the claimed code.
+// Wraps Better Auth's handler: a failing before-hook skips hooks.after, so only the response can release the code.
 export async function claimInviteAround(env, body, forward) {
   const code = body?.code;
   // Better Auth stores emails lowercased, so the pin is compared and stored the same way.

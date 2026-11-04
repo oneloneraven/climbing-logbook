@@ -113,7 +113,7 @@ export async function actOnUser(request, env, id, action) {
   return json(toUser(await findUser(env, id)));
 }
 
-// Read-only, and every look is logged in the same batch as the read (#1279).
+// Read-only, and every look is logged in the same batch as the read.
 export async function viewLogbook(env, id) {
   const user = await findUser(env, id);
   if (!user) return json({ error: "Not found" }, 404);

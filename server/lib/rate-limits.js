@@ -8,7 +8,7 @@ function expandIPv6(ip) {
   return [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill("0"), ...right];
 }
 
-// An IPv6 host is handed a whole /64 to rotate through, so it's counted by that /64 (#1049).
+// An IPv6 host is handed a whole /64 to rotate through, so it's counted by that /64.
 export function clientKey(request) {
   const ip = request.headers.get("cf-connecting-ip");
   if (!ip) return "unknown";
@@ -21,8 +21,7 @@ export function clientKey(request) {
     .join(":")}::/64`;
 }
 
-// Counted at the edge by a Rate Limiting binding (wrangler.jsonc `ratelimits`), so a check never writes to D1. Counts
-// are per location and approximate: a brake, not a quota.
+// Counted at the edge (wrangler.jsonc `ratelimits`), never in D1: per location and approximate, a brake not a quota.
 export async function rateLimited(env, limiter, key, { message, surface, log }) {
   if (env.RATE_LIMITING_ENABLED !== "true") return null;
   const { success } = await env[limiter].limit({ key });

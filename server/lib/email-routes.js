@@ -2,7 +2,7 @@ import { json, readBody } from "./json.js";
 import { emailLimitResponse } from "./email-limit.js";
 import { turnstileFailure } from "./turnstile.js";
 
-// Anyone can ask for a reset for any address, so it gets the bot check and the per-address limit (#1053).
+// Anyone can ask for a reset for any address, so it gets the bot check and the per-address limit.
 export async function handlePasswordResetRequest(request, env, createAuth) {
   const { text, body } = await readBody(request);
 
@@ -24,7 +24,7 @@ export async function handleVerificationResend(request, env, createAuth) {
   return createAuth().handler(new Request(request, { body: text }));
 }
 
-// The confirmation goes to the address the account has now, so that's the address counted (#1053).
+// The confirmation goes to the address the account has now, so that's the address counted.
 export async function handleChangeEmail(request, env, createAuth) {
   const auth = createAuth();
   if (env.RATE_LIMITING_ENABLED !== "true") return auth.handler(request);

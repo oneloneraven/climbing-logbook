@@ -1,4 +1,4 @@
-// An allowlist, not a denylist: a field nobody has vetted never reaches the logs (#1027).
+// An allowlist, not a denylist: a field nobody has vetted never reaches the logs.
 const ALLOWED_FIELDS = new Set([
   "event",
   "level",

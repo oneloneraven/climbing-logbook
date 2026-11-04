@@ -10,7 +10,7 @@ async function send(env, log, payload, link) {
     log.info("email.skipped", { reason: "delivery off" });
     return;
   }
-  // Local dev prints the link instead of sending; anywhere else that would put live tokens in logs (#1357).
+  // Local dev prints the link instead of sending; anywhere else that would put live tokens in logs.
   if (env.EMAIL_DELIVERY === "log") {
     if (env.APP_ENV !== "development") {
       log.warn("email.skipped", { reason: "log delivery outside development" });
@@ -39,7 +39,7 @@ const longDate = ms =>
 
 const CHANGE_PASSWORD = "If this wasn't you, change your password straight away: someone has access to your account.";
 
-// One email per account change that changes data (#1456). `url` is where the change can be seen or undone.
+// `url` is where the change can be seen or undone.
 const ACCOUNT_NOTICES = {
   passkeyAdded: ({ url }) => ({
     subject: "A passkey was added to your account",
