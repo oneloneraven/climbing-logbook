@@ -86,6 +86,9 @@ importers:
       '@wdio/spec-reporter':
         specifier: 10.1.0
         version: 10.1.0
+      '@wdio/utils':
+        specifier: 10.1.0
+        version: 10.1.0
       axe-core:
         specifier: ^4.14.0
         version: 4.14.0
@@ -4876,7 +4879,7 @@ snapshots:
   '@puppeteer/browsers@3.2.6':
     dependencies:
       modern-tar: 0.8.6
-      yargs: 18.0.0
+      yargs: 18.2.0
 
   '@ravendarque/beta-interpreter@0.2.0': {}
 
