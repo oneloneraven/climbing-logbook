@@ -62,7 +62,7 @@ describe("log entry form", () => {
     await gotoLog();
     await $("#collapse-all-btn").click();
 
-    const nameButton = () => $('role/button[name="Edit Boulder Seed"]');
+    const nameButton = () => $("climbing-entries-table").$('role/button[name="Edit Boulder Seed"]');
     await expect(nameButton().$(".font-medium")).toHaveTextContent("Boulder Seed");
     await expect($("//th[contains(., 'Edit')]")).not.toExist();
 

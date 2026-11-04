@@ -9,7 +9,7 @@ async function expectLandmarksAndSkipLink() {
   await expectEventually(async () => (await textContents("h1", { visibleOnly: true })).length, 1);
 
   await browser.keys("Tab");
-  const skip = $('role/link[name="Skip to content"]');
+  const skip = $("html").$('role/link[name="Skip to content"]');
   await expect(skip).toBeFocused();
   expect((await boundingBox(skip)).width).toBeGreaterThan(1);
 

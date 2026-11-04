@@ -6,7 +6,7 @@ import { claimOwner } from "./wdio-owner.js";
 const pointText = ({ label, text }) => `${label}: ${text}`;
 const PAIN = { limb: "hand", side: "left", holdType: "crimp", movementStyle: "static", wallAngle: "overhang" };
 const contains = text => expect.stringContaining(text);
-const consentBox = () => $(`role/checkbox[name=${JSON.stringify(PAIN_INJURY_WORDING.statement)}]`);
+const consentBox = () => $("#health-grant").$(`role/checkbox[name=${JSON.stringify(PAIN_INJURY_WORDING.statement)}]`);
 
 describe("account health page", () => {
   it("off: explains it, and Turn on waits for the box and records the current wording", async () => {
@@ -19,7 +19,7 @@ describe("account health page", () => {
     await expect($("#health-statement")).toHaveTextContent(PAIN_INJURY_WORDING.statement);
     await expect($("#health-withdraw")).not.toBeDisplayed();
 
-    const turnOn = $('role/button[name="Turn on"]');
+    const turnOn = $("#health-grant").$('role/button[name="Turn on"]');
     await expect(turnOn).toBeDisabled();
     await consentBox().click();
 
@@ -27,7 +27,7 @@ describe("account health page", () => {
     await turnOn.click();
     expect(JSON.parse((await post).body)).toEqual({ version: expect.any(String) });
     await expect($("#health-title")).toBeFocused();
-    await expect($('role/button[name="Turn off and delete"]')).toBeDisplayed();
+    await expect($("#health-withdraw").$('role/button[name="Turn off and delete"]')).toBeDisplayed();
     await expect($("#health-grant")).not.toBeDisplayed();
   });
 
@@ -44,7 +44,7 @@ describe("account health page", () => {
     await expect($("#health-count")).toHaveTextContent("You have pain and injury details on 2 entries.");
     await expect($$("#health-withdraw button")).toBeElementsArrayOfSize(1);
 
-    await $('role/button[name="Turn off and delete"]').click();
+    await $("#health-withdraw").$('role/button[name="Turn off and delete"]').click();
     await expect($("#health-title")).toBeFocused();
     await expect($("#health-grant")).toBeDisplayed();
     await expect($("#health-withdraw")).not.toBeDisplayed();
@@ -72,7 +72,7 @@ describe("account health page", () => {
   it("offline: the buttons are disabled with a note, and come back with the connection", async () => {
     const owner = await claimOwner();
     await browser.url(owner.url("/account/health"));
-    const turnOn = $('role/button[name="Turn on"]');
+    const turnOn = $("#health-grant").$('role/button[name="Turn on"]');
     await expect(turnOn).toBeDisplayed();
     await consentBox().click();
     await expect(turnOn).toBeEnabled();

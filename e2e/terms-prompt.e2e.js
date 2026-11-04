@@ -1,11 +1,11 @@
-import { $, $$, browser, expect } from "@wdio/globals";
+import { $, browser, expect } from "@wdio/globals";
 import { d1Execute, d1Query } from "../scripts/lib/dev-session.mjs";
 import { TERMS_VERSION } from "../shared/terms.js";
 import { recordFetches, settle } from "./wdio-browser.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 const D1 = { database: "climbing-logbook-preview", env: "preview" };
-const termsDialog = () => $(`role/dialog[name="We're updating our terms of use"]`);
+const termsDialog = () => $("html").$(`role/dialog[name="We're updating our terms of use"]`);
 
 describe("terms prompt", () => {
   it("an account on older terms is asked to agree, and its saves wait until it does (#1354)", async () => {
@@ -15,7 +15,7 @@ describe("terms prompt", () => {
       places: [{ id: "p1", locationId: "l1", area: "" }],
     });
     await gotoSyncedLog(owner);
-    await expect($$("role/dialog")).toBeElementsArrayOfSize(0);
+    await expect($("html").$$("role/dialog")).toBeElementsArrayOfSize(0);
 
     d1Execute(`UPDATE "user" SET termsVersion = NULL WHERE username = '${owner.username}'`, D1);
     const record = {
@@ -57,6 +57,6 @@ describe("terms prompt", () => {
     await browser.refresh();
     await expect($("climbing-entries-table")).toBeDisplayed();
     await settle();
-    await expect($$("role/dialog")).toBeElementsArrayOfSize(0);
+    await expect($("html").$$("role/dialog")).toBeElementsArrayOfSize(0);
   });
 });
