@@ -1,5 +1,4 @@
-// Read-only by construction: no write-capable module is imported. Nothing is cached, so another
-// user's public data never lands in a signed-in owner's storage.
+// Nothing is cached, so another user's public data never lands in a signed-in owner's storage.
 import { createStore } from "./store.js";
 import { createMapView } from "./map-view.js";
 import { createDisclosure } from "./modal-utils.js";
@@ -114,7 +113,7 @@ entriesTable.addEventListener("sections-expand", async e => {
 
 async function boot() {
   const base = `/-/api/public/${encodeURIComponent(USERNAME)}`;
-  // Null on failure, so a dropped connection doesn't read as an empty logbook (#1387).
+  // Null on failure, so a dropped connection doesn't read as an empty logbook.
   const json = res => (res.ok ? res.json() : null);
   const [entryCounts, mapCounts] = await Promise.all([
     fetch(`${base}/entries/counts`)

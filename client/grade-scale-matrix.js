@@ -3,8 +3,7 @@ import { SCALES_BY_DISCIPLINE, FONT_STANDARD, FRENCH_STANDARD, GRADE_CONVERSION_
 
 const REFERENCE_SCALE = { boulder: FONT_STANDARD, sport: FRENCH_STANDARD };
 
-// Groups every non-standard sub-position under the standard label it rounds to, within the same
-// number, across whole numbers at both ends so none are dropped.
+// Across whole numbers at both ends, so no sub-position is dropped.
 function nonStandardLabelsByStandardRow(referenceScale, nonStandardScale) {
   const SUB_POSITIONS_PER_NUMBER = 12;
   const firstOrdinal = referenceScale.toOrdinal(referenceScale.labels[0]);

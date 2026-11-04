@@ -1,5 +1,4 @@
-// #947, ADR-0028 -- what the worker may put in its cache, as pure
-// functions (unit-tested in test/client/sw/responses.test.js).
+// Pure, so the worker's caching rules are unit-tested: ADR-0028.
 import { SHELL_HEADER, SHELL_PATHS } from "../../shared/owner-routes.js";
 
 // One shell per page type, not per user: the HTML is identical.

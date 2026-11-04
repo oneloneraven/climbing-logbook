@@ -1,4 +1,3 @@
-// Per-user keys are namespaced by username; device-level keys (theme, scale choices) stay global.
 // Nothing is deleted at logout: an unsynced queue stays with its owner.
 import { matchOwnerRoute } from "../shared/owner-routes.js";
 
@@ -13,9 +12,6 @@ export function normalizeUsername(raw) {
   }
 }
 
-// The owner-page username in `pathname`, normalised, or null when this
-// isn't an owner page (public profile, help, the e2e fixture harness, a
-// unit test's blank location).
 export function ownerOfPath(pathname) {
   const route = matchOwnerRoute(pathname);
   return route ? normalizeUsername(route.username) : null;
@@ -25,9 +21,7 @@ function currentPathname() {
   return typeof location === "undefined" ? "" : location.pathname;
 }
 
-// `base` namespaced to this page's owner; the plain base key anywhere
-// that isn't an owner page (so fixture pages and unit tests see the same
-// keys they always did).
+// The plain base key off owner pages, so fixture pages and unit tests see unprefixed keys.
 export function userKey(base, pathname = currentPathname()) {
   const owner = ownerOfPath(pathname);
   return owner ? `${base}:${owner}` : base;

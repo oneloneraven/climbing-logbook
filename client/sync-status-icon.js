@@ -1,5 +1,4 @@
-// Background reads only, not page content or queued writes. No cap on "working": a slow link can
-// really take minutes. The fetches time out, and report any request that gets no response here.
+// No cap on "working": a slow link can really take minutes, and the fetches time out on their own.
 export const BACKGROUND_FETCH_TIMEOUT_MS = 120000;
 
 // The page going away, not the link: our own timeout is a TimeoutError.

@@ -3,15 +3,7 @@ import { matchOwnerRoute } from "../../shared/owner-routes.js";
 
 export const LAUNCH_PATH = "/-/launch/";
 
-// kinds:
-//   owner-shell  an owner-page navigation (cache-first per build; carries
-//                the matched page key)
-//   launch       a navigation to /-/launch/, the installed app's start page
-//                (#949; cache-first per build, pre-cached by #948)
-//   immutable    content-addressed: /-/chunks/* or any ?v= URL
-//   font         /-/fonts/* (unversioned, so stale-while-revalidate)
-//   static       any other /-/ static file (network-first)
-//   passthrough  everything else, including every API call
+// Each kind's caching strategy: docs/app-architecture.md, Offline and sync.
 export function classifyRequest({ url, method, mode, workerOrigin }) {
   const u = new URL(url);
   if (method !== "GET" || u.origin !== workerOrigin) return { kind: "passthrough" };

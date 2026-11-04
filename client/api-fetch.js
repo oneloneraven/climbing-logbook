@@ -7,12 +7,12 @@ export function apiFetch(url, options = {}) {
   return fetch(url, { ...options, signal });
 }
 
-// The API answers an expired or missing session with a 401, never a redirect (#992).
+// The API answers an expired or missing session with a 401, never a redirect.
 export function isUnauthorized(res) {
   return res.status === 401;
 }
 
-// A 503 means try again later, as in read-only mode (#1063): the write queues like it would offline.
+// A 503 means try again later, as in read-only mode: the write queues like it would offline.
 export function isUnavailable(res) {
   return res.status === 503;
 }

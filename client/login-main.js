@@ -18,7 +18,7 @@ const emailInput = document.getElementById("email");
 const forgotPasswordBtn = document.getElementById("forgot-password-btn");
 const resendEl = document.getElementById("login-resend");
 const resendBtn = document.getElementById("resend-verification-btn");
-// Only reset and resend requests are checked (#1053, #1335). Cloudflare's script loads after the page, so it can't hold up sign-in.
+// Only reset and resend requests are checked. Cloudflare's script loads after the page, so it can't hold up sign-in.
 const turnstile = renderTurnstile("#turnstile-widget");
 window.addEventListener("load", () => {
   const script = document.createElement("script");

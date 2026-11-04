@@ -32,7 +32,6 @@ function removeUserKeys(storage, owner) {
   }
 }
 
-// True only if everything went.
 export async function removeDeviceData(username, { storage = localStorage, factory = globalThis.indexedDB } = {}) {
   const owner = username.toLowerCase();
   let removedAll = true;

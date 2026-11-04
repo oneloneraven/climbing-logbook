@@ -1,7 +1,6 @@
 import { escapeHtml } from "./escape-html.js";
 
 // Inside a modal, pass escapeTarget: a document-level Escape would also close the modal.
-// destroy() is for callers that rebuild their markup, or document listeners pile up.
 export function createDisclosure(trigger, panel, containerSelector, { escapeTarget = document, onOpen } = {}) {
   function open() {
     panel.hidden = false;

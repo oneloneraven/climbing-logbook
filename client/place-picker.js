@@ -1,5 +1,4 @@
-// The add-place modal lives here: it has one caller and one workflow. openModal/closeModal are
-// injected because they share one lastFocusedEl across the page.
+// openModal/closeModal are injected because they share one lastFocusedEl across the page.
 import { escapeHtml } from "./escape-html.js";
 import { COUNTRY_BY_NAME, COUNTRIES } from "../shared/countries.js";
 import { FIELD_LIMITS } from "../shared/field-limits.js";
@@ -186,10 +185,7 @@ export function createPlacePicker({
     const place = { id: crypto.randomUUID(), locationId: location.id, area };
 
     let authLapsed = false;
-    // #1076 -- collected here and appended to the stored queue at the end,
-    // not pushed onto a copy read before the awaits below: writing that
-    // copy back would erase anything a sync or another tab changed while
-    // these requests were in flight.
+    // Appended at the end: writing back a copy read before the awaits would erase other tabs' and syncs' changes.
     const queued = [];
 
     if (!matched) {
@@ -261,10 +257,7 @@ export function createPlacePicker({
   });
 
   return {
-    // Closes the popover (always reopens closed, regardless of whatever
-    // state a previous entry-modal session left it in) and commits
-    // placeId as the current value -- always called together by the
-    // entry form when opening for add/edit, so exposed as one step.
+    // Always reopens closed, whatever a previous entry-form session left.
     reset(placeId) {
       closePlacePopover();
       setPlace(placeId);

@@ -1,7 +1,6 @@
 import { userKey } from "./user-storage.js";
 
-// A versioned marker of a real full sync, not "is anything cached": a partial cache isn't synced.
-// Bump SYNC_VERSION to send every device through /sync again.
+// Versioned, not "is anything cached": a partial cache isn't synced, and a bump resyncs every device.
 const SYNC_STATUS_KEY = userKey("logbook_sync_status");
 const SYNC_VERSION = 1;
 

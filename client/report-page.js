@@ -5,7 +5,6 @@ import { createReportData } from "./report-data.js";
 import { startPage } from "./boot-gate.js";
 import { insightsHtml } from "./insight-card.js";
 
-// A time-windowed report with a grade-scale picker: Gap, RPE and Trends differ only in report and chart.
 export function createReportPage({ view, rootId, path, build, renderChart, insights }) {
   const shell = createAppShell({ render });
   const { username, isDemo, store, syncStatusIcon, headerChrome, updateAdminBar } = shell;

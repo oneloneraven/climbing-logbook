@@ -24,12 +24,12 @@ export function createOfflineSync({
   const syncSpinner = document.getElementById("sync-line-spinner");
   const installNudge = document.getElementById("install-nudge");
   const showInstallNudge = isSafariTab();
+  // A disabled button stops a second click, but not repeated online events.
   let syncInFlight = false;
 
   function getQueue() {
     return readPendingQueue(queueKey);
   }
-  // False when storage is full.
   function setQueue(queue) {
     try {
       localStorage.setItem(queueKey, JSON.stringify(queue));
@@ -104,8 +104,6 @@ export function createOfflineSync({
     return loaded;
   }
 
-  // A disabled button stops a second click, but not repeated online events.
-  // A server that's failing is retried later, each wait doubling up to the cap.
   const FIRST_RETRY_MS = 30_000;
   const MAX_RETRY_MS = 10 * 60_000;
   let retryDelay = FIRST_RETRY_MS;

@@ -23,8 +23,7 @@ const MAP_VARIANTS = {
   americas: { label: "Americas" },
   oceania: { label: "Oceania" },
 };
-// Uncompressed sizes, for the progress bar: gzip responses carry no Content-Length, and the
-// body stream is already decompressed.
+// Uncompressed sizes: gzip responses carry no Content-Length, and the body stream is already decompressed.
 const MAP_VARIANT_SIZES = { greenwich: 83027, americas: 82148, oceania: 82354 };
 const MAP_VARIANT_STORAGE_KEY = "mapProjectionVariant";
 
@@ -34,7 +33,7 @@ const PIN_BASE_FONT = 9;
 
 // allDisciplines combines counts, except the pin popover, which splits by discipline.
 export function createMapView({ store, allDisciplines = false }) {
-  // Null until the counts arrive: the pins are unknown, not absent (#1387).
+  // Null until the counts arrive: the pins are unknown, not absent.
   let mapCounts = null;
   let countsFailed = false;
 
@@ -154,8 +153,7 @@ export function createMapView({ store, allDisciplines = false }) {
     return data;
   }
 
-  // A fixed viewport aspect showing pole to pole and a horizontal slice, so your own region reads
-  // at a useful size.
+  // Pole to pole but only a horizontal slice, so your own region reads at a useful size.
   const mapNarrowQuery = window.matchMedia("(max-width: 600px)");
   function mapViewportAspect() {
     return mapViewportAspectPure(mapNarrowQuery.matches);
