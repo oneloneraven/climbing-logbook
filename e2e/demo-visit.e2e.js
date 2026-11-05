@@ -17,7 +17,7 @@ describe("a visitor with nothing stored", () => {
     await browser.url(`http://my.localhost:8787${await link.getAttribute("href")}`);
     await expect(tour()).toHaveTextContent(expect.stringContaining("1 of 11"));
     await tour().$('role/button[name="Skip tour"]').click();
-    await waitForPath("/intermediatedemo/log");
+    await waitForUrlEnding("/intermediatedemo/log");
     await expect($$(".place-header[data-location-id]")[0]).toBeDisplayed();
 
     await browser.url("http://my.localhost:8787/intermediatedemo/view/map");
