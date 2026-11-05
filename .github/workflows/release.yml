@@ -26,7 +26,7 @@ jobs:
   # Every merged PR runs this: a run tags every released PR since the latest tag, so one cancelled while waiting loses nothing.
   release:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       pull-requests: read

@@ -127,7 +127,8 @@ quietly reversed without someone re-deciding on purpose.
   "all zones"/"all accounts" out of convenience.
 - **Tools and runners are pinned exactly.** `tofu_version` in `infra.yml`
   is an exact release more than 72 hours old, upgraded by hand because
-  Dependabot doesn't track it; every workflow runs on `ubuntu-24.04`.
+  Dependabot doesn't track it. Every workflow runs on `ubuntu-26.04`, moved
+  by hand to the image `ubuntu-latest` points at when GitHub changes it.
 
 ### Authentication
 

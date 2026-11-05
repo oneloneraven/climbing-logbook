@@ -24,7 +24,7 @@ jobs:
   preview:
     # Dependabot runs get no secrets, so they'd always fail.
     if: github.actor != 'dependabot[bot]' && github.event.action != 'closed'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: read
@@ -59,7 +59,7 @@ jobs:
   # A PR only migrates the shared preview database; preview-db.yml rebuilds and seeds it from main.
   migrate:
     if: github.actor != 'dependabot[bot]' && github.event.action != 'closed'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     concurrency:
       group: preview-db
       cancel-in-progress: false
@@ -76,7 +76,7 @@ jobs:
   # The free plan keeps 100 Previews per Worker; a merged or closed PR's goes straight away.
   cleanup:
     if: github.actor != 'dependabot[bot]' && github.event.action == 'closed'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

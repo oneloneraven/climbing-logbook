@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # The deploy token lives in this environment, which only main and v* tags can use.
     environment: production
     steps:

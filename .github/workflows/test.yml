@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   changes:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       relevant: ${{ steps.filter.outputs.relevant }}
       e2e: ${{ steps.filter.outputs.e2e }}
@@ -39,7 +39,7 @@ jobs:
   lint:
     needs: changes
     if: needs.changes.outputs.relevant == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -50,7 +50,7 @@ jobs:
   typecheck:
     needs: changes
     if: needs.changes.outputs.relevant == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -61,7 +61,7 @@ jobs:
   test:
     needs: changes
     if: needs.changes.outputs.relevant == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -101,7 +101,7 @@ jobs:
   e2e-browser:
     needs: [changes, lint, typecheck]
     if: needs.changes.outputs.e2e == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -129,7 +129,7 @@ jobs:
   e2e:
     needs: [changes, e2e-browser]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - if: needs.changes.result != 'success'
         run: echo "::error::The path filter failed." && exit 1
