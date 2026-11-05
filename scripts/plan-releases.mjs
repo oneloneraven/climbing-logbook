@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { planFromRepo } from "./lib/plan-releases.mjs";
+import { parsePulls, planFromRepo } from "./lib/plan-releases.mjs";
 
 const run = (cmd, args) => execFileSync(cmd, args, { encoding: "utf8" }).trim();
 const { MERGE_SHA, GITHUB_REPOSITORY, BUMP_INPUT } = process.env;
@@ -9,7 +9,7 @@ const plan = planFromRepo({
   mergeSha: MERGE_SHA,
   bumpInput: BUMP_INPUT,
   prFor: sha => {
-    const prs = JSON.parse(run("gh", ["api", `repos/${GITHUB_REPOSITORY}/commits/${sha}/pulls`]));
+    const prs = parsePulls(run("gh", ["api", `repos/${GITHUB_REPOSITORY}/commits/${sha}/pulls`]), sha);
     const pr = prs.find(p => p.merge_commit_sha === sha);
     return pr ? { number: pr.number, body: pr.body, labels: pr.labels.map(l => l.name) } : null;
   },

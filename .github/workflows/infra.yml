@@ -13,11 +13,11 @@ permissions:
 
 concurrency:
   group: infra-${{ github.event_name == 'pull_request' && github.ref || 'apply' }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   tofu:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # A PR plans with a read-only token; only main, through the infra environment, holds the one that can apply.
     environment: ${{ github.event_name != 'pull_request' && 'infra' || '' }}
     permissions:
@@ -41,7 +41,7 @@ jobs:
           persist-credentials: false
       - uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2.0.2
         with:
-          tofu_version: "~1.13"
+          tofu_version: "1.13.2"
           tofu_wrapper: false
 
       - run: tofu fmt -check -recursive

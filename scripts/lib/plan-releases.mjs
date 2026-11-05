@@ -57,3 +57,12 @@ function isAncestor(git, ancestor, descendant) {
     return false;
   }
 }
+
+export function parsePulls(output, sha) {
+  try {
+    const pulls = JSON.parse(output);
+    if (Array.isArray(pulls)) return pulls;
+  } catch {}
+  const shown = output.length > 500 ? `${output.slice(0, 500)}...` : output;
+  throw new Error(`gh api returned no usable pull request list for ${sha}: ${JSON.stringify(shown)}`);
+}

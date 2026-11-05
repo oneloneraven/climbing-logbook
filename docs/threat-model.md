@@ -55,7 +55,7 @@ flowchart LR
 | TB6 | Owner to administrator | The admin host's user list, logbook view, suspend, ban, delete | Cloudflare Access, one allowed email (`infra/access.tf`); the Worker verifies the Access token (`ACCESS_AUD`); read-only logbook view; audit log (ADR-0034) |
 | TB7 | Device storage | The on-device logbook copy and the offline queue | Keyed per user (`client/user-storage.js`); *Clear device data*; logout keeps unsynced changes by design |
 | TB8 | Worker to processors | Email address and username to Resend; everything to Cloudflare | DPAs and transfer safeguards (`docs/data-protection.md`); allowlist logger, no bodies or notes in logs (#1027) |
-| TB9 | CI to production | Deploy, migrations, OpenTofu, release tags | Scoped, expiring Cloudflare tokens (`docs/infra-architecture.md`); environment secrets for deploy and infra; pinned actions, zizmor, CodeQL, Scorecard, dependency review |
+| TB9 | CI to production | Deploy, migrations, OpenTofu, release tags | Scoped, expiring Cloudflare tokens (`docs/infra-architecture.md`); environment secrets for deploy and infra; release tags pushed with a one-hour release App token, minted only in the release job (`docs/versioning.md`); pinned actions, zizmor, CodeQL, Scorecard, dependency review |
 
 ## Assets
 
@@ -67,6 +67,7 @@ flowchart LR
 | Email addresses | Personal data; harvesting and spam |
 | The admin host | Can read every logbook and suspend, ban or delete accounts |
 | Secrets and CI tokens | `BETTER_AUTH_SECRET` forges sessions; Cloudflare tokens deploy code or change DNS |
+| Release App private key | Mints tokens that push release tags, which deploy, and through the Workflows permission change workflow files |
 | Email reputation and quota | Losing them stops verification and password reset |
 | Availability and the free-plan quotas | Workers, D1 and Resend limits; exhausting them is an outage |
 
@@ -111,6 +112,7 @@ S spoofing, T tampering, R repudiation, I information disclosure, D denial of se
 | 20 | E | Beta enrolment or invite bypass | Enrolment checked per request (ADR-0016, ADR-0029); invite codes claimed before sign-up | — |
 | 21 | E | A compromised maintainer account | Cloudflare tokens scoped and expiring; Access limited to one email | Account hardening (2FA everywhere, branch rules, CAA): #1069 |
 | 22 | S | Switching off someone's two-step sign-in through recovery | Recovery needs the correct password first, then the link from the account's email; switching off waits 7 days, with an email when the wait starts and a cancel link; no admin reset, so no one can be talked into it (`server/lib/two-step-recovery.js`) | — |
+| 23 | E | A leaked release App key or token used to push a tag or alter workflow files | Tokens last an hour and are minted only in the release job; the key is a repository secret; the App is installed on this repository only. Workflows permission is needed because GitHub refuses a tag whose commit's workflow files differ from the default branch's | Accepted |
 
 ## Known gaps, in one place
 

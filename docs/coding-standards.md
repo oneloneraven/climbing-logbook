@@ -125,6 +125,9 @@ quietly reversed without someone re-deciding on purpose.
   Workers Routes and DNS are Zone-scoped. Scope each permission row to the
   narrowest resource that actually has that option — don't default to
   "all zones"/"all accounts" out of convenience.
+- **Tools and runners are pinned exactly.** `tofu_version` in `infra.yml`
+  is an exact release more than 72 hours old, upgraded by hand because
+  Dependabot doesn't track it; every workflow runs on `ubuntu-24.04`.
 
 ### Authentication
 

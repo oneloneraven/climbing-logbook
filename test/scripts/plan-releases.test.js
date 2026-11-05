@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bumpOf, nextVersion, planFromRepo, planReleases } from "../../scripts/lib/plan-releases.mjs";
+import { bumpOf, nextVersion, parsePulls, planFromRepo, planReleases } from "../../scripts/lib/plan-releases.mjs";
 
 const PRS = {
   a: { number: 1, labels: ["release: patch"], body: "## What's new\n\n- Fix one." },
@@ -82,5 +82,21 @@ describe("planFromRepo (#1512)", () => {
     expect(planFromRepo({ git, prFor: () => null, bumpInput: "minor" })).toEqual([
       { sha: "tip", version: "v2.10.0", pr: null, message: "v2.10.0\n" },
     ]);
+  });
+});
+
+describe("parsePulls", () => {
+  it("returns the pull request list", () => {
+    expect(parsePulls('[{"number":1}]', "abc")).toEqual([{ number: 1 }]);
+  });
+
+  it.each(["", "not json", '{"message":"Not Found"}'])("names the commit and shows the raw output for %j", output => {
+    expect(() => parsePulls(output, "abc")).toThrow(
+      `gh api returned no usable pull request list for abc: ${JSON.stringify(output)}`,
+    );
+  });
+
+  it("shortens long output in the error", () => {
+    expect(() => parsePulls("x".repeat(600), "abc")).toThrow(`${"x".repeat(500)}...`);
   });
 });
