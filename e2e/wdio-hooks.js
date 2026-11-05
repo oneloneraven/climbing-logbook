@@ -42,7 +42,9 @@ export async function recordPageEvents() {
     const listener = params => {
       if ((params.context ?? params.source?.context) !== context) return;
       const { navigation, url, request, response, errorText, text } = params;
-      const detail = { navigation, url: url ?? request?.url, status: response?.status, errorText, text };
+      // Query strings can carry tokens, which shouldn't reach CI logs.
+      const path = (url ?? request?.url)?.split("?")[0];
+      const detail = { navigation, url: path, status: response?.status, errorText, text };
       seen.push(`${new Date().toISOString()} ${event} ${JSON.stringify(detail).slice(0, 300)}`);
     };
     browser.on(event, listener);
