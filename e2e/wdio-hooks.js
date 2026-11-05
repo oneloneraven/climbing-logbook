@@ -1,6 +1,12 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { browser } from "@wdio/globals";
-import { cleanUpThisTest, currentContext, startInFreshWindow, waitUntilActionable } from "./wdio-browser.js";
+import {
+  afterThisTest,
+  cleanUpThisTest,
+  currentContext,
+  startInFreshWindow,
+  waitUntilActionable,
+} from "./wdio-browser.js";
 import { signInDevUser } from "./wdio-owner.js";
 
 const PAGE_REPLACED =
@@ -11,6 +17,37 @@ const recentCommands = [];
 function remember(line) {
   recentCommands.push(`${new Date().toISOString()} ${line}`);
   if (recentCommands.length > 30) recentCommands.shift();
+}
+
+// A command log can't show why a page never loaded (#1662), so a test can also keep its tab's page events.
+const pageEvents = new Map();
+const PAGE_EVENTS = [
+  "browsingContext.navigationStarted",
+  "browsingContext.navigationCommitted",
+  "browsingContext.navigationFailed",
+  "browsingContext.domContentLoaded",
+  "browsingContext.load",
+  "network.beforeRequestSent",
+  "network.responseCompleted",
+  "network.fetchError",
+  "log.entryAdded",
+];
+export async function recordPageEvents() {
+  const context = currentContext();
+  const seen = [];
+  pageEvents.set(context, seen);
+  afterThisTest(() => pageEvents.delete(context));
+  await browser.sessionSubscribe({ events: PAGE_EVENTS, contexts: [context] });
+  for (const event of PAGE_EVENTS) {
+    const listener = params => {
+      if ((params.context ?? params.source?.context) !== context) return;
+      const { navigation, url, request, response, errorText, text } = params;
+      const detail = { navigation, url: url ?? request?.url, status: response?.status, errorText, text };
+      seen.push(`${new Date().toISOString()} ${event} ${JSON.stringify(detail).slice(0, 300)}`);
+    };
+    browser.on(event, listener);
+    afterThisTest(() => browser.off(event, listener));
+  }
 }
 
 // Commands ride out the page's own redirects and reloads, which WebDriver BiDi reports as errors.
@@ -91,6 +128,8 @@ export const mochaHooks = {
   async afterEach() {
     const test = this.currentTest ?? this.test;
     if (test?.state === "failed") console.log(`Last commands before the failure:\n${recentCommands.join("\n")}`);
+    const events = pageEvents.get(currentContext());
+    if (test?.state === "failed" && events) console.log(`Page events in this test:\n${events.join("\n")}`);
     await screenshotFailure(test);
     await cleanUpThisTest();
   },

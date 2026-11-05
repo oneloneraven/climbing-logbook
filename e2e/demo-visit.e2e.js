@@ -1,5 +1,6 @@
 import { $, $$, browser, expect } from "@wdio/globals";
 import { settle, waitForPath, waitForUrl } from "./wdio-browser.js";
+import { recordPageEvents } from "./wdio-hooks.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 
 const tour = () => $('[role="dialog"][aria-labelledby="tour-title"]');
@@ -7,6 +8,7 @@ const waitForUrlEnding = ending => waitForUrl(url => url.href.endsWith(ending), 
 
 describe("a visitor with nothing stored", () => {
   it("the home page's demo links start the tour, and the visit stores nothing", async () => {
+    await recordPageEvents();
     await browser.url("/");
     await $("#demo-picker-wrap").$('role/button[name="View a demo first"]').click();
     const link = $("a*=Intermediate");
