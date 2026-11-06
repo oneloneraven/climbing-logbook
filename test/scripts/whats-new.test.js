@@ -69,7 +69,7 @@ describe("release tags", () => {
   it("round-trips a tag message through git", () => {
     const repo = mkdtempSync(join(tmpdir(), "whats-new-"));
     const env = {
-      ...process.env,
+      ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith("GIT_"))),
       GIT_CONFIG_GLOBAL: "/dev/null",
       GIT_CONFIG_NOSYSTEM: "1",
       GIT_AUTHOR_NAME: "t",
