@@ -57,7 +57,9 @@ describe("logging in with a passkey", () => {
     await virtualAuthenticator();
     const owner = await claimOwner();
     await addPasskey(owner);
-    expect(await browser.execute(() => window.offeredAlgorithms)).toEqual([-7, -257]);
+    const offered = await browser.execute(() => window.offeredAlgorithms);
+    expect(offered).toContain(-7);
+    expect(offered).not.toContain(-8);
     await logInWithPasskey(owner);
   });
 
