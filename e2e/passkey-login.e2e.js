@@ -45,6 +45,22 @@ describe("logging in with a passkey", () => {
     await logInWithPasskey(owner);
   });
 
+  it("never offers the authenticator EdDSA, which Proton Pass creates but can't log in with (#1677)", async () => {
+    await withoutAutofill();
+    await browser.addInitScript(() => {
+      const create = navigator.credentials.create.bind(navigator.credentials);
+      navigator.credentials.create = options => {
+        window.offeredAlgorithms = options.publicKey.pubKeyCredParams.map(param => param.alg);
+        return create(options);
+      };
+    });
+    await virtualAuthenticator();
+    const owner = await claimOwner();
+    await addPasskey(owner);
+    expect(await browser.execute(() => window.offeredAlgorithms)).toEqual([-7, -257]);
+    await logInWithPasskey(owner);
+  });
+
   it("a passkey logs in without asking for a 2FA code (#1439)", async () => {
     await withoutAutofill();
     await virtualAuthenticator();
