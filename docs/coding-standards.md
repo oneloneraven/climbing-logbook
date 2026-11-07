@@ -129,6 +129,9 @@ quietly reversed without someone re-deciding on purpose.
   is an exact release more than 72 hours old, upgraded by hand because
   Dependabot doesn't track it. Every workflow runs on `ubuntu-26.04`, moved
   by hand to the image `ubuntu-latest` points at when GitHub changes it.
+  Node is the exact release in `.nvmrc`, which every `setup-node` step
+  reads and `nvm use` picks up locally; move it by hand to the newest
+  Active LTS line when that changes.
 
 ### Authentication
 
