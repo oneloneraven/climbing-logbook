@@ -130,8 +130,10 @@ quietly reversed without someone re-deciding on purpose.
   Dependabot doesn't track it. Every workflow runs on `ubuntu-26.04`, moved
   by hand to the image `ubuntu-latest` points at when GitHub changes it.
   Node is the exact release in `package.json`'s `devEngines.runtime`:
-  every `setup-node` step reads it, and pnpm refuses to install or run
-  scripts on any other version. Move it by hand to the newest Active LTS
+  every `setup-node` step reads it, and pnpm warns on any other version.
+  It warns rather than fails because Dependabot's updater runs its own
+  Node, and a failure would stop every npm update. Commands started with
+  plain `node` aren't checked. Move it by hand to the newest Active LTS
   line when that changes.
 
 ### Authentication
