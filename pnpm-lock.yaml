@@ -17,6 +17,7 @@ overrides:
 
 patchedDependencies:
   '@cloudflare/vitest-plugin@1.5.0': e22a4b6e7fdef34546b8c4372a51bf15c6fafc25e276bb4f1b39588964cda1a1
+  webdriverio: eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55
 
 importers:
 
@@ -73,13 +74,13 @@ importers:
         version: 5.1.0(vitest@5.1.0)
       '@wdio/cli':
         specifier: 10.1.0
-        version: 10.1.0(@types/node@26.6.6)(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))
+        version: 10.1.0(@types/node@26.6.6)(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))
       '@wdio/globals':
         specifier: 10.1.0
-        version: 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(webdriverio@10.1.0(supports-color@8.1.1))
+        version: 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       '@wdio/local-runner':
         specifier: 10.1.0
-        version: 10.1.0(tsx@4.23.15)(webdriverio@10.1.0(supports-color@8.1.1))
+        version: 10.1.0(tsx@4.23.15)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       '@wdio/mocha-framework':
         specifier: 10.1.0
         version: 10.1.0
@@ -133,7 +134,7 @@ importers:
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       webdriverio:
         specifier: 10.1.0
-        version: 10.1.0(supports-color@8.1.1)
+        version: 10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)
       world-atlas:
         specifier: ^2.0.2
         version: 2.0.2
@@ -4901,14 +4902,14 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.2.0
 
-  '@wdio/cli@10.1.0(@types/node@26.6.6)(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))':
+  '@wdio/cli@10.1.0(@types/node@26.6.6)(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))':
     dependencies:
       '@vitest/snapshot': 5.0.5
       '@wdio/config': 10.1.0
-      '@wdio/globals': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(webdriverio@10.1.0(supports-color@8.1.1))
+      '@wdio/globals': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       '@wdio/logger': 10.1.0
       '@wdio/protocols': 10.0.2
-      '@wdio/session': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(tsx@4.23.15)
+      '@wdio/session': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(tsx@4.23.15)
       '@wdio/types': 10.1.0
       '@wdio/utils': 10.1.0
       async-exit-hook: 2.0.1
@@ -4922,7 +4923,7 @@ snapshots:
       lodash.union: 4.6.0
       read-package-up: 12.0.0
       tsx: 4.23.15
-      webdriverio: 10.1.0(supports-color@8.1.1)
+      webdriverio: 10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@types/node'
@@ -4966,22 +4967,22 @@ snapshots:
       '@wdio/types': 10.1.0
       chalk: 6.0.1
 
-  '@wdio/globals@10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(webdriverio@10.1.0(supports-color@8.1.1))':
+  '@wdio/globals@10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))':
     dependencies:
-      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1))
-      webdriverio: 10.1.0(supports-color@8.1.1)
+      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
+      webdriverio: 10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)
 
-  '@wdio/local-runner@10.1.0(tsx@4.23.15)(webdriverio@10.1.0(supports-color@8.1.1))':
+  '@wdio/local-runner@10.1.0(tsx@4.23.15)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))':
     dependencies:
       '@types/node': 22.20.5
       '@types/split2': 4.2.3
       '@wdio/display-server': 10.1.0
       '@wdio/logger': 10.1.0
       '@wdio/repl': 10.0.0
-      '@wdio/runner': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(tsx@4.23.15)(webdriverio@10.1.0(supports-color@8.1.1))
+      '@wdio/runner': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(tsx@4.23.15)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       '@wdio/types': 10.1.0
       exit-hook: 5.1.0
-      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1))
+      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       split2: 4.2.0
       stream-buffers: 3.0.3
     transitivePeerDependencies:
@@ -5035,20 +5036,20 @@ snapshots:
       diff: 9.0.0
       object-inspect: 1.13.4
 
-  '@wdio/runner@10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(tsx@4.23.15)(webdriverio@10.1.0(supports-color@8.1.1))':
+  '@wdio/runner@10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(tsx@4.23.15)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))':
     dependencies:
       '@types/node': 22.20.5
       '@wdio/config': 10.1.0
       '@wdio/dot-reporter': 10.1.0
-      '@wdio/globals': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(webdriverio@10.1.0(supports-color@8.1.1))
+      '@wdio/globals': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       '@wdio/logger': 10.1.0
-      '@wdio/session': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(tsx@4.23.15)
+      '@wdio/session': 10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(tsx@4.23.15)
       '@wdio/types': 10.1.0
       '@wdio/utils': 10.1.0
       deepmerge-ts: 8.0.2
-      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1))
+      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       webdriver: 10.1.0(supports-color@8.1.1)
-      webdriverio: 10.1.0(supports-color@8.1.1)
+      webdriverio: 10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)
     transitivePeerDependencies:
       - '@wdio/electron-service'
       - '@wdio/visual-service'
@@ -5065,7 +5066,7 @@ snapshots:
       - utf-8-validate
       - yauzl
 
-  '@wdio/session@10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)))(tsx@4.23.15)':
+  '@wdio/session@10.1.0(expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)))(tsx@4.23.15)':
     dependencies:
       '@types/node': 22.20.5
       '@wdio/config': 10.1.0
@@ -5079,10 +5080,10 @@ snapshots:
       image-size: 2.0.4
       picomatch: 4.0.7
       semver: 7.8.6
-      webdriverio: 10.1.0(supports-color@8.1.1)
+      webdriverio: 10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)
       yargs: 18.2.0
     optionalDependencies:
-      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1))
+      expect-webdriverio: 8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1))
       tsx: 4.23.15
     transitivePeerDependencies:
       - bare-abort-controller
@@ -5099,7 +5100,7 @@ snapshots:
   '@wdio/snapshot@10.1.0':
     dependencies:
       '@wdio/utils': 10.1.0
-      webdriverio: 10.1.0(supports-color@8.1.1)
+      webdriverio: 10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -5676,13 +5677,13 @@ snapshots:
 
   expect-type@1.4.0: {}
 
-  expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(supports-color@8.1.1)):
+  expect-webdriverio@8.0.0(@wdio/types@10.1.0)(webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)):
     dependencies:
       '@vitest/snapshot': 5.0.5
       '@wdio/types': 10.1.0
       expect: 30.5.2
       jest-matcher-utils: 30.5.2
-      webdriverio: 10.1.0(supports-color@8.1.1)
+      webdriverio: 10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1)
 
   expect@30.5.2:
     dependencies:
@@ -6876,7 +6877,7 @@ snapshots:
       - utf-8-validate
       - yauzl
 
-  webdriverio@10.1.0(supports-color@8.1.1):
+  webdriverio@10.1.0(patch_hash=eb4244e8fbaeb41a7dd3d489fa9d038ab9e1f4bea10569bb69e8cea1cac9cb55)(supports-color@8.1.1):
     dependencies:
       '@types/node': 22.20.5
       '@types/sinonjs__fake-timers': 15.0.1

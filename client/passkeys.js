@@ -32,7 +32,9 @@ export async function signInWithPasskey({ autofill = false, signal } = {}) {
 
 export async function addPasskey(name) {
   const options = await passkeyRequest(`/generate-register-options?name=${encodeURIComponent(name)}`);
-  const publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(options);
+  // Proton Pass creates an EdDSA passkey when offered one, then can't log in with it (#1677).
+  const pubKeyCredParams = options.pubKeyCredParams.filter(param => param.alg !== -8);
+  const publicKey = PublicKeyCredential.parseCreationOptionsFromJSON({ ...options, pubKeyCredParams });
   const credential = await navigator.credentials.create({ publicKey });
   return passkeyRequest("/verify-registration", { response: credential.toJSON(), name });
 }

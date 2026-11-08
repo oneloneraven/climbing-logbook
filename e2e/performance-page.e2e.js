@@ -32,7 +32,7 @@ describe("performance page", () => {
     await owner.settings({ athleteMode: true, activeDiscipline: "boulder" });
     await browser.url(owner.url("/performance"));
 
-    const title = $("#insight-gap").$(".row-card-title");
+    const title = $("#insight-gap .row-card-title");
     await expect(title).toHaveTextContent("Send / Flash Gap");
 
     await $("#discipline-btn").click();

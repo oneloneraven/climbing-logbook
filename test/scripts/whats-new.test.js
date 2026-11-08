@@ -68,16 +68,25 @@ describe("whatsNewFromPrBody (#917)", () => {
 describe("release tags", () => {
   it("round-trips a tag message through git", () => {
     const repo = mkdtempSync(join(tmpdir(), "whats-new-"));
-    const git = (...args) => execFileSync("git", args, { cwd: repo, stdio: "pipe" });
+    const env = {
+      ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith("GIT_"))),
+      GIT_CONFIG_GLOBAL: "/dev/null",
+      GIT_CONFIG_NOSYSTEM: "1",
+      GIT_AUTHOR_NAME: "t",
+      GIT_AUTHOR_EMAIL: "t@t",
+      GIT_COMMITTER_NAME: "t",
+      GIT_COMMITTER_EMAIL: "t@t",
+    };
+    const git = (...args) => execFileSync("git", args, { cwd: repo, env, stdio: "pipe" });
     git("init", "-q");
-    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "first");
+    git("commit", "-q", "--allow-empty", "-m", "first");
     const message = join(repo, "message");
     writeFileSync(message, tagMessage("v1.1.0", ["#1 change.", "Another change."]));
-    git("-c", "user.name=t", "-c", "user.email=t@t", "tag", "-a", "v1.1.0", "--cleanup=whitespace", "-F", message);
-    git("-c", "user.name=t", "-c", "user.email=t@t", "tag", "-a", "v1.0.0", "-m", "v1.0.0");
+    git("tag", "-a", "v1.1.0", "--cleanup=whitespace", "-F", message);
+    git("tag", "-a", "v1.0.0", "-m", "v1.0.0");
     git("checkout", "-q", "-b", "later");
-    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "later");
-    git("-c", "user.name=t", "-c", "user.email=t@t", "tag", "-a", "v1.2.0", "-m", "v1.2.0\n\nNot built yet.");
+    git("commit", "-q", "--allow-empty", "-m", "later");
+    git("tag", "-a", "v1.2.0", "-m", "v1.2.0\n\nNot built yet.");
     git("checkout", "-q", "v1.1.0");
 
     const releases = readTaggedReleases(repo);

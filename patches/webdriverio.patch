@@ -1,0 +1,42 @@
+diff --git a/build/index.js b/build/index.js
+index f00f0f02071150f7dcffbb98d9d6caf36cccb559..a8b7f851f62eaa4e602f0a37961736bd181547bc 100644
+--- a/build/index.js
++++ b/build/index.js
+@@ -253,7 +253,15 @@ async function implicitWait(currentElement, commandName) {
+     );
+     try {
+       await currentElement.waitForExist();
+-      const nextElement2 = await findElementAgain(currentElement, { wait: true });
++      let nextElement2 = await findElementAgain(currentElement, { wait: true });
++      const deadline = Date.now() + (browser.options?.waitforTimeout ?? 5e3);
++      while (nextElement2 && !nextElement2.elementId && Date.now() < deadline) {
++        await currentElement.waitForExist({ timeout: deadline - Date.now() });
++        nextElement2 = await findElementAgain(currentElement, { wait: true });
++      }
++      if (nextElement2 && !nextElement2.elementId) {
++        throw nextElement2.error ?? new Error(`element with selector "${describeSelector(currentElement)}" was replaced each time it was found`);
++      }
+       if (!nextElement2) {
+         throw new Error(
+           `element with selector "${describeSelector(currentElement)}" has no match at index ${currentElement.index}`
+diff --git a/build/node.js b/build/node.js
+index bcd2a388f8c2f412bfaafc4548a1d42dee75426c..87c28396195ff6a56e75b4fc2a4dab1172c9eb5e 100644
+--- a/build/node.js
++++ b/build/node.js
+@@ -1924,7 +1924,15 @@ async function implicitWait(currentElement, commandName) {
+     );
+     try {
+       await currentElement.waitForExist();
+-      const nextElement2 = await findElementAgain(currentElement, { wait: true });
++      let nextElement2 = await findElementAgain(currentElement, { wait: true });
++      const deadline = Date.now() + (browser.options?.waitforTimeout ?? 5e3);
++      while (nextElement2 && !nextElement2.elementId && Date.now() < deadline) {
++        await currentElement.waitForExist({ timeout: deadline - Date.now() });
++        nextElement2 = await findElementAgain(currentElement, { wait: true });
++      }
++      if (nextElement2 && !nextElement2.elementId) {
++        throw nextElement2.error ?? new Error(`element with selector "${describeSelector(currentElement)}" was replaced each time it was found`);
++      }
+       if (!nextElement2) {
+         throw new Error(
+           `element with selector "${describeSelector(currentElement)}" has no match at index ${currentElement.index}`
