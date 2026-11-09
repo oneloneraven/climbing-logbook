@@ -32,5 +32,5 @@ overrides:
   minimatch@10: '^11.0.3'
 
 patchedDependencies:
-  '@cloudflare/vitest-plugin@1.5.0': patches/@cloudflare__vitest-plugin@1.5.0.patch
+  '@cloudflare/vitest-plugin': patches/@cloudflare__vitest-plugin.patch
   webdriverio: patches/webdriverio.patch
