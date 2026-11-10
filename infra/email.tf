@@ -20,6 +20,32 @@ removed {
   }
 }
 
+# Proton Mail to Proton Pass (#1691): update the records in place rather than delete and recreate.
+moved {
+  from = cloudflare_dns_record.proton_mx["mail.protonmail.ch"]
+  to   = cloudflare_dns_record.proton_mx["mx1.alias.proton.me"]
+}
+
+moved {
+  from = cloudflare_dns_record.proton_mx["mailsec.protonmail.ch"]
+  to   = cloudflare_dns_record.proton_mx["mx2.alias.proton.me"]
+}
+
+moved {
+  from = cloudflare_dns_record.proton_dkim["protonmail"]
+  to   = cloudflare_dns_record.proton_dkim["dkim"]
+}
+
+moved {
+  from = cloudflare_dns_record.proton_dkim["protonmail2"]
+  to   = cloudflare_dns_record.proton_dkim["dkim02"]
+}
+
+moved {
+  from = cloudflare_dns_record.proton_dkim["protonmail3"]
+  to   = cloudflare_dns_record.proton_dkim["dkim03"]
+}
+
 # Only after Email Routing is off: disabling it deletes the root MX and SPF, even edited ones.
 resource "cloudflare_dns_record" "proton_mx" {
   for_each = { "mx1.alias.proton.me" = 10, "mx2.alias.proton.me" = 20 }
