@@ -13,8 +13,8 @@ const BODY_FONT = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
 const DISPLAY_FONT = "'Bebas Neue', Impact, 'Arial Narrow Bold', 'Helvetica Neue', Arial, sans-serif";
 const LOCKUP_PATH = "/-/email-lockup.png";
 // Joined at runtime so the public repo never holds the address as a scrapeable literal.
-const SUPPORT_ADDRESS = ["hello", "climbinglogbook.com"].join("@");
-const SEND_ONLY = `Replies to this address aren't read. For help, email ${SUPPORT_ADDRESS}.`;
+const HELP_ADDRESS = ["hello", "climbinglogbook.com"].join("@");
+const SEND_ONLY = `Replies to this address aren't read. For help, email ${HELP_ADDRESS}.`;
 
 function originOf(url) {
   try {

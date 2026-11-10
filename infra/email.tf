@@ -1,4 +1,4 @@
-# hello@ is the contact address emails give, with support@ kept for older emails; both are Proton Pass aliases, never published on the site.
+# hello@ is the contact address emails give; it's never published on the site.
 import {
   to = cloudflare_dns_record.proton_verification
   id = "${data.cloudflare_zone.app.id}/f777e54d1be62620b46ec8d26f914b66"
@@ -20,7 +20,7 @@ removed {
   }
 }
 
-# Proton Mail to Proton Pass (#1691): update the records in place rather than delete and recreate.
+# Moved, not replaced, so the plan updates each record in place and deletes nothing (#1075).
 moved {
   from = cloudflare_dns_record.proton_mx["mail.protonmail.ch"]
   to   = cloudflare_dns_record.proton_mx["mx1.alias.proton.me"]
