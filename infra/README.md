@@ -110,8 +110,8 @@ dashboard or elsewhere, and why:
 - **Resend's domain verification** happens in Resend; only its DNS records
   live here.
 
-`support@` is a Proton Mail custom-domain mailbox (#1444). Its records
-(verification TXT, MX, root SPF, DKIM CNAMEs) are in `email.tf`. Adding
+`hello@` and `support@` are Proton Pass custom-domain aliases (#1691). Their
+records (verification TXT, MX, root SPF, DKIM CNAMEs) are in `email.tf`. Adding
 another service that sends as the root domain means adding its `include:`
 to `cloudflare_dns_record.root_spf`, keeping to one SPF record.
 

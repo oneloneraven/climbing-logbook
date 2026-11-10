@@ -207,7 +207,7 @@ describe("createEmailSender parts (#1106)", () => {
 
   it("says in both parts that replies aren't read, and where to get help (#1365)", async () => {
     await sender.sendVerificationEmail("owner@example.com", url);
-    const help = `Replies to this address aren't read. For help, email ${["support", "climbinglogbook.com"].join("@")}.`;
+    const help = `Replies to this address aren't read. For help, email ${["hello", "climbinglogbook.com"].join("@")}.`;
     expect(resendCalls[0].body.text).toContain(help);
     expect(resendCalls[0].body.html).toContain(help.replace("aren't", "aren&#39;t"));
   });

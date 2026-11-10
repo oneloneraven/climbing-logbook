@@ -1,4 +1,4 @@
-# support@ is the contact address emails give; it's never published on the site.
+# hello@ is the contact address emails give, with support@ kept for older emails; both are Proton Pass aliases, never published on the site.
 import {
   to = cloudflare_dns_record.proton_verification
   id = "${data.cloudflare_zone.app.id}/f777e54d1be62620b46ec8d26f914b66"
@@ -9,7 +9,7 @@ resource "cloudflare_dns_record" "proton_verification" {
   name    = var.app_zone_name
   type    = "TXT"
   ttl     = 1
-  content = "\"protonmail-verification=fe96490b1f1ddc48374942ffa3fef4aecdcdddcf\""
+  content = "\"pm-verification=gqsulojaiazjislcsxekrhbxtrroib\""
 }
 
 # Email Routing was disabled in the dashboard: forget its zone settings rather than call disable again.
@@ -22,7 +22,7 @@ removed {
 
 # Only after Email Routing is off: disabling it deletes the root MX and SPF, even edited ones.
 resource "cloudflare_dns_record" "proton_mx" {
-  for_each = { "mail.protonmail.ch" = 10, "mailsec.protonmail.ch" = 20 }
+  for_each = { "mx1.alias.proton.me" = 10, "mx2.alias.proton.me" = 20 }
   zone_id  = data.cloudflare_zone.app.id
   name     = var.app_zone_name
   type     = "MX"
@@ -36,17 +36,17 @@ resource "cloudflare_dns_record" "root_spf" {
   name    = var.app_zone_name
   type    = "TXT"
   ttl     = 1
-  content = "\"v=spf1 include:_spf.protonmail.ch ~all\""
+  content = "\"v=spf1 include:alias.proton.me ~all\""
 }
 
 resource "cloudflare_dns_record" "proton_dkim" {
-  for_each = toset(["protonmail", "protonmail2", "protonmail3"])
+  for_each = toset(["dkim", "dkim02", "dkim03"])
   zone_id  = data.cloudflare_zone.app.id
   name     = "${each.key}._domainkey.${var.app_zone_name}"
   type     = "CNAME"
   ttl      = 1
   proxied  = false
-  content  = "${each.key}.domainkey.drsvvi26oveh5kvolngnll7dtopfd2anzc73r2le4vdjz6rb4tw6q.domains.proton.ch"
+  content  = "${each.key}._domainkey.alias.proton.me"
 }
 
 # Made in the dashboard when Resend was set up; reject once only Resend sends as the domain.
