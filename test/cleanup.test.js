@@ -1,6 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanUp } from "../server/lib/cleanup.js";
+import { VOCABULARY_VERSION } from "../server/lib/hardest-beta.js";
 import {
   createAuthedSession,
   fetchJson,
@@ -154,6 +155,61 @@ describe("the daily clean-up (#1051)", () => {
       hardestBeta: "Heel hook the lip, cross to the crimp",
       movements: 1,
     });
+  });
+});
+
+describe("re-reading hardest-move betas after an interpreter upgrade (#1526)", () => {
+  const movementsOf = async id =>
+    (
+      await db
+        .prepare(`SELECT id, vocabulary_version, start_state FROM entry_movements WHERE entry_id = ? ORDER BY position`)
+        .bind(id)
+        .all()
+    ).results;
+  const cursorOf = async id =>
+    (await db.prepare(`SELECT sync_cursor FROM entries WHERE id = ?`).bind(id).first()).sync_cursor;
+  const readByOldVersion = id =>
+    db
+      .prepare(`UPDATE entry_movements SET vocabulary_version = '0.0.1', start_state = '{}' WHERE entry_id = ?`)
+      .bind(id)
+      .run();
+
+  it("re-reads a climb read by an older version, and moves its cursor so devices fetch it", async () => {
+    await climbWithEverything("stale");
+    const fresh = await movementsOf("stale");
+    await readByOldVersion("stale");
+    const before = await cursorOf("stale");
+
+    await cleanUp(env, log);
+
+    const reread = await movementsOf("stale");
+    expect(reread.map(m => [m.vocabulary_version, m.start_state])).toEqual(
+      fresh.map(m => [VOCABULARY_VERSION, m.start_state]),
+    );
+    expect(await cursorOf("stale")).toBeGreaterThan(before);
+    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 1 });
+  });
+
+  it("leaves a climb read by the current version alone", async () => {
+    await climbWithEverything("current");
+    const before = { movements: await movementsOf("current"), cursor: await cursorOf("current") };
+
+    await cleanUp(env, log);
+
+    expect({ movements: await movementsOf("current"), cursor: await cursorOf("current") }).toEqual(before);
+    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 0 });
+  });
+
+  it("skips a deleted climb", async () => {
+    await climbWithEverything("deleted");
+    await readByOldVersion("deleted");
+    await db.prepare(`UPDATE entries SET deleted_at = 1 WHERE id = 'deleted'`).run();
+    const before = await cursorOf("deleted");
+
+    await cleanUp(env, log);
+
+    expect(await cursorOf("deleted")).toBe(before);
+    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 0 });
   });
 });
 

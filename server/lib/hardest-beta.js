@@ -1,8 +1,11 @@
 import { parse, toMovements } from "@ravendarque/beta-interpreter";
 import pkg from "../../package.json" with { type: "json" };
+import { nextCursorSql, replaceChildRowStatements } from "./d1-resource.js";
 
 // The pinned package version, so a stored movement shows how far behind the current vocabulary it is.
 export const VOCABULARY_VERSION = pkg.dependencies["@ravendarque/beta-interpreter"];
+
+const REREAD_BATCH = 50;
 
 const ids = terms => terms.map(t => t.id);
 
@@ -73,4 +76,37 @@ export function movementRow(movement, id, entryId) {
     end_state: JSON.stringify(movement.end),
     vocabulary_version: VOCABULARY_VERSION,
   };
+}
+
+export async function rereadStaleMovements(env) {
+  const { results } = await env.LOGBOOK_DB.prepare(
+    `SELECT id, user_id, hardest_beta FROM entries WHERE deleted_at IS NULL
+       AND id IN (SELECT entry_id FROM entry_movements WHERE vocabulary_version != ?) LIMIT ${REREAD_BATCH}`,
+  )
+    .bind(VOCABULARY_VERSION)
+    .all();
+  if (!results.length) return 0;
+  const written = await env.LOGBOOK_DB.batch(
+    results.flatMap(climb => {
+      // Written only if the beta is still what was read, so a save in between keeps its own reading.
+      const unedited = {
+        sql: "EXISTS (SELECT 1 FROM entries WHERE id = ? AND hardest_beta IS ?)",
+        binds: [climb.id, climb.hardest_beta],
+      };
+      return [
+        ...replaceChildRowStatements(
+          env,
+          "entry_movements",
+          climb.id,
+          hardestBetaMovements(climb.hardest_beta),
+          movementRow,
+          unedited,
+        ),
+        env.LOGBOOK_DB.prepare(
+          `UPDATE entries SET sync_cursor = ${nextCursorSql("entries")} WHERE id = ? AND hardest_beta IS ? RETURNING 1`,
+        ).bind(climb.user_id, climb.id, climb.hardest_beta),
+      ];
+    }),
+  );
+  return written.reduce((count, result) => count + result.results.length, 0);
 }

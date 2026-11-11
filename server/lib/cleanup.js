@@ -1,3 +1,5 @@
+import { rereadStaleMovements } from "./hardest-beta.js";
+
 const BATCH = 500;
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const SESSION_GRACE_DAYS = 7;
@@ -62,4 +64,5 @@ export async function cleanUp(env, log, now = Date.now()) {
   ];
   const results = await env.LOGBOOK_DB.batch(steps.map(([, statement]) => statement));
   for (const [i, [reason]] of steps.entries()) log.info("cleanup.done", { reason, count: results[i].results.length });
+  log.info("cleanup.done", { reason: "reread-betas", count: await rereadStaleMovements(env) });
 }
