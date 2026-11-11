@@ -6,6 +6,7 @@ import { nextCursorSql, replaceChildRowStatements } from "./d1-resource.js";
 export const VOCABULARY_VERSION = pkg.dependencies["@ravendarque/beta-interpreter"];
 
 const REREAD_BATCH = 50;
+const byVersion = new Intl.Collator("en", { numeric: true });
 
 const ids = terms => terms.map(t => t.id);
 
@@ -78,12 +79,21 @@ export function movementRow(movement, id, entryId) {
   };
 }
 
+// Older only: beta shares production's database and can run a newer interpreter than production's clean-up.
 export async function rereadStaleMovements(env) {
+  const { results: versions } = await env.LOGBOOK_DB.prepare(
+    "SELECT DISTINCT vocabulary_version FROM entry_movements",
+  ).all();
+  const older = versions
+    .map(v => v.vocabulary_version)
+    .filter(version => byVersion.compare(version, VOCABULARY_VERSION) < 0);
+  if (!older.length) return 0;
   const { results } = await env.LOGBOOK_DB.prepare(
     `SELECT id, user_id, hardest_beta FROM entries WHERE deleted_at IS NULL
-       AND id IN (SELECT entry_id FROM entry_movements WHERE vocabulary_version != ?) LIMIT ${REREAD_BATCH}`,
+       AND id IN (SELECT entry_id FROM entry_movements WHERE vocabulary_version IN (${older.map(() => "?").join(", ")}))
+       LIMIT ${REREAD_BATCH}`,
   )
-    .bind(VOCABULARY_VERSION)
+    .bind(...older)
     .all();
   if (!results.length) return 0;
   const written = await env.LOGBOOK_DB.batch(

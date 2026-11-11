@@ -168,11 +168,12 @@ describe("re-reading hardest-move betas after an interpreter upgrade (#1526)", (
     ).results;
   const cursorOf = async id =>
     (await db.prepare(`SELECT sync_cursor FROM entries WHERE id = ?`).bind(id).first()).sync_cursor;
-  const readByOldVersion = id =>
+  const readBy = (version, id) =>
     db
-      .prepare(`UPDATE entry_movements SET vocabulary_version = '0.0.1', start_state = '{}' WHERE entry_id = ?`)
-      .bind(id)
+      .prepare(`UPDATE entry_movements SET vocabulary_version = ?, start_state = '{}' WHERE entry_id = ?`)
+      .bind(version, id)
       .run();
+  const readByOldVersion = id => readBy("0.0.1", id);
 
   it("re-reads a climb read by an older version, and moves its cursor so devices fetch it", async () => {
     await climbWithEverything("stale");
@@ -197,6 +198,17 @@ describe("re-reading hardest-move betas after an interpreter upgrade (#1526)", (
     await cleanUp(env, log);
 
     expect({ movements: await movementsOf("current"), cursor: await cursorOf("current") }).toEqual(before);
+    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 0 });
+  });
+
+  it("leaves a climb read by a newer version alone, as beta can run ahead of production", async () => {
+    await climbWithEverything("ahead");
+    await readBy("999.0.0", "ahead");
+    const before = { movements: await movementsOf("ahead"), cursor: await cursorOf("ahead") };
+
+    await cleanUp(env, log);
+
+    expect({ movements: await movementsOf("ahead"), cursor: await cursorOf("ahead") }).toEqual(before);
     expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 0 });
   });
 
