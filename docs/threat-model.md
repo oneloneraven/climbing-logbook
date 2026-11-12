@@ -24,7 +24,7 @@ flowchart LR
   end
   D1[(D1: one database for<br/>production and beta)]
   TT[(Time Travel backups)]
-  RS[Resend: email]
+  RS[Cloudflare Email Sending]
   AD[Admin browser]
   GH[GitHub Actions]
   CFAPI[Cloudflare API]
@@ -37,7 +37,7 @@ flowchart LR
   AD -- Access login --> ACC --> APP
   APP <--> D1
   D1 --- TT
-  APP -- API key --> RS
+  APP -- EMAIL binding --> RS
   APP --- RL
   GH -- scoped tokens --> CFAPI --> APP
   GH -- migrations --> D1
@@ -54,7 +54,7 @@ flowchart LR
 | TB5 | Production and beta | One shared D1 database (ADR-0020) | Migrations are backward-compatible and deploy straight to production (`docs/versioning.md`); beta enrolment is per user (ADR-0029) |
 | TB6 | Owner to administrator | The admin host's user list, logbook view, suspend, ban, delete | Cloudflare Access, one allowed email (`infra/access.tf`); the Worker verifies the Access token (`ACCESS_AUD`); read-only logbook view; audit log (ADR-0034) |
 | TB7 | Device storage | The on-device logbook copy and the offline queue | Keyed per user (`client/user-storage.js`); *Clear device data*; logout keeps unsynced changes by design |
-| TB8 | Worker to processors | Email address and username to Resend; everything to Cloudflare | DPAs and transfer safeguards (`docs/data-protection.md`); allowlist logger, no bodies or notes in logs (#1027) |
+| TB8 | Worker to processors | Everything to Cloudflare, including each account email's address and username (Email Sending) | DPAs and transfer safeguards (`docs/data-protection.md`); allowlist logger, no bodies or notes in logs (#1027) |
 | TB9 | CI to production | Deploy, migrations, OpenTofu, release tags | Scoped, expiring Cloudflare tokens (`docs/infra-architecture.md`); environment secrets for deploy and infra; release tags pushed with a one-hour release App token, minted only in the release job (`docs/versioning.md`); pinned actions, zizmor, CodeQL, Scorecard, dependency review |
 
 ## Assets
@@ -69,7 +69,7 @@ flowchart LR
 | Secrets and CI tokens | `BETTER_AUTH_SECRET` forges sessions; Cloudflare tokens deploy code or change DNS |
 | Release App private key | Mints tokens that push release tags, which deploy, and through the Workflows permission change workflow files |
 | Email reputation and quota | Losing them stops verification and password reset |
-| Availability and the free-plan quotas | Workers, D1 and Resend limits; exhausting them is an outage |
+| Availability and the free-plan quotas | Workers, D1 and Email Sending limits; exhausting them is an outage |
 
 ## Actors
 
@@ -81,7 +81,7 @@ flowchart LR
 | Curious or malicious signed-in user | Another user's private logbook or health data |
 | Botnet | Downtime, or quota exhaustion |
 | Compromised dependency or Action | Code running in the Worker, the browser or CI |
-| Compromised maintainer account (GitHub, Cloudflare, Resend) | Everything |
+| Compromised maintainer account (GitHub, Cloudflare) | Everything |
 | Someone holding a climber's device | The on-device copy |
 
 ## Threats (STRIDE)
