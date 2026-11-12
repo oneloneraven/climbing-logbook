@@ -83,7 +83,7 @@ minute and 500 per hour.
 - Start each piece of work with `pnpm outdated` (or the stack's equivalent)
   and the open Dependabot alerts. Bring anything behind up to date in its own
   PR.
-- `@ravendarque` packages need a registry token locally. pnpm ignores tokens
+- `@oneloneraven` packages need a registry token locally. pnpm ignores tokens
   in a project `.npmrc`, so put
   `//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}` in `~/.npmrc` and export
   `NODE_AUTH_TOKEN=$(gh auth token)` in your shell profile. A token with

@@ -1,4 +1,4 @@
-import vocabulary from "@ravendarque/beta-interpreter/vocabulary/terms.json" with { type: "json" };
+import vocabulary from "@oneloneraven/beta-interpreter/vocabulary/terms.json" with { type: "json" };
 import { DEFAULT_SCALE_BY_TYPE, SCALES, gradeOrdinal } from "./grade-data.js";
 import { ENTRY_WALL_ANGLES } from "./entry-schema.js";
 import { MIN_TAG_COUNT, humanize, pluralizeHoldType } from "./tag-stats-helpers.js";

@@ -1,6 +1,6 @@
 name: Project status sync
 
-# GITHUB_TOKEN can't reach Projects v2, so this uses the PROJECT_STATUS_PAT secret.
+# GITHUB_TOKEN can't reach Projects v2, so this uses a token from the organisation's board-sync App.
 on:
   create:
   pull_request:
@@ -14,14 +14,25 @@ jobs:
     if: github.actor != 'dependabot[bot]' && ((github.event_name == 'create' && github.ref_type == 'branch') || github.event_name == 'pull_request')
     runs-on: ubuntu-26.04
     env:
-      GH_TOKEN: ${{ secrets.PROJECT_STATUS_PAT }}
       PROJECT_ID: ${{ vars.PROJECT_ID }}
       STATUS_FIELD_ID: ${{ vars.PROJECT_STATUS_FIELD_ID }}
       BRANCH_NAME: ${{ github.event_name == 'create' && github.ref_name || github.head_ref }}
       PR_BODY: ${{ github.event.pull_request.body }}
       OPTION_ID: ${{ github.event_name == 'create' && vars.PROJECT_IN_PROGRESS_OPTION || vars.PROJECT_IN_REVIEW_OPTION }}
     steps:
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: token
+        with:
+          client-id: ${{ vars.BOARD_SYNC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.BOARD_SYNC_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-issues: read
+          permission-organization-projects: write
+
       - name: Move the linked issue
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           ISSUE_NUM=$(echo "$BRANCH_NAME" | grep -oE '^[a-z]+/[0-9]+-' | grep -oE '[0-9]+' || true)
           if [ -z "$ISSUE_NUM" ] && [ -n "$PR_BODY" ]; then
