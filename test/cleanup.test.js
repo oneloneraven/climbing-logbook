@@ -1,6 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanUp } from "../server/lib/cleanup.js";
+import { rereadStaleMovements, VOCABULARY_VERSION } from "../server/lib/hardest-beta.js";
 import {
   createAuthedSession,
   fetchJson,
@@ -28,6 +29,7 @@ beforeEach(async () => {
   await resetAuthTables();
   ({ cookie, userId } = await createAuthedSession());
   log.info.mockClear();
+  log.warn.mockClear();
 });
 
 async function climbWithEverything(id) {
@@ -154,6 +156,111 @@ describe("the daily clean-up (#1051)", () => {
       hardestBeta: "Heel hook the lip, cross to the crimp",
       movements: 1,
     });
+  });
+});
+
+describe("re-reading hardest-move betas after an interpreter upgrade (#1526)", () => {
+  const movementsOf = async id =>
+    (
+      await db
+        .prepare(`SELECT id, vocabulary_version, start_state FROM entry_movements WHERE entry_id = ? ORDER BY position`)
+        .bind(id)
+        .all()
+    ).results;
+  const cursorOf = async id =>
+    (await db.prepare(`SELECT sync_cursor FROM entries WHERE id = ?`).bind(id).first()).sync_cursor;
+  const readBy = (version, id) =>
+    db
+      .prepare(`UPDATE entry_movements SET vocabulary_version = ?, start_state = '{}' WHERE entry_id = ?`)
+      .bind(version, id)
+      .run();
+  const snapshot = async id => ({ movements: await movementsOf(id), cursor: await cursorOf(id) });
+
+  it.each(["0.2.0", `${VOCABULARY_VERSION}-rc.1`])(
+    "re-reads a climb read by %s, and moves its cursor so devices fetch it",
+    async version => {
+      await climbWithEverything("stale");
+      const fresh = await movementsOf("stale");
+      await readBy(version, "stale");
+      const before = await cursorOf("stale");
+
+      expect(await rereadStaleMovements(env, log)).toBe(1);
+
+      const reread = await movementsOf("stale");
+      expect(reread.map(m => [m.vocabulary_version, m.start_state])).toEqual(
+        fresh.map(m => [VOCABULARY_VERSION, m.start_state]),
+      );
+      expect(await cursorOf("stale")).toBeGreaterThan(before);
+    },
+  );
+
+  it("leaves a climb read by the current version alone", async () => {
+    await climbWithEverything("current");
+    const before = await snapshot("current");
+
+    expect(await rereadStaleMovements(env, log)).toBe(0);
+    expect(await snapshot("current")).toEqual(before);
+  });
+
+  it("leaves a climb read by a newer version alone, as beta can run ahead of production", async () => {
+    await climbWithEverything("ahead");
+    await readBy("999.0.0", "ahead");
+    const before = await snapshot("ahead");
+
+    expect(await rereadStaleMovements(env, log)).toBe(0);
+    expect(await snapshot("ahead")).toEqual(before);
+  });
+
+  it("skips a deleted climb", async () => {
+    await climbWithEverything("deleted");
+    await readBy("0.2.0", "deleted");
+    await db.prepare(`UPDATE entries SET deleted_at = 1 WHERE id = 'deleted'`).run();
+    const before = await snapshot("deleted");
+
+    expect(await rereadStaleMovements(env, log)).toBe(0);
+    expect(await snapshot("deleted")).toEqual(before);
+  });
+
+  it("keeps a save that lands between reading the beta and writing its movements", async () => {
+    await climbWithEverything("raced");
+    await readBy("0.2.0", "raced");
+    const before = await snapshot("raced");
+    const savedMeanwhile = new Proxy(db, {
+      get(target, key) {
+        if (key === "batch")
+          return async statements => {
+            await db.prepare(`UPDATE entries SET hardest_beta = 'Dyno to the jug' WHERE id = 'raced'`).run();
+            return target.batch(statements);
+          };
+        const value = target[key];
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+
+    expect(await rereadStaleMovements({ ...env, LOGBOOK_DB: savedMeanwhile }, log)).toBe(0);
+    expect(await snapshot("raced")).toEqual(before);
+  });
+
+  it("skips and logs a beta it can't read, and still re-reads the rest", async () => {
+    for (const id of ["unreadable", "readable"]) {
+      await climbWithEverything(id);
+      await readBy("0.2.0", id);
+    }
+    await db.prepare(`UPDATE entries SET hardest_beta = X'00' WHERE id = 'unreadable'`).run();
+    const before = await snapshot("unreadable");
+
+    expect(await rereadStaleMovements(env, log)).toBe(1);
+    expect(await snapshot("unreadable")).toEqual(before);
+    expect(log.warn).toHaveBeenCalledWith("reread.skipped", expect.objectContaining({ entryId: "unreadable" }));
+  });
+
+  it("runs on its own hourly cron", async () => {
+    await climbWithEverything("hourly");
+    await readBy("0.2.0", "hourly");
+
+    await exports.default.scheduled({ scheduledTime: Date.now(), cron: "47 * * * *" });
+
+    expect((await movementsOf("hourly")).map(m => m.vocabulary_version)).toEqual([VOCABULARY_VERSION]);
   });
 });
 

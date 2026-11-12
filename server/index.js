@@ -3,6 +3,7 @@ import { handleCspReport } from "./api/csp-report.js";
 import { withContentSecurityPolicy } from "./lib/csp.js";
 import { capRequestBody } from "./lib/body-limit.js";
 import { cleanUp } from "./lib/cleanup.js";
+import { rereadStaleMovements } from "./lib/hardest-beta.js";
 import { createEmailSender } from "./lib/email.js";
 import { completeDueRecoveries } from "./lib/two-step-recovery.js";
 import { reencryptTwoStepData } from "./lib/auth-secrets.js";
@@ -149,6 +150,8 @@ function readOnlyResponse() {
 // Test-only routes that throw, so the boundary can be checked on a preview.
 const THROW_PATHS = new Set(["/-/test/throw", "/-/api/test/throw"]);
 const THROWABLE_ENVS = new Set(["development", "e2e", "preview"]);
+// Its own hourly run, so it fits Workers Free's CPU limit and can't stop the daily clean-up (#1696).
+const REREAD_CRON = "47 * * * *";
 
 export default {
   async fetch(request, env, ctx) {
@@ -168,8 +171,17 @@ export default {
     }
   },
 
-  async scheduled(_controller, env) {
+  async scheduled(controller, env) {
     const log = createLogger({ env, route: "scheduled" });
+    if (controller.cron === REREAD_CRON) {
+      try {
+        log.info("reread.done", { count: await rereadStaleMovements(env, log) });
+      } catch (err) {
+        log.error("reread.failed", { err });
+        throw err;
+      }
+      return;
+    }
     try {
       await cleanUp(env, log);
       log.info("two-step.recoveries.completed", {

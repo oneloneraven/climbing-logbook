@@ -8,6 +8,7 @@ import {
   listChangedForUser,
   listForUser,
   nextCursorSql,
+  replaceChildRowStatements,
 } from "../lib/d1-resource.js";
 import { VALID_TYPES, validateEntryShape } from "../../shared/entry-schema.js";
 import { intParam } from "../lib/params.js";
@@ -131,20 +132,6 @@ function painMoveRowToJson(row) {
     movementStyle: row.movement_style,
     wallAngle: row.wall_angle,
   };
-}
-
-/** @param {{ sql: string, binds: unknown[] }} [guard] */
-function replaceChildRowStatements(env, table, entryId, records, buildRow, guard = { sql: "1", binds: [] }) {
-  return [
-    env.LOGBOOK_DB.prepare(`DELETE FROM ${table} WHERE entry_id = ? AND ${guard.sql}`).bind(entryId, ...guard.binds),
-    ...records.map(record => {
-      const row = buildRow(record, crypto.randomUUID(), entryId);
-      const columns = Object.keys(row);
-      return env.LOGBOOK_DB.prepare(
-        `INSERT INTO ${table} (${columns.join(", ")}) SELECT ${columns.map(() => "?").join(", ")} WHERE ${guard.sql}`,
-      ).bind(...columns.map(c => row[c]), ...guard.binds);
-    }),
-  ];
 }
 
 // Checked inside the write too, so a withdrawal mid-request can't leave pain details behind.

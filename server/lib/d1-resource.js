@@ -31,6 +31,20 @@ export async function listChangedForUser(env, table, userId, rowToJson, since) {
   return { rows: results.map(rowToJson), cursor };
 }
 
+/** @param {{ sql: string, binds: unknown[] }} [guard] */
+export function replaceChildRowStatements(env, table, entryId, records, buildRow, guard = { sql: "1", binds: [] }) {
+  return [
+    env.LOGBOOK_DB.prepare(`DELETE FROM ${table} WHERE entry_id = ? AND ${guard.sql}`).bind(entryId, ...guard.binds),
+    ...records.map(record => {
+      const row = buildRow(record, crypto.randomUUID(), entryId);
+      const columns = Object.keys(row);
+      return env.LOGBOOK_DB.prepare(
+        `INSERT INTO ${table} (${columns.join(", ")}) SELECT ${columns.map(() => "?").join(", ")} WHERE ${guard.sql}`,
+      ).bind(...columns.map(c => row[c]), ...guard.binds);
+    }),
+  ];
+}
+
 // Assigned inside the write, so SQLite's single writer orders cursors by commit, not by Worker clock.
 export function nextCursorSql(table) {
   return `(SELECT COALESCE(MAX(sync_cursor), 0) + 1 FROM ${table} WHERE user_id = ?)`;
