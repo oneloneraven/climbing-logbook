@@ -1,7 +1,7 @@
 import { env, exports } from "cloudflare:workers";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanUp } from "../server/lib/cleanup.js";
-import { VOCABULARY_VERSION } from "../server/lib/hardest-beta.js";
+import { rereadStaleMovements, VOCABULARY_VERSION } from "../server/lib/hardest-beta.js";
 import {
   createAuthedSession,
   fetchJson,
@@ -173,55 +173,80 @@ describe("re-reading hardest-move betas after an interpreter upgrade (#1526)", (
       .prepare(`UPDATE entry_movements SET vocabulary_version = ?, start_state = '{}' WHERE entry_id = ?`)
       .bind(version, id)
       .run();
-  const readByOldVersion = id => readBy("0.0.1", id);
+  const snapshot = async id => ({ movements: await movementsOf(id), cursor: await cursorOf(id) });
 
-  it("re-reads a climb read by an older version, and moves its cursor so devices fetch it", async () => {
-    await climbWithEverything("stale");
-    const fresh = await movementsOf("stale");
-    await readByOldVersion("stale");
-    const before = await cursorOf("stale");
+  it.each(["0.2.0", `${VOCABULARY_VERSION}-rc.1`])(
+    "re-reads a climb read by %s, and moves its cursor so devices fetch it",
+    async version => {
+      await climbWithEverything("stale");
+      const fresh = await movementsOf("stale");
+      await readBy(version, "stale");
+      const before = await cursorOf("stale");
 
-    await cleanUp(env, log);
+      expect(await rereadStaleMovements(env, log)).toBe(1);
 
-    const reread = await movementsOf("stale");
-    expect(reread.map(m => [m.vocabulary_version, m.start_state])).toEqual(
-      fresh.map(m => [VOCABULARY_VERSION, m.start_state]),
-    );
-    expect(await cursorOf("stale")).toBeGreaterThan(before);
-    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 1 });
-  });
+      const reread = await movementsOf("stale");
+      expect(reread.map(m => [m.vocabulary_version, m.start_state])).toEqual(
+        fresh.map(m => [VOCABULARY_VERSION, m.start_state]),
+      );
+      expect(await cursorOf("stale")).toBeGreaterThan(before);
+    },
+  );
 
   it("leaves a climb read by the current version alone", async () => {
     await climbWithEverything("current");
-    const before = { movements: await movementsOf("current"), cursor: await cursorOf("current") };
+    const before = await snapshot("current");
 
-    await cleanUp(env, log);
-
-    expect({ movements: await movementsOf("current"), cursor: await cursorOf("current") }).toEqual(before);
-    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 0 });
+    expect(await rereadStaleMovements(env, log)).toBe(0);
+    expect(await snapshot("current")).toEqual(before);
   });
 
   it("leaves a climb read by a newer version alone, as beta can run ahead of production", async () => {
     await climbWithEverything("ahead");
     await readBy("999.0.0", "ahead");
-    const before = { movements: await movementsOf("ahead"), cursor: await cursorOf("ahead") };
+    const before = await snapshot("ahead");
 
-    await cleanUp(env, log);
-
-    expect({ movements: await movementsOf("ahead"), cursor: await cursorOf("ahead") }).toEqual(before);
-    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 0 });
+    expect(await rereadStaleMovements(env, log)).toBe(0);
+    expect(await snapshot("ahead")).toEqual(before);
   });
 
   it("skips a deleted climb", async () => {
     await climbWithEverything("deleted");
-    await readByOldVersion("deleted");
+    await readBy("0.2.0", "deleted");
     await db.prepare(`UPDATE entries SET deleted_at = 1 WHERE id = 'deleted'`).run();
-    const before = await cursorOf("deleted");
+    const before = await snapshot("deleted");
 
-    await cleanUp(env, log);
+    expect(await rereadStaleMovements(env, log)).toBe(0);
+    expect(await snapshot("deleted")).toEqual(before);
+  });
 
-    expect(await cursorOf("deleted")).toBe(before);
-    expect(log.info).toHaveBeenCalledWith("cleanup.done", { reason: "reread-betas", count: 0 });
+  it("keeps a save that lands between reading the beta and writing its movements", async () => {
+    await climbWithEverything("raced");
+    await readBy("0.2.0", "raced");
+    const before = await snapshot("raced");
+    const savedMeanwhile = new Proxy(db, {
+      get(target, key) {
+        if (key === "batch")
+          return async statements => {
+            await db.prepare(`UPDATE entries SET hardest_beta = 'Dyno to the jug' WHERE id = 'raced'`).run();
+            return target.batch(statements);
+          };
+        const value = target[key];
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+
+    expect(await rereadStaleMovements({ ...env, LOGBOOK_DB: savedMeanwhile }, log)).toBe(0);
+    expect(await snapshot("raced")).toEqual(before);
+  });
+
+  it("runs on its own hourly cron", async () => {
+    await climbWithEverything("hourly");
+    await readBy("0.2.0", "hourly");
+
+    await exports.default.scheduled({ scheduledTime: Date.now(), cron: "47 * * * *" });
+
+    expect((await movementsOf("hourly")).map(m => m.vocabulary_version)).toEqual([VOCABULARY_VERSION]);
   });
 });
 

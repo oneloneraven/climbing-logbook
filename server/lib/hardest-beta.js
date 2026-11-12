@@ -5,8 +5,17 @@ import { nextCursorSql, replaceChildRowStatements } from "./d1-resource.js";
 // The pinned package version, so a stored movement shows how far behind the current vocabulary it is.
 export const VOCABULARY_VERSION = pkg.dependencies["@ravendarque/beta-interpreter"];
 
-const REREAD_BATCH = 50;
-const byVersion = new Intl.Collator("en", { numeric: true });
+// Workers Free gives a cron run about 10 ms of CPU, and a long beta takes about 1.7 ms to read (#1696).
+const REREAD_BATCH = 3;
+
+const core = version => version.split("-")[0].split(".").map(Number);
+
+// A pre-release sorts before its release.
+function isOlder(version, than) {
+  const [a, b] = [core(version), core(than)];
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] < b[i];
+  return version.includes("-") && (!than.includes("-") || version.localeCompare(than, "en", { numeric: true }) < 0);
+}
 
 const ids = terms => terms.map(t => t.id);
 
@@ -79,44 +88,41 @@ export function movementRow(movement, id, entryId) {
   };
 }
 
-// Older only: beta shares production's database and can run a newer interpreter than production's clean-up.
-export async function rereadStaleMovements(env) {
+// Older only: beta shares production's database and can run a newer interpreter than production's re-read.
+export async function rereadStaleMovements(env, log) {
   const { results: versions } = await env.LOGBOOK_DB.prepare(
     "SELECT DISTINCT vocabulary_version FROM entry_movements",
   ).all();
-  const older = versions
-    .map(v => v.vocabulary_version)
-    .filter(version => byVersion.compare(version, VOCABULARY_VERSION) < 0);
+  const older = versions.map(v => v.vocabulary_version).filter(version => isOlder(version, VOCABULARY_VERSION));
   if (!older.length) return 0;
   const { results } = await env.LOGBOOK_DB.prepare(
     `SELECT id, user_id, hardest_beta FROM entries WHERE deleted_at IS NULL
        AND id IN (SELECT entry_id FROM entry_movements WHERE vocabulary_version IN (${older.map(() => "?").join(", ")}))
-       LIMIT ${REREAD_BATCH}`,
+       ORDER BY random() LIMIT ${REREAD_BATCH}`,
   )
     .bind(...older)
     .all();
-  if (!results.length) return 0;
-  const written = await env.LOGBOOK_DB.batch(
-    results.flatMap(climb => {
-      // Written only if the beta is still what was read, so a save in between keeps its own reading.
-      const unedited = {
-        sql: "EXISTS (SELECT 1 FROM entries WHERE id = ? AND hardest_beta IS ?)",
-        binds: [climb.id, climb.hardest_beta],
-      };
-      return [
-        ...replaceChildRowStatements(
-          env,
-          "entry_movements",
-          climb.id,
-          hardestBetaMovements(climb.hardest_beta),
-          movementRow,
-          unedited,
-        ),
-        env.LOGBOOK_DB.prepare(
-          `UPDATE entries SET sync_cursor = ${nextCursorSql("entries")} WHERE id = ? AND hardest_beta IS ? RETURNING 1`,
-        ).bind(climb.user_id, climb.id, climb.hardest_beta),
-      ];
-    }),
-  );
+  const statements = results.flatMap(climb => {
+    let movements;
+    try {
+      movements = hardestBetaMovements(climb.hardest_beta);
+    } catch (err) {
+      log.warn("reread.skipped", { entryId: climb.id, err });
+      return [];
+    }
+    // Written only if the beta is still what was read, so a save in between keeps its own reading.
+    const unedited = {
+      sql: "EXISTS (SELECT 1 FROM entries WHERE id = ? AND hardest_beta IS ?)",
+      binds: [climb.id, climb.hardest_beta],
+    };
+    return [
+      ...replaceChildRowStatements(env, "entry_movements", climb.id, movements, movementRow, unedited),
+      env.LOGBOOK_DB.prepare(
+        `UPDATE entries SET sync_cursor = ${nextCursorSql("entries")} WHERE id = ? AND hardest_beta IS ? RETURNING 1`,
+      ).bind(climb.user_id, climb.id, climb.hardest_beta),
+    ];
+  });
+  if (!statements.length) return 0;
+  const written = await env.LOGBOOK_DB.batch(statements);
   return written.reduce((count, result) => count + result.results.length, 0);
 }
