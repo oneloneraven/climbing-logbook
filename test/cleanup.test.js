@@ -29,6 +29,7 @@ beforeEach(async () => {
   await resetAuthTables();
   ({ cookie, userId } = await createAuthedSession());
   log.info.mockClear();
+  log.warn.mockClear();
 });
 
 async function climbWithEverything(id) {
@@ -238,6 +239,19 @@ describe("re-reading hardest-move betas after an interpreter upgrade (#1526)", (
 
     expect(await rereadStaleMovements({ ...env, LOGBOOK_DB: savedMeanwhile }, log)).toBe(0);
     expect(await snapshot("raced")).toEqual(before);
+  });
+
+  it("skips and logs a beta it can't read, and still re-reads the rest", async () => {
+    for (const id of ["unreadable", "readable"]) {
+      await climbWithEverything(id);
+      await readBy("0.2.0", id);
+    }
+    await db.prepare(`UPDATE entries SET hardest_beta = X'00' WHERE id = 'unreadable'`).run();
+    const before = await snapshot("unreadable");
+
+    expect(await rereadStaleMovements(env, log)).toBe(1);
+    expect(await snapshot("unreadable")).toEqual(before);
+    expect(log.warn).toHaveBeenCalledWith("reread.skipped", expect.objectContaining({ entryId: "unreadable" }));
   });
 
   it("runs on its own hourly cron", async () => {
