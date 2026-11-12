@@ -18,7 +18,7 @@ runs:
         # setup-node would otherwise enable its own cache because package.json has packageManager; cache: pnpm is explicit.
         package-manager-cache: false
         registry-url: https://npm.pkg.github.com
-        scope: '@ravendarque'
+        scope: '@oneloneraven'
     - run: pnpm install --frozen-lockfile
       shell: bash
       env:

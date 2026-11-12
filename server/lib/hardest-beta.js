@@ -1,9 +1,9 @@
-import { parse, toMovements } from "@ravendarque/beta-interpreter";
+import { parse, toMovements } from "@oneloneraven/beta-interpreter";
 import pkg from "../../package.json" with { type: "json" };
 import { nextCursorSql, replaceChildRowStatements } from "./d1-resource.js";
 
 // The pinned package version, so a stored movement shows how far behind the current vocabulary it is.
-export const VOCABULARY_VERSION = pkg.dependencies["@ravendarque/beta-interpreter"];
+export const VOCABULARY_VERSION = pkg.dependencies["@oneloneraven/beta-interpreter"];
 
 // Workers Free gives a cron run about 10 ms of CPU, and a long beta takes about 1.7 ms to read (#1696).
 const REREAD_BATCH = 3;

@@ -2,7 +2,7 @@
 let interpreter = null;
 let loading = null;
 const loadInterpreter = () =>
-  (loading ??= import("@ravendarque/beta-interpreter").then(module => {
+  (loading ??= import("@oneloneraven/beta-interpreter").then(module => {
     interpreter = module;
   }));
 

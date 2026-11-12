@@ -29,9 +29,9 @@ importers:
       '@floating-ui/dom':
         specifier: ^1.8.0
         version: 1.8.0
-      '@ravendarque/beta-interpreter':
-        specifier: 0.14.1
-        version: 0.14.1
+      '@oneloneraven/beta-interpreter':
+        specifier: 0.15.0
+        version: 0.15.0
       better-auth:
         specifier: 1.7.15
         version: 1.7.15(@prisma/client@5.22.0)(pg@8.22.0)(vitest@5.1.0)
@@ -992,6 +992,9 @@ packages:
     resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
     engines: {node: '>= 20.19.0'}
 
+  '@oneloneraven/beta-interpreter@0.15.0':
+    resolution: {integrity: sha512-f1eIBmraDJhQ224wEd0nXWidwwo77bNkrdATQneMjz6IsBPMuDws+XLyeBiTR0bQAt4otp9jhAUgxgR1SeNyTw==, tarball: https://npm.pkg.github.com/download/@oneloneraven/beta-interpreter/0.15.0/be0c0e2dcc11076afb26b930c0337aabe7376fcc}
+
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
 
@@ -1196,9 +1199,6 @@ packages:
         optional: true
       yauzl:
         optional: true
-
-  '@ravendarque/beta-interpreter@0.14.1':
-    resolution: {integrity: sha512-cwvYprqS8kHXyQwx2QefdepjfsSfnAZiPdOeqlRCcVrqkXEAarxyQ1XIhD0pEXsa6KP745rOsmEVifXCXk3NTQ==, tarball: https://npm.pkg.github.com/download/@ravendarque/beta-interpreter/0.14.1/a6013270f75945917dc2ab0905f9816a00e19147}
 
   '@rolldown/binding-android-arm-eabi@1.2.16':
     resolution: {integrity: sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA==}
@@ -4418,6 +4418,8 @@ snapshots:
 
   '@noble/hashes@2.4.0': {}
 
+  '@oneloneraven/beta-interpreter@0.15.0': {}
+
   '@oxc-project/types@0.156.0': {}
 
   '@pagefind/darwin-arm64@1.6.0':
@@ -4620,8 +4622,6 @@ snapshots:
     dependencies:
       modern-tar: 0.8.6
       yargs: 18.2.0
-
-  '@ravendarque/beta-interpreter@0.14.1': {}
 
   '@rolldown/binding-android-arm-eabi@1.2.16':
     optional: true
