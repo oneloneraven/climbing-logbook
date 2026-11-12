@@ -44,18 +44,19 @@ export async function createAuthedSession({
   const base = hostname ? `https://${hostname}` : BASE_URL;
   const request = (path, init) => exports.default.fetch(`${base}${path}`, init);
 
+  // The sign-up email is read here, not recorded: a test counts the emails its own steps send.
+  const fakeEmail = env.EMAIL;
   let capturedHtml;
+  env.EMAIL = {
+    send: async payload => {
+      capturedHtml = payload.html;
+      return { messageId: "test-message-id" };
+    },
+  };
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (input, init) => {
+    vi.fn(async input => {
       const url = typeof input === "string" ? input : input.url;
-      if (url.startsWith("https://api.resend.com/")) {
-        capturedHtml = JSON.parse(init.body).html;
-        return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
       if (url.startsWith("https://challenges.cloudflare.com/turnstile/")) {
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
@@ -63,7 +64,7 @@ export async function createAuthedSession({
         });
       }
       throw new Error(
-        `Unexpected fetch to ${url} -- only Resend/Turnstile calls should reach real fetch() during createAuthedSession()`,
+        `Unexpected fetch to ${url} -- only Turnstile calls should reach real fetch() during createAuthedSession()`,
       );
     }),
   );
@@ -88,6 +89,7 @@ export async function createAuthedSession({
   const cookie = res.headers.get("set-cookie").split(";")[0];
 
   vi.unstubAllGlobals();
+  env.EMAIL = fakeEmail;
 
   const user = await env.LOGBOOK_DB.prepare(`SELECT id FROM "user" WHERE email = ?`).bind(email).first();
   return { cookie, userId: user.id };

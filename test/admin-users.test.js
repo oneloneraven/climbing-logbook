@@ -9,6 +9,7 @@ import {
   resetAuthTables,
   seedPlace,
 } from "./support.js";
+import { sentEmails } from "./fake-email.js";
 import { TERMS_VERSION } from "../shared/terms.js";
 
 const ADMIN = "https://admin.example.com";
@@ -27,20 +28,15 @@ function act(userId, action, body) {
 }
 
 function stubOutsideCalls() {
-  let capturedHtml;
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (input, init) => {
+    vi.fn(async input => {
       const url = typeof input === "string" ? input : input.url;
-      if (url.startsWith("https://api.resend.com/")) {
-        capturedHtml = JSON.parse(init.body).html;
-        return Response.json({ id: "fake-resend-id" });
-      }
       if (url.startsWith("https://challenges.cloudflare.com/turnstile/")) return Response.json({ success: true });
       throw new Error(`Unexpected fetch to ${url}`);
     }),
   );
-  return () => capturedHtml;
+  return () => sentEmails().at(-1)?.html;
 }
 
 function signIn(email) {

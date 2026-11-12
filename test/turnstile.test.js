@@ -33,12 +33,6 @@ function stubSiteverify(success) {
           headers: { "Content-Type": "application/json" },
         });
       }
-      if (url.startsWith("https://api.resend.com/")) {
-        return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
       throw new Error(`Unexpected fetch to ${url}`);
     }),
   );
@@ -86,11 +80,6 @@ describe("siteverify itself is unreachable (#802)", () => {
       vi.fn(async input => {
         const url = typeof input === "string" ? input : input.url;
         if (url.startsWith("https://challenges.cloudflare.com/turnstile/")) throw new Error("network error");
-        if (url.startsWith("https://api.resend.com/"))
-          return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
         throw new Error(`Unexpected fetch to ${url}`);
       }),
     );
@@ -106,11 +95,6 @@ describe("siteverify itself is unreachable (#802)", () => {
         const url = typeof input === "string" ? input : input.url;
         if (url.startsWith("https://challenges.cloudflare.com/turnstile/"))
           return new Response("<html>Bad Gateway</html>", { status: 502, headers: { "Content-Type": "text/html" } });
-        if (url.startsWith("https://api.resend.com/"))
-          return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
         throw new Error(`Unexpected fetch to ${url}`);
       }),
     );

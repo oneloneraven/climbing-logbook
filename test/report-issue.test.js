@@ -30,12 +30,6 @@ function stubSiteverify(success) {
           headers: { "Content-Type": "application/json" },
         });
       }
-      if (url.startsWith("https://api.resend.com/")) {
-        return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
       throw new Error(`Unexpected fetch to ${url}`);
     }),
   );

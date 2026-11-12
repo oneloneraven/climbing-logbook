@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { emailSend, sentEmails } from "./fake-email.js";
 import { fetchJson, jsonRequest, resetAuthTables } from "./support.js";
 import { createEmailSender } from "../server/lib/email.js";
 import { TERMS_VERSION } from "../shared/terms.js";
@@ -22,29 +23,18 @@ const SIGNUP = {
   agreedTermsVersion: TERMS_VERSION,
 };
 
-let resendCalls;
 beforeEach(() => {
-  resendCalls = [];
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (input, init) => {
+    vi.fn(async input => {
       const url = typeof input === "string" ? input : input.url;
-      if (url.startsWith("https://api.resend.com/")) {
-        resendCalls.push({ url, body: init?.body ? JSON.parse(init.body) : null });
-        return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
       if (url.startsWith("https://challenges.cloudflare.com/turnstile/")) {
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
       }
-      throw new Error(
-        `Unexpected fetch to ${url} -- only Resend/Turnstile calls should reach real fetch() in this test file`,
-      );
+      throw new Error(`Unexpected fetch to ${url} -- only Turnstile calls should reach real fetch() in this test file`);
     }),
   );
 });
@@ -64,10 +54,10 @@ describe("sign-up with email verification required", () => {
     expect(body.token).toBeNull();
     expect(body.user.email).toBe(SIGNUP.email);
 
-    expect(resendCalls).toHaveLength(1);
-    expect(resendCalls[0].body.to).toEqual(SIGNUP.email);
-    expect(resendCalls[0].body.subject).toMatch(/verify/i);
-    expect(resendCalls[0].body.html).toContain("/-/api/auth/verify-email?token=");
+    expect(emailSend).toHaveBeenCalledTimes(1);
+    expect(sentEmails()[0].to).toEqual(SIGNUP.email);
+    expect(sentEmails()[0].subject).toMatch(/verify/i);
+    expect(sentEmails()[0].html).toContain("/-/api/auth/verify-email?token=");
   });
 
   it("rejects sign-in before the email is verified", async () => {
@@ -81,7 +71,7 @@ describe("sign-up with email verification required", () => {
 
   it("verifies via the emailed token and auto-signs-in", async () => {
     await signUp();
-    const token = extractToken(resendCalls[0].body.html, "token=");
+    const token = extractToken(sentEmails()[0].html, "token=");
 
     const res = await fetchJson(`/-/api/auth/verify-email?token=${token}`);
     expect([200, 302]).toContain(res.status);
@@ -97,17 +87,17 @@ describe("sign-up with email verification required", () => {
 describe("password reset", () => {
   it("sends a reset email and the token round-trips to a new password", async () => {
     await signUp();
-    resendCalls.length = 0; // only care about the reset email from here
+    emailSend.mockClear(); // only care about the reset email from here
 
     const reqRes = await jsonRequest("POST", "/-/api/auth/request-password-reset", {
       email: SIGNUP.email,
       turnstileToken: "t",
     });
     expect(reqRes.status).toBe(200);
-    expect(resendCalls).toHaveLength(1);
-    expect(resendCalls[0].body.subject).toMatch(/reset/i);
+    expect(emailSend).toHaveBeenCalledTimes(1);
+    expect(sentEmails()[0].subject).toMatch(/reset/i);
 
-    const token = extractToken(resendCalls[0].body.html, "reset-password/");
+    const token = extractToken(sentEmails()[0].html, "reset-password/");
     const resetRes = await jsonRequest("POST", "/-/api/auth/reset-password", {
       newPassword: "a-brand-new-password",
       token,
@@ -129,9 +119,9 @@ describe("password reset", () => {
 
   it("rejects a reused reset token", async () => {
     await signUp();
-    resendCalls.length = 0;
+    emailSend.mockClear();
     await jsonRequest("POST", "/-/api/auth/request-password-reset", { email: SIGNUP.email, turnstileToken: "t" });
-    const token = extractToken(resendCalls[0].body.html, "reset-password/");
+    const token = extractToken(sentEmails()[0].html, "reset-password/");
 
     expect(
       (await jsonRequest("POST", "/-/api/auth/reset-password", { newPassword: "first-new-password", token })).status,
@@ -167,7 +157,7 @@ describe("createEmailSender HTML escaping (defense in depth, #754)", () => {
       "<img src=x onerror=alert(1)>",
       "https://example.com/confirm?token=abc",
     );
-    const html = resendCalls[0].body.html;
+    const html = sentEmails()[0].html;
     expect(html).not.toContain("<img src=x onerror=alert(1)>");
     expect(html).toContain("&lt;img src=x onerror=alert(1)&gt;");
   });
@@ -175,7 +165,7 @@ describe("createEmailSender HTML escaping (defense in depth, #754)", () => {
   it("escapes HTML metacharacters in a malicious url before interpolating into href/link text", async () => {
     const maliciousUrl = 'https://example.com/"><script>alert(1)</script>';
     await sender.sendVerificationEmail("owner@example.com", maliciousUrl);
-    const html = resendCalls[0].body.html;
+    const html = sentEmails()[0].html;
     expect(html).not.toContain("<script>alert(1)</script>");
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
   });
@@ -191,7 +181,7 @@ describe("createEmailSender parts (#1106)", () => {
     ["email change", () => sender.sendChangeEmailConfirmation("owner@example.com", "new@example.com", url)],
   ])("sends the %s email with a plain-text part and an HTML part", async (_name, sendIt) => {
     await sendIt();
-    const { html, text } = resendCalls[0].body;
+    const { html, text } = sentEmails()[0];
     expect(html).toContain(`href="${url}"`);
     expect(text).toContain(url);
     expect(text).not.toMatch(/<[a-z]/i);
@@ -199,7 +189,7 @@ describe("createEmailSender parts (#1106)", () => {
 
   it("keeps every style attribute whole, so a quote in a font name can't cut it short", async () => {
     await sender.sendVerificationEmail("owner@example.com", url);
-    const { html } = resendCalls[0].body;
+    const { html } = sentEmails()[0];
     const opened = html.match(/style="/g).length;
     const whole = html.match(/style="[^"]*"(?=[\s>])/g).length;
     expect(whole).toBe(opened);
@@ -208,46 +198,46 @@ describe("createEmailSender parts (#1106)", () => {
   it("says in both parts that replies aren't read, and where to get help (#1365)", async () => {
     await sender.sendVerificationEmail("owner@example.com", url);
     const help = `Replies to this address aren't read. For help, email ${["hello", "climbinglogbook.com"].join("@")}.`;
-    expect(resendCalls[0].body.text).toContain(help);
-    expect(resendCalls[0].body.html).toContain(help.replace("aren't", "aren&#39;t"));
+    expect(sentEmails()[0].text).toContain(help);
+    expect(sentEmails()[0].html).toContain(help.replace("aren't", "aren&#39;t"));
   });
 
   it("names the new address in both parts of the email change", async () => {
     await sender.sendChangeEmailConfirmation("owner@example.com", "new@example.com", url);
-    expect(resendCalls[0].body.text).toContain("new@example.com");
-    expect(resendCalls[0].body.html).toContain("new@example.com");
+    expect(sentEmails()[0].text).toContain("new@example.com");
+    expect(sentEmails()[0].html).toContain("new@example.com");
   });
 
   it("loads the brand image from the link's own origin, and falls back to text when the link has none", async () => {
     await sender.sendVerificationEmail("owner@example.com", url);
-    expect(resendCalls[0].body.html).toContain('src="https://my.climbinglogbook.com/-/email-lockup.png"');
+    expect(sentEmails()[0].html).toContain('src="https://my.climbinglogbook.com/-/email-lockup.png"');
     await sender.sendVerificationEmail("owner@example.com", "not a url");
-    expect(resendCalls[1].body.html).not.toContain("<img");
-    expect(resendCalls[1].body.html).toContain("CLIMBING LOGBOOK");
+    expect(sentEmails()[1].html).not.toContain("<img");
+    expect(sentEmails()[1].html).toContain("CLIMBING LOGBOOK");
   });
 });
 
 describe("createEmailSender with delivery off (#1170)", () => {
   const sender = createEmailSender({ ...env, EMAIL_DELIVERY: "off" });
 
-  it("never calls Resend, for any kind of email", async () => {
+  it("never sends, for any kind of email", async () => {
     await sender.sendVerificationEmail("owner@example.com", "https://example.com/verify?token=abc");
     await sender.sendPasswordResetEmail("owner@example.com", "https://example.com/reset?token=abc");
     await sender.sendChangeEmailConfirmation("owner@example.com", "new@example.com", "https://example.com/c?t=abc");
-    expect(resendCalls).toEqual([]);
+    expect(emailSend).not.toHaveBeenCalled();
   });
 });
 
 describe("createEmailSender with delivery logged (#1357)", () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it("prints the link in local dev instead of calling Resend", async () => {
+  it("prints the link in local dev instead of sending", async () => {
     const print = vi.spyOn(console, "log").mockImplementation(() => {});
     const sender = createEmailSender({ ...env, APP_ENV: "development", EMAIL_DELIVERY: "log" });
 
     await sender.sendVerificationEmail("owner@example.com", "https://example.com/verify?token=abc");
 
-    expect(resendCalls).toEqual([]);
+    expect(emailSend).not.toHaveBeenCalled();
     expect(print).toHaveBeenCalledWith(
       "Email to owner@example.com: Verify your email\n  https://example.com/verify?token=abc",
     );
@@ -260,7 +250,7 @@ describe("createEmailSender with delivery logged (#1357)", () => {
 
     await sender.sendPasswordResetEmail("owner@example.com", "https://example.com/reset?token=abc");
 
-    expect(resendCalls).toEqual([]);
+    expect(emailSend).not.toHaveBeenCalled();
     expect(print).not.toHaveBeenCalled();
     expect(log.warn).toHaveBeenCalledWith("email.skipped", { reason: "log delivery outside development" });
   });
@@ -268,7 +258,7 @@ describe("createEmailSender with delivery logged (#1357)", () => {
 
 describe("2FA recovery emails (#1436)", () => {
   const sender = () => createEmailSender(env);
-  const sent = () => resendCalls.at(-1).body;
+  const sent = () => sentEmails().at(-1);
 
   it("explains the wait in the recovery link email", async () => {
     await sender().sendTwoStepRecoveryLink("nix@example.com", "https://climbinglogbook.com/login/?two-step-recovery=t");
@@ -307,8 +297,84 @@ describe("passkey emails (#1439)", () => {
     await createEmailSender(env).sendAccountNotice("nix@example.com", "passkeyAdded", {
       url: "https://my.climbinglogbook.com/nix/account/authentication",
     });
-    const { subject, html } = resendCalls.at(-1).body;
+    const { subject, html } = sentEmails().at(-1);
     expect(subject).toBe("A passkey was added to your account");
     expect(html).toContain("https://my.climbinglogbook.com/nix/account/authentication");
+  });
+});
+
+describe("sending through the Email Sending binding (#1702)", () => {
+  const FROM = "Climbing Logbook <myaccount@climbinglogbook.com>";
+  const to = "owner@example.com";
+  const url = "https://example.com/x?token=abc";
+  const senders = {
+    sendVerificationEmail: [s => s.sendVerificationEmail(to, url), "Verify your email"],
+    sendPasswordResetEmail: [s => s.sendPasswordResetEmail(to, url), "Reset your password"],
+    sendChangeEmailConfirmation: [
+      s => s.sendChangeEmailConfirmation(to, "new@example.com", url),
+      "Confirm your email change",
+    ],
+    sendAccountNotice: [s => s.sendAccountNotice(to, "passkeyAdded", { url }), "A passkey was added to your account"],
+    sendTwoStepRecoveryLink: [s => s.sendTwoStepRecoveryLink(to, url), "Switch off 2FA?"],
+    sendTwoStepRecoveryStarted: [
+      s => s.sendTwoStepRecoveryStarted(to, Date.UTC(2026, 9, 25), url),
+      "2FA will switch off in 7 days",
+    ],
+    sendTwoStepRecoveryCancelled: [s => s.sendTwoStepRecoveryCancelled(to, url), "2FA stays on"],
+    sendTwoStepSwitchedOff: [s => s.sendTwoStepSwitchedOff(to, url), "2FA is off"],
+  };
+
+  for (const [method, [send, subject]] of Object.entries(senders)) {
+    it(`${method} calls EMAIL.send once, with the sender, recipient, subject, and both html and text`, async () => {
+      await send(createEmailSender(env));
+
+      expect(emailSend).toHaveBeenCalledTimes(1);
+      expect(emailSend).toHaveBeenCalledWith({
+        from: FROM,
+        to,
+        subject,
+        html: expect.stringContaining("<"),
+        text: expect.stringMatching(/\S/),
+      });
+    });
+  }
+
+  it("logs a rejected send by its code alone, never the address or the error's message", async () => {
+    const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    emailSend.mockRejectedValue(
+      Object.assign(new Error(`Daily limit reached sending to ${to}`), { code: "E_DAILY_LIMIT_EXCEEDED" }),
+    );
+
+    await expect(createEmailSender(env, log).sendVerificationEmail(to, url)).resolves.toBeUndefined();
+
+    expect(log.error).toHaveBeenCalledOnce();
+    expect(log.error).toHaveBeenCalledWith("email.failed", { code: "E_DAILY_LIMIT_EXCEEDED" });
+  });
+
+  it("logs an error with no code as unknown, and still doesn't throw", async () => {
+    const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    emailSend.mockRejectedValue(new Error("boom"));
+    await createEmailSender(env, log).sendVerificationEmail(to, url);
+    emailSend.mockRejectedValue(undefined);
+    await createEmailSender(env, log).sendVerificationEmail(to, url);
+
+    expect(log.error).toHaveBeenNthCalledWith(1, "email.failed", { code: "E_UNKNOWN" });
+    expect(log.error).toHaveBeenNthCalledWith(2, "email.failed", { code: "E_UNKNOWN" });
+  });
+
+  it("lets sign-up succeed when the daily limit stops the email, and logs only the code", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    emailSend.mockRejectedValue(Object.assign(new Error("Daily limit reached"), { code: "E_DAILY_LIMIT_EXCEEDED" }));
+
+    const res = await signUp();
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).user.email).toBe(SIGNUP.email);
+    const logged = errors.mock.calls.map(([line]) => String(line));
+    expect(
+      logged.some(line => line.includes('"event":"email.failed"') && line.includes("E_DAILY_LIMIT_EXCEEDED")),
+    ).toBe(true);
+    expect(logged.join("\n")).not.toContain(SIGNUP.email);
+    errors.mockRestore();
   });
 });

@@ -17,12 +17,6 @@ export function stubBetaGateFetch() {
             headers: { "Content-Type": "application/json" },
           });
         }
-        if (url.startsWith("https://api.resend.com/")) {
-          return new Response(JSON.stringify({ id: "test-email-id" }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
         return originalFetch(input, init);
       }),
     );

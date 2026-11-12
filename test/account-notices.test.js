@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { BASE_URL, createAuthedSession, fetchJson, jsonRequest as rawJsonRequest, resetAuthTables } from "./support.js";
+import { emailSend, sentEmails } from "./fake-email.js";
 import { secretFromUri, totp } from "./totp.js";
 import { PAIN_INJURY } from "../shared/health-consent.js";
 import { accountNoticeFor } from "../server/lib/auth.js";
@@ -19,23 +20,11 @@ afterAll(() => {
 let cookie;
 let userId;
 let email;
-let emails;
 beforeEach(async () => {
   await resetAuthTables();
   ({ cookie, userId } = await createAuthedSession());
   ({ email } = await env.LOGBOOK_DB.prepare(`SELECT email FROM "user" WHERE id = ?`).bind(userId).first());
-  emails = [];
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async (input, init) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (!url.startsWith("https://api.resend.com/")) throw new Error(`Unexpected fetch to ${url}`);
-      emails.push(JSON.parse(init.body));
-      return new Response(JSON.stringify({ id: "fake" }), { status: 200 });
-    }),
-  );
 });
-afterEach(() => vi.unstubAllGlobals());
 
 const cookiesFrom = res =>
   res.headers
@@ -43,18 +32,21 @@ const cookiesFrom = res =>
     .map(c => c.split(";")[0])
     .filter(c => !c.endsWith("="))
     .join("; ");
-const subjectsTo = address => emails.filter(e => [e.to].flat().includes(address)).map(e => e.subject);
+const subjectsTo = address =>
+  sentEmails()
+    .filter(e => [e.to].flat().includes(address))
+    .map(e => e.subject);
 
 describe("account details (#1456)", () => {
   it("emails when the username changes, naming the new one, and not when it's unchanged", async () => {
     const username = `renamed${Date.now().toString(36)}`;
     expect((await jsonRequest("POST", "/-/api/auth/update-user", { username }, { Cookie: cookie })).status).toBe(200);
-    const notice = emails.find(e => e.subject === "Your username was changed");
+    const notice = sentEmails().find(e => e.subject === "Your username was changed");
     expect(notice.to).toEqual(email);
     expect(notice.html).toContain(username);
     expect(notice.html).toContain(`/${username}/account/authentication`);
 
-    emails.length = 0;
+    emailSend.mockClear();
     await jsonRequest("POST", "/-/api/auth/update-user", { username }, { Cookie: cookie });
     expect(subjectsTo(email)).not.toContain("Your username was changed");
   });
@@ -79,7 +71,7 @@ describe("account details (#1456)", () => {
       { Cookie: cookie },
     );
     const linkIn = subject => {
-      const html = emails.find(e => e.subject === subject).html;
+      const html = sentEmails().find(e => e.subject === subject).html;
       return decodeURIComponent(html.match(/token=([^"&<?]+)/)[1]);
     };
     await fetchJson(`/-/api/auth/verify-email?token=${linkIn("Confirm your email change")}`, {
@@ -88,7 +80,7 @@ describe("account details (#1456)", () => {
     expect(subjectsTo(email)).not.toContain("Your email address was changed");
 
     await fetchJson(`/-/api/auth/verify-email?token=${linkIn("Verify your email")}`, { headers: { Cookie: cookie } });
-    const notice = emails.find(e => e.subject === "Your email address was changed");
+    const notice = sentEmails().find(e => e.subject === "Your email address was changed");
     expect(notice.to).toEqual(email);
     expect(notice.html).toContain(newEmail);
   });
@@ -135,7 +127,7 @@ describe("Two-Factor Authentication (#1456)", () => {
 
   it("doesn't email when a code is used to log in", async () => {
     const secret = await turnOn();
-    emails.length = 0;
+    emailSend.mockClear();
     const signIn = await jsonRequest("POST", "/-/api/auth/sign-in/email", { email, password: PASSWORD });
     const login = await jsonRequest(
       "POST",
@@ -160,7 +152,7 @@ describe("health data (#1456)", () => {
 
     expect((await jsonRequest("DELETE", "/-/api/consent/pain-injury", undefined, { Cookie: cookie })).status).toBe(200);
     expect(subjectsTo(email)).toEqual(["Health data is on", "Health data is off"]);
-    expect(emails.at(-1).html).toContain("/account/health");
+    expect(sentEmails().at(-1).html).toContain("/account/health");
   });
 
   it("doesn't email when health data is turned off but was never on", async () => {
