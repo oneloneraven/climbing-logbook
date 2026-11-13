@@ -1,10 +1,9 @@
-import { Resend } from "resend";
 import { renderEmail } from "./email-template.js";
 import { createLogger } from "./log.js";
 
 const FROM_ADDRESS = "Climbing Logbook <myaccount@climbinglogbook.com>";
 
-// Never throws: new Resend() throws synchronously without a key, which would break the whole auth request.
+// Never throws: a failed email must not break the auth request that triggered it.
 async function send(env, log, payload, link) {
   if (env.EMAIL_DELIVERY === "off") {
     log.info("email.skipped", { reason: "delivery off" });
@@ -20,11 +19,10 @@ async function send(env, log, payload, link) {
     return;
   }
   try {
-    const resend = new Resend(env.RESEND_API_KEY);
-    const result = await resend.emails.send(payload);
-    if (result.error) log.error("email.failed", { code: result.error.name });
+    await env.EMAIL.send(payload);
   } catch (err) {
-    log.error("email.failed", { err });
+    // Only the code is logged: the error's message can carry the recipient.
+    log.error("email.failed", { code: err?.code ?? "E_UNKNOWN" });
   }
 }
 

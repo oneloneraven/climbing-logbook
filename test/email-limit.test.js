@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { emailSend } from "./fake-email.js";
 import { EMAIL_LIMITS } from "../server/lib/email-limit.js";
 import { TERMS_VERSION } from "../shared/terms.js";
 import { createAuthedSession, jsonRequest, resetAuthTables } from "./support.js";
@@ -12,16 +13,12 @@ beforeAll(() => {
 afterAll(() => {
   env.BETA_GATE_ENABLED = "true";
 });
-let resendCalls;
-// Turnstile and Resend are faked; anything else is a mistake. Called after creating a session, which resets stubs.
+// Turnstile is faked. Called after creating a session, which resets stubs.
 function stubExternal() {
-  resendCalls = 0;
   vi.stubGlobal(
     "fetch",
-    vi.fn(async input => {
-      const url = String(input.url ?? input);
-      if (url.startsWith("https://api.resend.com/")) resendCalls++;
-      return new Response(JSON.stringify({ success: true, id: "test-email-id" }), {
+    vi.fn(async () => {
+      return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
@@ -74,10 +71,10 @@ describe("the per-address email limit (#1053)", () => {
   it("sends nothing once an address is limited, and leaves other addresses alone", async () => {
     await limitingOn(["member@example.com"]);
     for (let i = 0; i < EMAIL_LIMITS.perHour; i++) await requestReset("member@example.com");
-    const sentBefore = resendCalls;
+    const sentBefore = emailSend.mock.calls.length;
 
     expect((await requestReset("member@example.com")).status).toBe(429);
-    expect(resendCalls).toBe(sentBefore);
+    expect(emailSend).toHaveBeenCalledTimes(sentBefore);
     expect((await requestReset("other@example.com")).status).toBe(200);
   });
 

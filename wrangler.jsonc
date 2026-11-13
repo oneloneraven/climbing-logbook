@@ -40,6 +40,8 @@
     { "name": "PUBLIC_READ_LIMITER", "namespace_id": "1059", "simple": { "limit": 60, "period": 60 } }
   ],
   "durable_objects": { "bindings": [{ "name": "EMAIL_LIMITER", "class_name": "RecipientEmailLimiter" }] },
+  // Email Sending. Local dev simulates it (logs, never sends), so no "remote"; EMAIL_DELIVERY "log" skips it anyway.
+  "send_email": [{ "name": "EMAIL" }],
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RecipientEmailLimiter"] }],
   // The id is a placeholder until the Infra workflow writes the real one; keep these three keys adjacent for its regex.
   "d1_databases": [
@@ -101,6 +103,7 @@
         { "name": "PUBLIC_READ_LIMITER", "namespace_id": "1059", "simple": { "limit": 60, "period": 60 } }
       ],
       "durable_objects": { "bindings": [{ "name": "EMAIL_LIMITER", "class_name": "RecipientEmailLimiter" }] },
+      "send_email": [{ "name": "EMAIL" }],
       "d1_databases": [
         { "binding": "LOGBOOK_DB", "database_name": "climbing-logbook", "database_id": "8f094438-520c-4a67-a685-aee3db6198ad", "migrations_dir": "migrations" }
       ]
@@ -122,6 +125,8 @@
         "BETA_GATE_ENABLED": "true",
         "TURNSTILE_SECRET_KEY": "1x0000000000000000000000000000000AA",
         "RATE_LIMITING_ENABLED": "true",
+        // Every Turnstile check passes here, so a preview must never send real email.
+        "EMAIL_DELIVERY": "off",
         // A preview has one workers.dev host, with no my. to put owner pages on.
         "OWNER_PAGES_ON_ANY_HOST": "true"
       },
@@ -138,6 +143,7 @@
         { "name": "PUBLIC_READ_LIMITER", "namespace_id": "1059", "simple": { "limit": 60, "period": 60 } }
       ],
       "durable_objects": { "bindings": [{ "name": "EMAIL_LIMITER", "class_name": "RecipientEmailLimiter" }] },
+      "send_email": [{ "name": "EMAIL" }],
       "d1_databases": [
         { "binding": "LOGBOOK_DB", "database_name": "climbing-logbook-preview", "database_id": "845753a5-abfc-4d74-995b-94d802b4964e", "migrations_dir": "migrations" }
       ],
@@ -149,6 +155,7 @@
           "BETA_GATE_ENABLED": "true",
           "TURNSTILE_SECRET_KEY": "1x0000000000000000000000000000000AA",
           "RATE_LIMITING_ENABLED": "true",
+          "EMAIL_DELIVERY": "off",
           "OWNER_PAGES_ON_ANY_HOST": "true"
         },
         "ratelimits": [
@@ -164,6 +171,7 @@
           { "name": "PUBLIC_READ_LIMITER", "namespace_id": "1059", "simple": { "limit": 60, "period": 60 } }
         ],
         "durable_objects": { "bindings": [{ "name": "EMAIL_LIMITER", "class_name": "RecipientEmailLimiter" }] },
+        "send_email": [{ "name": "EMAIL" }],
         "d1_databases": [
           { "binding": "LOGBOOK_DB", "database_name": "climbing-logbook-preview", "database_id": "845753a5-abfc-4d74-995b-94d802b4964e", "migrations_dir": "migrations" }
         ]
@@ -216,6 +224,7 @@
         { "name": "PUBLIC_READ_LIMITER", "namespace_id": "1059", "simple": { "limit": 60, "period": 60 } }
       ],
       "durable_objects": { "bindings": [{ "name": "EMAIL_LIMITER", "class_name": "RecipientEmailLimiter" }] },
+      "send_email": [{ "name": "EMAIL" }],
       "d1_databases": [
         { "binding": "LOGBOOK_DB", "database_name": "climbing-logbook", "database_id": "8f094438-520c-4a67-a685-aee3db6198ad", "migrations_dir": "migrations" }
       ]

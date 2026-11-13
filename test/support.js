@@ -44,18 +44,19 @@ export async function createAuthedSession({
   const base = hostname ? `https://${hostname}` : BASE_URL;
   const request = (path, init) => exports.default.fetch(`${base}${path}`, init);
 
+  // The sign-up email is read here, not recorded: a test counts the emails its own steps send.
+  const fakeEmail = env.EMAIL;
   let capturedHtml;
+  env.EMAIL = {
+    send: async payload => {
+      capturedHtml = payload.html;
+      return { messageId: "test-message-id" };
+    },
+  };
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (input, init) => {
+    vi.fn(async input => {
       const url = typeof input === "string" ? input : input.url;
-      if (url.startsWith("https://api.resend.com/")) {
-        capturedHtml = JSON.parse(init.body).html;
-        return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
       if (url.startsWith("https://challenges.cloudflare.com/turnstile/")) {
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
@@ -63,31 +64,37 @@ export async function createAuthedSession({
         });
       }
       throw new Error(
-        `Unexpected fetch to ${url} -- only Resend/Turnstile calls should reach real fetch() during createAuthedSession()`,
+        `Unexpected fetch to ${url} -- only Turnstile calls should reach real fetch() during createAuthedSession()`,
       );
     }),
   );
 
-  const signUp = await request("/-/api/auth/sign-up/email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email,
-      password: "correct-horse-battery-staple",
-      name: "Test User",
-      username,
-      turnstileToken: "test-token",
-      agreedTermsVersion: TERMS_VERSION,
-    }),
-  });
+  let cookie;
+  try {
+    const signUp = await request("/-/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password: "correct-horse-battery-staple",
+        name: "Test User",
+        username,
+        turnstileToken: "test-token",
+        agreedTermsVersion: TERMS_VERSION,
+      }),
+    });
 
-  if (!signUp.ok)
-    throw new Error(`createAuthedSession: sign-up as "${username}" failed (${signUp.status}): ${await signUp.text()}`);
-  const token = decodeURIComponent(capturedHtml.match(/token=([^"&<?]+)/)[1]);
-  const res = await request(`/-/api/auth/verify-email?token=${token}`);
-  const cookie = res.headers.get("set-cookie").split(";")[0];
-
-  vi.unstubAllGlobals();
+    if (!signUp.ok)
+      throw new Error(
+        `createAuthedSession: sign-up as "${username}" failed (${signUp.status}): ${await signUp.text()}`,
+      );
+    const token = decodeURIComponent(capturedHtml.match(/token=([^"&<?]+)/)[1]);
+    const res = await request(`/-/api/auth/verify-email?token=${token}`);
+    cookie = res.headers.get("set-cookie").split(";")[0];
+  } finally {
+    vi.unstubAllGlobals();
+    env.EMAIL = fakeEmail;
+  }
 
   const user = await env.LOGBOOK_DB.prepare(`SELECT id FROM "user" WHERE email = ?`).bind(email).first();
   return { cookie, userId: user.id };

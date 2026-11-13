@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { BASE_URL, createAuthedSession, fetchJson, jsonRequest as rawJsonRequest, resetAuthTables } from "./support.js";
+import { sentEmails } from "./fake-email.js";
 import { secretFromUri, totp } from "./totp.js";
 import { cleanUp } from "../server/lib/cleanup.js";
 import { completeDueRecoveries } from "../server/lib/two-step-recovery.js";
@@ -21,25 +22,6 @@ afterAll(() => {
   env.BETA_GATE_ENABLED = "true";
 });
 
-let emails;
-function captureEmails() {
-  emails = [];
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async (input, init) => {
-      const url = typeof input === "string" ? input : input.url;
-      if (!url.startsWith("https://api.resend.com/")) throw new Error(`Unexpected fetch to ${url}`);
-      const { to, subject, html } = JSON.parse(init.body);
-      emails.push({ to, subject, html });
-      return new Response(JSON.stringify({ id: "fake" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }),
-  );
-}
-afterEach(() => vi.unstubAllGlobals());
-
 const cookiesFrom = res =>
   res.headers
     .getSetCookie()
@@ -54,7 +36,6 @@ beforeEach(async () => {
   await resetAuthTables();
   ({ cookie, userId } = await createAuthedSession());
   ({ email } = await env.LOGBOOK_DB.prepare(`SELECT email FROM "user" WHERE id = ?`).bind(userId).first());
-  captureEmails();
 });
 
 async function turnOn() {
@@ -157,7 +138,7 @@ describe("recovering without the device (#1436)", () => {
     await turnOn();
     const res = await authPost("/-/api/auth/two-factor/recovery/request");
     expect(res.status).toBe(401);
-    expect(emails.map(e => e.subject)).not.toContain("Switch off 2FA?");
+    expect(sentEmails().map(e => e.subject)).not.toContain("Switch off 2FA?");
   });
 
   it("emails a link; using it starts a 7-day wait, after which 2FA is off", async () => {
@@ -165,14 +146,14 @@ describe("recovering without the device (#1436)", () => {
     const { pending } = await signInWithPassword();
     const asked = await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: pending });
     expect(asked.status).toBe(200);
-    expect(emails.at(-1)).toMatchObject({ to: email, subject: "Switch off 2FA?" });
-    const token = tokenFrom(emails.at(-1).html);
+    expect(sentEmails().at(-1)).toMatchObject({ to: email, subject: "Switch off 2FA?" });
+    const token = tokenFrom(sentEmails().at(-1).html);
 
     expect(await (await recovery("status", token)).json()).toMatchObject({ state: "unstarted" });
     const started = await (await recovery("start", token)).json();
     expect(started.state).toBe("waiting");
     expect(started.effectiveAt - Date.now()).toBeGreaterThan(7 * DAY_MS - 60_000);
-    expect(emails.at(-1).subject).toBe("2FA will switch off in 7 days");
+    expect(sentEmails().at(-1).subject).toBe("2FA will switch off in 7 days");
 
     const sender = { sendTwoStepSwitchedOff: vi.fn() };
     expect(await completeDueRecoveries(env, sender, Date.now() + 6 * DAY_MS)).toBe(0);
@@ -193,11 +174,11 @@ describe("recovering without the device (#1436)", () => {
     await turnOn();
     const { pending } = await signInWithPassword();
     await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: pending });
-    const token = tokenFrom(emails.at(-1).html);
+    const token = tokenFrom(sentEmails().at(-1).html);
     const { effectiveAt } = await (await recovery("start", token)).json();
 
     expect(await (await recovery("cancel", token)).json()).toEqual({ state: "cancelled" });
-    expect(emails.at(-1).subject).toBe("2FA stays on");
+    expect(sentEmails().at(-1).subject).toBe("2FA stays on");
     expect(await completeDueRecoveries(env, { sendTwoStepSwitchedOff: vi.fn() }, effectiveAt)).toBe(0);
     expect(await enabledFlag()).toBe(1);
     expect(await (await recovery("start", token)).json()).toMatchObject({ state: "cancelled" });
@@ -207,7 +188,7 @@ describe("recovering without the device (#1436)", () => {
     await turnOn();
     const { pending } = await signInWithPassword();
     await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: pending });
-    const { effectiveAt } = await (await recovery("start", tokenFrom(emails.at(-1).html))).json();
+    const { effectiveAt } = await (await recovery("start", tokenFrom(sentEmails().at(-1).html))).json();
 
     const shown = await fetchJson("/-/api/auth/two-factor/recovery/pending", { headers: { Cookie: cookie } });
     expect(await shown.json()).toEqual({ effectiveAt });
@@ -220,7 +201,7 @@ describe("recovering without the device (#1436)", () => {
     await turnOn();
     const { pending } = await signInWithPassword();
     await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: pending });
-    const { effectiveAt } = await (await recovery("start", tokenFrom(emails.at(-1).html))).json();
+    const { effectiveAt } = await (await recovery("start", tokenFrom(sentEmails().at(-1).html))).json();
 
     const off = await jsonRequest("POST", "/-/api/auth/two-factor/disable", { password: PASSWORD }, { Cookie: cookie });
     expect(off.status).toBe(200);
@@ -255,7 +236,7 @@ describe("recovering without the device (#1436)", () => {
     await turnOn();
     const first = await signInWithPassword();
     await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: first.pending });
-    await recovery("start", tokenFrom(emails.at(-1).html));
+    await recovery("start", tokenFrom(sentEmails().at(-1).html));
     const second = await signInWithPassword();
     const again = await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: second.pending });
     expect(again.status).toBe(409);
@@ -266,7 +247,7 @@ describe("recovering without the device (#1436)", () => {
     await turnOn();
     const { pending } = await signInWithPassword();
     await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: pending });
-    const token = tokenFrom(emails.at(-1).html);
+    const token = tokenFrom(sentEmails().at(-1).html);
     await env.LOGBOOK_DB.prepare(`UPDATE two_step_recoveries SET requested_at = ?`)
       .bind(Date.now() - 2 * DAY_MS)
       .run();
@@ -289,10 +270,8 @@ describe("rotating the auth secret (#1440)", () => {
   beforeEach(async () => {
     legacy = env.BETTER_AUTH_SECRET;
     env.BETTER_AUTH_SECRET = "the-old-auth-secret-before-rotation-0123456789";
-    vi.unstubAllGlobals();
     ({ cookie, userId } = await createAuthedSession());
     ({ email } = await env.LOGBOOK_DB.prepare(`SELECT email FROM "user" WHERE id = ?`).bind(userId).first());
-    captureEmails();
   });
   afterEach(() => {
     env.BETTER_AUTH_SECRET = legacy;

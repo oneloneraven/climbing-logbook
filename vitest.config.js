@@ -90,7 +90,7 @@ export default defineConfig({
           name: "workers",
           include: ["test/**/*.test.js"],
           exclude: [...DOM_TESTS, ...NODE_TESTS],
-          setupFiles: ["./test/apply-migrations.js"],
+          setupFiles: ["./test/apply-migrations.js", "./test/fake-email.js"],
           // obscenity's ESM entry re-exports CommonJS, which workerd can't load unbundled.
           deps: { optimizer: { ssr: { enabled: true, include: ["obscenity"] } } },
           // D1 setup and migrations make each file's first request slow, in a hook or a test.
@@ -105,20 +105,16 @@ export default defineConfig({
             miniflare: {
               // Unit tests never reach a real service: a test that wants a reply stubs fetch, and anything else lands here.
               outboundService: request =>
-                new URL(request.url).hostname === "api.resend.com"
-                  ? Response.json({ id: "test-outbound" })
-                  : new Response(`Unit tests can't reach ${new URL(request.url).hostname}`, { status: 599 }),
+                new Response(`Unit tests can't reach ${new URL(request.url).hostname}`, { status: 599 }),
               bindings: {
                 TEST_D1_MIGRATIONS: migrations,
                 RUN_WORKER_FIRST_PATHS: RUN_WORKER_FIRST_PATHS,
-                // Resend calls are always stubbed; this just satisfies new Resend().
-                RESEND_API_KEY: "test-key-fetch-is-always-stubbed",
                 // Not a Cloudflare test secret, so the Turnstile test's stubbed fetch really runs.
                 TURNSTILE_SECRET_KEY: "test-secret-fetch-is-always-stubbed",
                 // No client IP here, so rate limiting would lump every test into one bucket.
                 RATE_LIMITING_ENABLED: "false",
-                // Local dev prints emails; the tests check the stubbed Resend call instead.
-                EMAIL_DELIVERY: "resend",
+                // Local dev prints emails; the tests check calls to the fake EMAIL binding (test/fake-email.js) instead.
+                EMAIL_DELIVERY: "cloudflare",
               },
             },
           }),

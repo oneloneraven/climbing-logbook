@@ -13,7 +13,7 @@ describe("wrangler.jsonc preview environment's previews block (#1338)", () => {
   const { previews, ...environment } = wrangler.env.preview;
 
   // A Preview inherits none of the environment's settings, so anything the app needs has to be in both.
-  for (const key of ["vars", "ratelimits", "d1_databases", "version_metadata", "durable_objects"]) {
+  for (const key of ["vars", "ratelimits", "d1_databases", "version_metadata", "durable_objects", "send_email"]) {
     it(`gives PR previews the same ${key} as the preview environment`, () => {
       expect(previews[key]).toEqual(environment[key]);
     });

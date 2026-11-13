@@ -10,8 +10,7 @@ The record UK GDPR Art. 30 requires. The small-organisation exemption doesn't ap
 
 | Processor | What for | Where | Transfer safeguard |
 |---|---|---|---|
-| Cloudflare | Hosting (Workers), the database (D1), backups (D1 Time Travel), logs, visit statistics, bot checks (Turnstile), firewall | Global | UK Extension to the EU-US Data Privacy Framework (the UK-US data bridge); if that certification lapses, the EU SCCs with the UK Addendum ([Cloudflare DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) v6.4, §6.2(b), §6.4), part of the self-serve subscription agreement |
-| Resend | Sending account emails | US | UK Extension to the EU-US Data Privacy Framework (the UK-US data bridge), and the EU SCCs with the UK Addendum ([Resend DPA](https://resend.com/legal/dpa) §6.4, §11.1), accepted with Resend's terms |
+| Cloudflare | Hosting (Workers), the database (D1), backups (D1 Time Travel), logs, visit statistics, bot checks (Turnstile), firewall, sending account emails (Email Sending) | Global | UK Extension to the EU-US Data Privacy Framework (the UK-US data bridge); if that certification lapses, the EU SCCs with the UK Addendum ([Cloudflare DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) v6.4, §6.2(b), §6.4), part of the self-serve subscription agreement |
 | Proton | The `hello@` and `support@` aliases and the mailbox they deliver to: mail people send for help (#1691) | Switzerland | UK adequacy regulations for Switzerland |
 | GitHub | Source code and issue tracking only; no user data | US | Not applicable |
 | Discord | Alert and support-notification channel; carries no personal data or submitted text (`server/lib/support-notify.js`) | US | Not applicable |
@@ -33,7 +32,7 @@ The record UK GDPR Art. 30 requires. The small-organisation exemption doesn't ap
 | Bot checks | Stop automated sign-ups | Legitimate interests | Whatever Turnstile collects in the browser | Turnstile's own | `server/lib/turnstile.js` |
 | Beta samples | Improve how the beta interpreter reads hardest moves | Legitimate interests | Hardest-move text saved on the Check our beta channel, with no user or entry link | 90 days | `beta_samples`, `server/lib/hardest-beta.js`, `server/lib/cleanup.js` |
 | Visit statistics | See which pages are used | Legitimate interests | Cookieless page views (no profile of the visitor) | Web Analytics' own | Cloudflare Web Analytics |
-| Account emails | Verification, password reset, email change, and a notice for every account change that changes data (username, password, email, 2FA, passkeys, health data, account deletion; #1456) | Contract | Email address, username | Resend's own sending logs | `server/lib/email.js` |
+| Account emails | Verification, password reset, email change, and a notice for every account change that changes data (username, password, email, 2FA, passkeys, health data, account deletion; #1456) | Contract | Email address, username | 31 days in Email Sending's delivery events (recipient and subject). Email preview, which would keep each message's content for about 7 days, is turned off for the domain | `server/lib/email.js` |
 | Backups | Recover from data loss | Legitimate interests | A full copy of the database | 7 days on the current plan (30 on Workers Paid) | D1 Time Travel; off-platform backups in #1068 |
 | Usage counters | Enforce per-account limits | Contract | Entry and import counts per user | With the account | `account_usage`, `import_runs` |
 

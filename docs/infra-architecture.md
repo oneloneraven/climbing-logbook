@@ -44,7 +44,7 @@ Everything provisionable, in `infra/`:
 | WAF custom rule blocking non-JSON `POST`s to `/-/api/` | `infra/waf.tf` |
 | Cache rules: bypass `/-/api/`, cache static assets | `infra/cache-rules.tf` |
 | CAA records: only Cloudflare's CAs may issue certificates for the zone (no reporting address: a published one gets scraped). A subdomain whose certificate comes from another CA needs that CA added to `cloudflare_cas`, unless it's a CNAME to the provider, whose own CAA records then apply (as with the Better Stack status page) | `infra/dns.tf` |
-| Email: `hello@` and `support@` are Proton Pass aliases (#1691), so the apex MX, SPF and DKIM records are Proton's, with its verification TXT; Resend's sending records on `send.` and its DKIM; the DMARC record (`p=reject`, reports to Cloudflare) | `infra/email.tf` |
+| Email: `hello@` and `support@` are Proton Pass aliases (#1691), so the apex MX, SPF and DKIM records are Proton's, with its verification TXT; Resend's sending records on `send.` and its DKIM, now unused and waiting for removal (#1702); the `cf-bounce` MX, SPF and DKIM records that Cloudflare Email Sending adds when the domain is onboarded in the dashboard (not in OpenTofu: see below); the DMARC record (`p=reject`, reports to Cloudflare) | `infra/email.tf` |
 | Better Stack uptime monitors (home page, `my.` and `beta.` readiness, certificate and domain expiry), the status page at `status.`, its DNS record, and an incident webhook to Discord `#alerts` | `infra/uptime.tf` |
 | Cloudflare alert destinations for Discord `#alerts` and `#monitoring`, and the DDoS and certificate alerts to `#monitoring` | `infra/alerts.tf` |
 | Security headers on every proxied response: `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` and `Reporting-Endpoints`. The CSP comes from the Worker instead (`server/lib/csp.js`): Cloudflare only adds its nonce to the bot-detection script it injects when the origin sends the CSP | `infra/security-headers.tf` |
@@ -74,6 +74,12 @@ The zone is looked up by name (`var.app_zone_name`), not a hardcoded id.
 - The `ravendarque.com/logbook` → `my.climbinglogbook.com/ravendarque`
   redirect. It lives on the `ravendarque.com` zone, which this project's
   token can't read, so it was removed from state and left running.
+- **Email Sending onboarding** for `climbinglogbook.com` (#1702): Compute →
+  Email Service → Email Sending → Onboard Domain. It adds the `cf-bounce`
+  MX, SPF and DKIM records, leaves the apex MX (Proton) and root SPF alone,
+  and keeps the existing `_dmarc` record. The provider version pinned here has
+  no resource for it, so the records aren't in `email.tf` and a plan doesn't
+  touch them.
 
 **State** lives in the R2 bucket `climbing-logbook-tfstate` through the
 S3-compatible backend, never in git (a `sensitive` value would still be
@@ -150,8 +156,8 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 | `ADMIN_EMAIL` | Actions secret | The one email the admin host's Access policy lets in (`infra/access.tf`) |
 | `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | Worker variables (`wrangler.jsonc`) | What the Worker checks the admin host's Access token against. Infra writes `ACCESS_AUD` after apply; empty, the admin host refuses everything |
 | `BETTER_AUTH_SECRET` | Worker secret, per environment | Session signing |
-| `RESEND_API_KEY` | Worker secret, per environment | Verification and password-reset email (sent from `myaccount@climbinglogbook.com`) |
-| `EMAIL_DELIVERY` | Worker variable (`wrangler.jsonc`) | `"off"` in `e2e` skips every email, since e2e registers and resets passwords by the dozen; `"log"` in local dev prints each email's link to the terminal (only when `APP_ENV` is `development`) |
+| `EMAIL` | Worker binding (`send_email` in `wrangler.jsonc`) | Cloudflare Email Sending: verification, password-reset and account-notice email, sent from `myaccount@climbinglogbook.com`. A binding, so there is no key to hold or rotate. Every environment that sends declares it (bindings aren't inherited); `e2e` doesn't, since it never sends |
+| `EMAIL_DELIVERY` | Worker variable (`wrangler.jsonc`) | `"off"` in `e2e` skips every email, since e2e registers and resets passwords by the dozen, and in `preview` and PR previews, where every Turnstile check passes; `"log"` in local dev prints each email's link to the terminal (only when `APP_ENV` is `development`). Any other value sends through the `EMAIL` binding: production and beta leave it unset, and unit tests set `"cloudflare"` |
 | `TURNSTILE_SECRET_KEY` | Worker secret, per environment | Turnstile verification. Production and beta each need the real value (`tofu output -raw turnstile_secret`); preview and local dev use Cloudflare's public always-passes test secret |
 
 Worker secrets are set once by hand with `wrangler secret put <name>

@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { emailSend, sentEmails } from "./fake-email.js";
 import { BASE_URL, fetchJson, jsonRequest, resetAuthTables } from "./support.js";
 import { trustedOriginsFor } from "../server/lib/auth.js";
 import { TERMS_VERSION } from "../shared/terms.js";
@@ -22,20 +23,11 @@ const VALID_SIGNUP = {
   agreedTermsVersion: TERMS_VERSION,
 };
 
-let resendCalls;
 beforeEach(() => {
-  resendCalls = [];
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (input, init) => {
+    vi.fn(async input => {
       const url = typeof input === "string" ? input : input.url;
-      if (url.startsWith("https://api.resend.com/")) {
-        resendCalls.push({ body: init?.body ? JSON.parse(init.body) : null });
-        return new Response(JSON.stringify({ id: "fake-resend-id" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
       if (url.startsWith("https://challenges.cloudflare.com/turnstile/")) {
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
@@ -73,7 +65,7 @@ function authedPost(path, body, cookie) {
 
 async function signUpAndVerify(body = VALID_SIGNUP) {
   await signUp(body);
-  const html = resendCalls.at(-1).body.html;
+  const html = sentEmails().at(-1).html;
   const token = decodeURIComponent(html.match(/token=([^"&<?]+)/)[1]);
   const res = await fetchJson(`/-/api/auth/verify-email?token=${token}`);
   return cookieFrom(res);
@@ -117,7 +109,7 @@ describe("sign-up", () => {
     const res = await signUp({ ...VALID_SIGNUP, username: "nix2" });
     expect(res.status).toBe(200);
 
-    expect(resendCalls).toHaveLength(1);
+    expect(emailSend).toHaveBeenCalledTimes(1);
   });
 
   it("rejects a duplicate username", async () => {
@@ -132,7 +124,7 @@ describe("sign-up", () => {
       expect(res.status, username).toBe(400);
       expect((await res.json()).code, username).toBe("INVALID_USERNAME");
     }
-    expect(resendCalls).toHaveLength(0);
+    expect(emailSend).toHaveBeenCalledTimes(0);
   });
 
   it("records which terms of use the account agreed to, and when", async () => {
@@ -153,7 +145,7 @@ describe("sign-up", () => {
     }
     const row = await env.LOGBOOK_DB.prepare(`SELECT 1 FROM "user" WHERE email = ?`).bind(VALID_SIGNUP.email).first();
     expect(row).toBeNull();
-    expect(resendCalls).toHaveLength(0);
+    expect(emailSend).toHaveBeenCalledTimes(0);
   });
 
   it("doesn't let an account change its recorded agreement", async () => {
@@ -283,14 +275,14 @@ describe("account settings (#302)", () => {
 
   it("sends the change-email confirmation to the CURRENT address, and doesn't change the email until it's clicked", async () => {
     const cookie = await signUpAndVerify();
-    resendCalls.length = 0;
+    emailSend.mockClear();
 
     const res = await authedPost("/-/api/auth/change-email", { newEmail: "new@example.com" }, cookie);
     expect(res.status).toBe(200);
 
-    expect(resendCalls).toHaveLength(1);
-    expect(resendCalls[0].body.to).toBe(VALID_SIGNUP.email);
-    expect(resendCalls[0].body.html).toContain("new@example.com");
+    expect(emailSend).toHaveBeenCalledTimes(1);
+    expect(sentEmails()[0].to).toBe(VALID_SIGNUP.email);
+    expect(sentEmails()[0].html).toContain("new@example.com");
 
     const session = await (await getSession(cookie)).json();
     expect(session.user.email).toBe(VALID_SIGNUP.email);

@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { BASE_URL, createAuthedSession, fetchJson, jsonRequest, resetAuthTables } from "./support.js";
+import { sentEmails } from "./fake-email.js";
 import { passkeyRpId, requireUserVerified } from "../server/lib/auth.js";
 import { ownedPageUrl } from "../server/lib/hosts.js";
 
@@ -45,18 +46,13 @@ describe("passkey settings (#1439)", () => {
 describe("managing passkeys (#1439)", () => {
   let cookie;
   let userId;
-  let emails;
   beforeEach(async () => {
     await resetAuthTables();
     ({ cookie, userId } = await createAuthedSession());
-    emails = [];
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (input, init) => {
-        const url = typeof input === "string" ? input : input.url;
-        if (!url.startsWith("https://api.resend.com/")) throw new Error(`Unexpected fetch to ${url}`);
-        emails.push(JSON.parse(init.body));
-        return new Response(JSON.stringify({ id: "fake" }), { status: 200 });
+      vi.fn(async input => {
+        throw new Error(`Unexpected fetch to ${typeof input === "string" ? input : input.url}`);
       }),
     );
   });
@@ -94,8 +90,8 @@ describe("managing passkeys (#1439)", () => {
     );
     expect(removed.status).toBe(200);
     expect(await env.LOGBOOK_DB.prepare(`SELECT COUNT(*) AS n FROM "passkey"`).first("n")).toBe(0);
-    expect(emails.at(-1).subject).toBe("A passkey was removed from your account");
-    expect(emails.at(-1).html).toContain("/account/authentication");
+    expect(sentEmails().at(-1).subject).toBe("A passkey was removed from your account");
+    expect(sentEmails().at(-1).html).toContain("/account/authentication");
   });
 
   it("can't rename or remove another user's passkey", async () => {

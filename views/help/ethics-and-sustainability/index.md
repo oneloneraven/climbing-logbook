@@ -24,8 +24,7 @@ We made a trade-off. We accepted that impact so we could build something useful 
 ## The tools we use
 
 - **GitHub** for our code.
-- **Cloudflare** to host the app.
-- **Resend** to send emails.
+- **Cloudflare** to host the app and send emails.
 - **Better Stack** to check the app is up, and to run our status page.
 - **Discord** for our own alerts when something goes wrong.
 - **Claude** (from Anthropic) to help write code.

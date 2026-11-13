@@ -16,7 +16,11 @@ describe("wrangler.jsonc e2e environment", () => {
 
   it("local dev prints emails instead of sending them, and no deployed environment does (#1357)", () => {
     expect(wrangler.vars.EMAIL_DELIVERY).toBe("log");
-    for (const name of ["production", "beta", "preview"])
-      expect(wrangler.env[name].vars.EMAIL_DELIVERY).toBeUndefined();
+    for (const name of ["production", "beta"]) expect(wrangler.env[name].vars.EMAIL_DELIVERY).toBeUndefined();
+  });
+
+  it("previews never send email, since every Turnstile check passes there (#1702)", () => {
+    expect(wrangler.env.preview.vars.EMAIL_DELIVERY).toBe("off");
+    expect(wrangler.env.preview.previews.vars.EMAIL_DELIVERY).toBe("off");
   });
 });
