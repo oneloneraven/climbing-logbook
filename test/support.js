@@ -69,27 +69,32 @@ export async function createAuthedSession({
     }),
   );
 
-  const signUp = await request("/-/api/auth/sign-up/email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email,
-      password: "correct-horse-battery-staple",
-      name: "Test User",
-      username,
-      turnstileToken: "test-token",
-      agreedTermsVersion: TERMS_VERSION,
-    }),
-  });
+  let cookie;
+  try {
+    const signUp = await request("/-/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password: "correct-horse-battery-staple",
+        name: "Test User",
+        username,
+        turnstileToken: "test-token",
+        agreedTermsVersion: TERMS_VERSION,
+      }),
+    });
 
-  if (!signUp.ok)
-    throw new Error(`createAuthedSession: sign-up as "${username}" failed (${signUp.status}): ${await signUp.text()}`);
-  const token = decodeURIComponent(capturedHtml.match(/token=([^"&<?]+)/)[1]);
-  const res = await request(`/-/api/auth/verify-email?token=${token}`);
-  const cookie = res.headers.get("set-cookie").split(";")[0];
-
-  vi.unstubAllGlobals();
-  env.EMAIL = fakeEmail;
+    if (!signUp.ok)
+      throw new Error(
+        `createAuthedSession: sign-up as "${username}" failed (${signUp.status}): ${await signUp.text()}`,
+      );
+    const token = decodeURIComponent(capturedHtml.match(/token=([^"&<?]+)/)[1]);
+    const res = await request(`/-/api/auth/verify-email?token=${token}`);
+    cookie = res.headers.get("set-cookie").split(";")[0];
+  } finally {
+    vi.unstubAllGlobals();
+    env.EMAIL = fakeEmail;
+  }
 
   const user = await env.LOGBOOK_DB.prepare(`SELECT id FROM "user" WHERE email = ?`).bind(email).first();
   return { cookie, userId: user.id };

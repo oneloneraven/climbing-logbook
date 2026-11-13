@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { BASE_URL, createAuthedSession, fetchJson, jsonRequest, resetAuthTables } from "./support.js";
 import { sentEmails } from "./fake-email.js";
 import { passkeyRpId, requireUserVerified } from "../server/lib/auth.js";
@@ -49,7 +49,14 @@ describe("managing passkeys (#1439)", () => {
   beforeEach(async () => {
     await resetAuthTables();
     ({ cookie, userId } = await createAuthedSession());
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async input => {
+        throw new Error(`Unexpected fetch to ${typeof input === "string" ? input : input.url}`);
+      }),
+    );
   });
+  afterEach(() => vi.unstubAllGlobals());
 
   const addRow = () =>
     env.LOGBOOK_DB.prepare(
