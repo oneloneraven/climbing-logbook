@@ -108,29 +108,12 @@ dashboard or elsewhere, and why:
   bucket, and Worker secrets. Credentials are created by hand or by that
   script, never stored in state.
 - **Resend's domain verification** happens in Resend; only its DNS records
-  live here. Resend no longer sends (#1702); its records stay until
-  Cloudflare delivery is confirmed, then go in a follow-up.
-- **Email Sending**: see [Email Sending](#email-sending).
+  live here.
 
 `hello@` and `support@` are Proton Pass custom-domain aliases (#1691). Their
 records (verification TXT, MX, root SPF, DKIM CNAMEs) are in `email.tf`. Adding
 another service that sends as the root domain means adding its `include:`
 to `cloudflare_dns_record.root_spf`, keeping to one SPF record.
-
-## Email Sending
-
-Account emails go out through Cloudflare Email Sending (the `EMAIL` binding in
-`wrangler.jsonc`). The provider version pinned in `.terraform.lock.hcl` has no
-resource for onboarding a sending domain (`cloudflare_email_sending_subdomain`
-first ships in 5.25.0), so it's a dashboard step, done once:
-
-1. Compute → Email Service → Email Sending → Onboard Domain.
-2. Choose `climbinglogbook.com`.
-3. Check the DNS records in Email Sending → Settings show Locked or Unlocked.
-
-Onboarding adds `cf-bounce` MX, SPF and DKIM records. It leaves the apex MX
-(Proton) and the root SPF alone. These records aren't in `email.tf`, so a plan
-doesn't touch them. The `_dmarc` record stays as it is.
 
 ## Local runs
 

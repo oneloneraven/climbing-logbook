@@ -75,7 +75,7 @@ resource "cloudflare_dns_record" "proton_dkim" {
   content  = "${each.key}._domainkey.alias.proton.me"
 }
 
-# Made in the dashboard when Resend was set up. Stays p=reject now that Cloudflare Email Sending sends too; #1702 checks that its mail passes DMARC.
+# Made in the dashboard when Resend was set up; reject once only Resend sends as the domain.
 import {
   to = cloudflare_dns_record.dmarc
   id = "${data.cloudflare_zone.app.id}/5abd7435f01c64cd75d6df3950588e7d"
