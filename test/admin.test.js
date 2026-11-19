@@ -1,33 +1,9 @@
 import { env, exports } from "cloudflare:workers";
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearAccessKeyCache } from "../server/lib/access.js";
+import { AUD, KID, clearAccess, configureAccess, encodeJson, signToken } from "./access-tokens.js";
 
-const TEAM = "team.example.com";
-const AUD = "admin-aud";
-const KID = "key-1";
 const ADMIN = "https://admin.example.com";
-
-let keyPair;
-let publicJwk;
-
-const base64Url = bytes =>
-  btoa(String.fromCharCode(...new Uint8Array(bytes)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-const encodeJson = value => base64Url(new TextEncoder().encode(JSON.stringify(value)));
-
-async function signToken(overrides = {}, { kid = KID, key = keyPair.privateKey } = {}) {
-  const now = Math.floor(Date.now() / 1000);
-  const header = encodeJson({ alg: "RS256", kid, typ: "JWT" });
-  const payload = encodeJson({ aud: [AUD], iss: `https://${TEAM}`, exp: now + 600, iat: now, ...overrides });
-  const signature = await crypto.subtle.sign(
-    "RSASSA-PKCS1-v1_5",
-    key,
-    new TextEncoder().encode(`${header}.${payload}`),
-  );
-  return `${header}.${payload}.${base64Url(signature)}`;
-}
 
 function admin(path, { token, ...init } = {}) {
   const headers = new Headers(init.headers);
@@ -48,38 +24,14 @@ async function insert(table, row) {
     .run();
 }
 
-beforeAll(async () => {
-  keyPair = await crypto.subtle.generateKey(
-    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
-    true,
-    ["sign", "verify"],
-  );
-  publicJwk = { ...(await crypto.subtle.exportKey("jwk", keyPair.publicKey)), kid: KID, alg: "RS256" };
-});
-
 beforeEach(async () => {
-  env.ACCESS_TEAM_DOMAIN = TEAM;
-  env.ACCESS_AUD = AUD;
-  delete env.ADMIN_ACCESS_CHECK;
-  clearAccessKeyCache();
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async input => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url === `https://${TEAM}/cdn-cgi/access/certs`) return Response.json({ keys: [publicJwk] });
-      throw new Error(`Unexpected fetch to ${url}`);
-    }),
-  );
+  configureAccess();
   for (const table of ["issue_reports", "feedback_submissions"]) {
     await env.LOGBOOK_DB.prepare(`DELETE FROM ${table}`).run();
   }
 });
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-  delete env.ACCESS_TEAM_DOMAIN;
-  delete env.ACCESS_AUD;
-});
+afterEach(clearAccess);
 
 describe("the admin host's Access check", () => {
   it("lets a valid Access token through", async () => {
@@ -119,6 +71,44 @@ describe("the admin host's Access check", () => {
     delete env.ACCESS_AUD;
     const res = await adminJson("/-/api/admin/reports");
     expect(res.status).toBe(403);
+  });
+
+  it("lets the owner through whatever the email's case", async () => {
+    env.OWNER_EMAIL = " Owner@Example.com ";
+    const res = await admin("/-/api/admin/reports", { token: await signToken({ email: "OWNER@example.COM" }) });
+    expect(res.status).toBe(200);
+  });
+
+  it.each([
+    ["someone else's email", { email: "someone@example.com" }],
+    ["no email", { email: undefined }],
+    ["an empty email", { email: "" }],
+  ])("refuses a valid token carrying %s", async (_label, overrides) => {
+    const res = await admin("/-/api/admin/reports", { token: await signToken(overrides) });
+    expect(res.status).toBe(403);
+  });
+
+  it.each([
+    ["isn't set", undefined],
+    ["is blank", "  "],
+  ])("refuses everyone when the owner's email %s", async (_label, owner) => {
+    if (owner === undefined) delete env.OWNER_EMAIL;
+    else env.OWNER_EMAIL = owner;
+    const res = await adminJson("/-/api/admin/reports");
+    expect(res.status).toBe(403);
+  });
+
+  it("can't be switched off in a real deployment", async () => {
+    env.ADMIN_ACCESS_CHECK = "off";
+    const original = env.APP_ENV;
+    try {
+      for (const appEnv of ["production", "beta", "preview"]) {
+        env.APP_ENV = appEnv;
+        expect((await admin("/-/api/admin/reports")).status).toBe(403);
+      }
+    } finally {
+      env.APP_ENV = original;
+    }
   });
 
   it("is skipped only where the environment switches it off", async () => {

@@ -2,6 +2,7 @@
 
 const KEYS_TTL_MS = 60 * 60 * 1000;
 const CLOCK_SKEW_S = 60;
+const SKIPPABLE_ENVIRONMENTS = ["e2e", "development"];
 
 /** @type {{ teamDomain: string, keys: Array<JsonWebKey & { kid?: string }>, at: number } | null} */
 let cachedKeys = null;
@@ -37,37 +38,43 @@ async function findKey(kid, teamDomain, fetchImpl) {
 export async function verifyAccessJwt(token, { teamDomain, aud, fetchImpl = fetch, nowS = Date.now() / 1000 }) {
   try {
     const parts = token.split(".");
-    if (parts.length !== 3) return false;
+    if (parts.length !== 3) return null;
     const [headerPart, payloadPart, signaturePart] = parts;
     const header = decodeJson(headerPart);
-    if (header.alg !== "RS256" || !header.kid) return false;
+    if (header.alg !== "RS256" || !header.kid) return null;
 
     const jwk = await findKey(header.kid, teamDomain, fetchImpl);
-    if (!jwk) return false;
+    if (!jwk) return null;
     const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, [
       "verify",
     ]);
     const signed = new TextEncoder().encode(`${headerPart}.${payloadPart}`);
-    if (!(await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, base64UrlToBytes(signaturePart), signed))) return false;
+    if (!(await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, base64UrlToBytes(signaturePart), signed))) return null;
 
     const payload = decodeJson(payloadPart);
     const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-    if (!audiences.includes(aud)) return false;
-    if (payload.iss !== `https://${teamDomain}`) return false;
-    if (typeof payload.exp !== "number" || payload.exp + CLOCK_SKEW_S < nowS) return false;
-    if (typeof payload.nbf === "number" && payload.nbf - CLOCK_SKEW_S > nowS) return false;
-    return true;
+    if (!audiences.includes(aud)) return null;
+    if (payload.iss !== `https://${teamDomain}`) return null;
+    if (typeof payload.exp !== "number" || payload.exp + CLOCK_SKEW_S < nowS) return null;
+    if (typeof payload.nbf === "number" && payload.nbf - CLOCK_SKEW_S > nowS) return null;
+    return typeof payload.email === "string" && payload.email ? { email: payload.email } : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
-// Off only where the e2e or local dev environment says so; with no team or audience configured, nothing passes.
-export function verifyAccessRequest(request, env, options = {}) {
-  if (env.ADMIN_ACCESS_CHECK === "off") return Promise.resolve(true);
+// Off only in e2e and local dev; anywhere else, nothing passes without the team, audience and owner configured.
+export async function verifyAccessRequest(request, env, options = {}) {
+  if (env.ADMIN_ACCESS_CHECK === "off" && SKIPPABLE_ENVIRONMENTS.includes(env.APP_ENV ?? "")) return true;
   const token = request.headers.get("Cf-Access-Jwt-Assertion");
-  if (!token || !env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) return Promise.resolve(false);
-  return verifyAccessJwt(token, { teamDomain: env.ACCESS_TEAM_DOMAIN, aud: env.ACCESS_AUD, ...options });
+  const owner = env.OWNER_EMAIL?.trim().toLowerCase();
+  if (!token || !env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD || !owner) return false;
+  const identity = await verifyAccessJwt(token, {
+    teamDomain: env.ACCESS_TEAM_DOMAIN,
+    aud: env.ACCESS_AUD,
+    ...options,
+  });
+  return identity?.email.toLowerCase() === owner;
 }
 
 export function clearAccessKeyCache() {
