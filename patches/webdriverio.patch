@@ -18,6 +18,42 @@ diff --git a/build/index.js b/build/index.js
        if (!nextElement2) {
          throw new Error(
            `element with selector "${describeSelector(currentElement)}" has no match at index ${currentElement.index}`
+@@ -8249,7 +8257,7 @@
+       }
+     };
+     release_fn = function(phase, requestId) {
+-      const release = phase === "beforeRequestSent" ? __privateGet(this, _browser5).networkContinueRequest({ request: requestId }) : __privateGet(this, _browser5).networkProvideResponse({ request: requestId });
++      const release = phase === "beforeRequestSent" ? __privateGet(this, _browser5).networkContinueRequest({ request: requestId }) : __privateGet(this, _browser5).networkContinueResponse({ request: requestId });
+       void release.catch(__privateGet(this, _onReleaseError));
+     };
+     _onReleaseError = new WeakMap();
+@@ -8536,7 +8544,7 @@
+         }
+         const decision = __privateGet(this, _restored) ? void 0 : __privateMethod(this, _WebDriverInterception_instances, decide_fn).call(this, "responseStarted", event);
+         if (!decision) {
+-          void __privateMethod(this, _WebDriverInterception_instances, track_fn).call(this, requestId, __privateGet(this, _browser6).networkProvideResponse({ request: requestId }));
++          void __privateMethod(this, _WebDriverInterception_instances, track_fn).call(this, requestId, __privateGet(this, _browser6).networkContinueResponse({ request: requestId }));
+           return;
+         }
+         try {
+@@ -8933,7 +8941,7 @@
+         return __privateMethod(this, _WebDriverInterception_instances, track_fn).call(this, requestId, __privateGet(this, _browser6).networkProvideResponse({ request: requestId, ...statusCode, ...responseData }), (err) => __privateMethod(this, _WebDriverInterception_instances, handleUnsupportedOverwrite_fn).call(this, err, requestId, gaveWay));
+       }
+       __privateMethod(this, _WebDriverInterception_instances, emit_fn).call(this, "continue", requestId);
+-      return __privateMethod(this, _WebDriverInterception_instances, track_fn).call(this, requestId, __privateGet(this, _browser6).networkProvideResponse({ request: requestId }));
++      return __privateMethod(this, _WebDriverInterception_instances, track_fn).call(this, requestId, __privateGet(this, _browser6).networkContinueResponse({ request: requestId }));
+     };
+     fail_fn = function(queue, requestId) {
+       __privateMethod(this, _WebDriverInterception_instances, take_fn).call(this, queue);
+@@ -9034,7 +9042,7 @@
+       log10.warn(
+         `mock.respond() could not replace the response of request ${requestId}: ${err.message}. The page received the real response. ${reason}`
+       );
+-      return __privateGet(this, _browser6).networkProvideResponse({ request: requestId }).catch(__privateGet(this, _handleNetworkProvideResponseError));
++      return __privateGet(this, _browser6).networkContinueResponse({ request: requestId }).catch(__privateGet(this, _handleNetworkProvideResponseError));
+     };
+     _handleNetworkProvideResponseError = new WeakMap();
+     attachPostData_fn = function(request) {
 diff --git a/build/node.js b/build/node.js
 --- a/build/node.js
 +++ b/build/node.js
@@ -38,3 +74,39 @@ diff --git a/build/node.js b/build/node.js
        if (!nextElement2) {
          throw new Error(
            `element with selector "${describeSelector(currentElement)}" has no match at index ${currentElement.index}`
+@@ -7993,7 +8001,7 @@
+         }
+       }
+       #release(phase, requestId) {
+-        const release = phase === "beforeRequestSent" ? this.#browser.networkContinueRequest({ request: requestId }) : this.#browser.networkProvideResponse({ request: requestId });
++        const release = phase === "beforeRequestSent" ? this.#browser.networkContinueRequest({ request: requestId }) : this.#browser.networkContinueResponse({ request: requestId });
+         void release.catch(this.#onReleaseError);
+       }
+       #onReleaseError = (err) => {
+@@ -8425,7 +8433,7 @@
+           );
+         }
+         this.#emit("continue", requestId);
+-        return this.#track(requestId, this.#browser.networkProvideResponse({ request: requestId }));
++        return this.#track(requestId, this.#browser.networkContinueResponse({ request: requestId }));
+       }
+       #fail(queue, requestId) {
+         this.#take(queue);
+@@ -8526,7 +8534,7 @@
+         log11.warn(
+           `mock.respond() could not replace the response of request ${requestId}: ${err.message}. The page received the real response. ${reason}`
+         );
+-        return this.#browser.networkProvideResponse({ request: requestId }).catch(this.#handleNetworkProvideResponseError);
++        return this.#browser.networkContinueResponse({ request: requestId }).catch(this.#handleNetworkProvideResponseError);
+       }
+       /**
+        * The error of a network command that answers a paused request. It runs in a network
+@@ -8595,7 +8603,7 @@
+         }
+         const decision = this.#restored ? void 0 : this.#decide("responseStarted", event);
+         if (!decision) {
+-          void this.#track(requestId, this.#browser.networkProvideResponse({ request: requestId }));
++          void this.#track(requestId, this.#browser.networkContinueResponse({ request: requestId }));
+           return;
+         }
+         try {
