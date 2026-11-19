@@ -28,4 +28,7 @@ resource "cloudflare_zero_trust_access_policy" "admin_email" {
 # The identity stack, coraxia, owns the application now (#1707).
 removed {
   from = cloudflare_zero_trust_access_application.admin
+  lifecycle {
+    destroy = false
+  }
 }
