@@ -19,3 +19,13 @@ output "admin_access_aud" {
   description = "The admin Access application's audience tag. infra.yml writes it into wrangler.jsonc as ACCESS_AUD, which the Worker checks every admin request's token against."
   value       = cloudflare_zero_trust_access_application.admin.aud
 }
+
+output "migration_admin_access_app_id" {
+  description = "Temporary: recorded for the identity stack move (#1707)."
+  value       = cloudflare_zero_trust_access_application.admin.id
+}
+
+output "migration_admin_access_policy_id" {
+  description = "Temporary: recorded for the identity stack move (#1707)."
+  value       = cloudflare_zero_trust_access_policy.admin_email.id
+}
