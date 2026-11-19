@@ -25,15 +25,10 @@ resource "cloudflare_zero_trust_access_policy" "admin_email" {
   }]
 }
 
-resource "cloudflare_zero_trust_access_application" "admin" {
-  account_id       = var.cloudflare_account_id
-  name             = "Climbing Logbook Admin"
-  domain           = "admin.${var.app_zone_name}"
-  type             = "self_hosted"
-  session_duration = "24h"
-
-  policies = [{
-    id         = cloudflare_zero_trust_access_policy.admin_email.id
-    precedence = 1
-  }]
+# The identity stack, coraxia, owns the application now (#1707).
+removed {
+  from = cloudflare_zero_trust_access_application.admin
+  lifecycle {
+    destroy = false
+  }
 }

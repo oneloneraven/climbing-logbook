@@ -49,7 +49,7 @@
   ],
   // Named environments don't inherit vars, so each one repeats them. Rate limiting only on real
   // deployments: elsewhere there's no client IP (docs/app-architecture.md, Better Auth configuration).
-  // ACCESS_AUD is written by the Infra workflow; until it is, the admin host refuses everything (ADR-0034).
+  // ACCESS_AUD is the admin Access application's audience tag, from the identity stack, coraxia (#1707).
   "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "vars": {
     "APP_ENV": "development",

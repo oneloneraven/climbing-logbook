@@ -39,7 +39,6 @@ Everything provisionable, in `infra/`:
 |---|---|
 | D1 database (`prevent_destroy`) | `infra/d1.tf` |
 | DNS records for the apex, `my.`, `beta.` and `www.`: proxied placeholders (192.0.2.1) so the hostnames reach the edge and the Worker routes can answer (`prevent_destroy`) | `infra/dns.tf`, `infra/tls-hardening.tf` |
-| Turnstile widget for the apex and beta (`prevent_destroy`) | `infra/turnstile.tf` |
 | Minimum TLS 1.2, HSTS, DNSSEC, and the redirect ruleset (`www` → apex, and apex-only pages from the app hosts → apex) | `infra/tls-hardening.tf` |
 | WAF custom rule blocking non-JSON `POST`s to `/-/api/` | `infra/waf.tf` |
 | Cache rules: bypass `/-/api/`, cache static assets | `infra/cache-rules.tf` |
@@ -49,7 +48,7 @@ Everything provisionable, in `infra/`:
 | Cloudflare alert destinations for Discord `#alerts` and `#monitoring`, and the DDoS and certificate alerts to `#monitoring` | `infra/alerts.tf` |
 | Security headers on every proxied response: `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` and `Reporting-Endpoints`. The CSP comes from the Worker instead (`server/lib/csp.js`): Cloudflare only adds its nonce to the bot-detection script it injects when the origin sends the CSP | `infra/security-headers.tf` |
 
-`prevent_destroy` marks the resources that can't be lost even briefly: a D1 database can't be restored, a destroy-then-create of a DNS record takes its hostname offline for the gap, and a replaced Turnstile widget gets a new secret, which is set by hand. Nothing else stops an unattended apply doing any of these.
+`prevent_destroy` marks the resources that can't be lost even briefly: a D1 database can't be restored and a destroy-then-create of a DNS record takes its hostname offline for the gap. Nothing else stops an unattended apply doing any of these.
 
 The zone is looked up by name (`var.app_zone_name`), not a hardcoded id.
 
@@ -130,9 +129,7 @@ Node and pnpm setup. A new workflow can only be dispatched once it's on
 `main`.
 
 **Generated config sync.** After apply, `infra.yml` writes OpenTofu's
-outputs into the repo: the D1 id and the admin Access audience into
-`wrangler.jsonc`, and the Turnstile sitekey into `client/turnstile.js`,
-which every Turnstile form imports. When anything changed, it pushes a
+outputs into the repo: the D1 id into `wrangler.jsonc`. When anything changed, it pushes a
 `ci/sync-generated-config-<run>` branch and puts a link to open its PR in
 the run's summary and as a warning. Open the PR by hand, label it
 `release: patch` (the files ship), and merge it: merging cuts the release
@@ -154,11 +151,11 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 | `CLOUDFLARE_ACCOUNT_ID` | Actions variable | Not confidential |
 | `SYNTHETIC_USER_EMAIL`, `SYNTHETIC_USER_PASSWORD` | Actions secrets | The synthetic check's account (`infra/README.md`) |
 | `ADMIN_EMAIL` | Actions secret | The one email the admin host's Access policy lets in (`infra/access.tf`) |
-| `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | Worker variables (`wrangler.jsonc`) | What the Worker checks the admin host's Access token against. Infra writes `ACCESS_AUD` after apply; empty, the admin host refuses everything |
+| `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | Worker variables (`wrangler.jsonc`) | What the Worker checks the admin host's Access token against. The Access application lives in the identity stack, coraxia, whose `team_domain` and `app_aud` outputs give these values; empty, the admin host refuses everything |
 | `BETTER_AUTH_SECRET` | Worker secret, per environment | Session signing |
 | `EMAIL` | Worker binding (`send_email` in `wrangler.jsonc`) | Cloudflare Email Sending: verification, password-reset and account-notice email, sent from `myaccount@climbinglogbook.com`. A binding, so there is no key to hold or rotate. Every environment that sends declares it (bindings aren't inherited); `e2e` doesn't, since it never sends |
 | `EMAIL_DELIVERY` | Worker variable (`wrangler.jsonc`) | `"off"` in `e2e` skips every email, since e2e registers and resets passwords by the dozen, and in `preview` and PR previews, where every Turnstile check passes; `"log"` in local dev prints each email's link to the terminal (only when `APP_ENV` is `development`). Any other value sends through the `EMAIL` binding: production and beta leave it unset, and unit tests set `"cloudflare"` |
-| `TURNSTILE_SECRET_KEY` | Worker secret, per environment | Turnstile verification. Production and beta each need the real value (`tofu output -raw turnstile_secret`); preview and local dev use Cloudflare's public always-passes test secret |
+| `TURNSTILE_SECRET_KEY` | Worker secret, per environment | Turnstile verification. Production and beta each need the real value, from the register widget's Turnstile page in the dashboard (the widget lives in the identity stack, coraxia); preview and local dev use Cloudflare's public always-passes test secret |
 
 Worker secrets are set once by hand with `wrangler secret put <name>
 --env <env>`. Setting one environment never sets another. Local dev reads
