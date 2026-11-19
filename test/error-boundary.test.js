@@ -1,5 +1,6 @@
 import { env, exports } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { clearAccess, configureAccess, signToken } from "./access-tokens.js";
 import { BASE_URL, fetchJson } from "./support.js";
 
 afterEach(() => {
@@ -45,13 +46,15 @@ describe("the error boundary (#1032)", () => {
   it("keeps a throw route on the admin host, behind Access, so production logging can be checked", async () => {
     errorLines();
     env.APP_ENV = "production";
-    env.ADMIN_ACCESS_CHECK = "off";
+    configureAccess();
     try {
-      const res = await exports.default.fetch("https://admin.example.com/-/api/admin/test/throw");
+      const res = await exports.default.fetch("https://admin.example.com/-/api/admin/test/throw", {
+        headers: { "Cf-Access-Jwt-Assertion": await signToken() },
+      });
       expect(res.status).toBe(500);
       expect((await res.json()).error).toBe("Something went wrong.");
     } finally {
-      delete env.ADMIN_ACCESS_CHECK;
+      clearAccess();
     }
   });
 
