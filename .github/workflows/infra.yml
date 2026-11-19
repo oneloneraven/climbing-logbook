@@ -89,45 +89,6 @@ jobs:
             }
           "
 
-      - name: Sync the Turnstile sitekey
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        working-directory: .
-        run: |
-          SITEKEY=$(cd infra && tofu output -raw turnstile_sitekey)
-          node -e "
-            const fs = require('node:fs');
-            const path = 'client/turnstile.js';
-            const current = fs.readFileSync(path, 'utf8');
-            const updated = current.replace(
-              /const REAL_SITEKEY = \"[^\"]*\";/,
-              'const REAL_SITEKEY = \"${SITEKEY}\";'
-            );
-            if (updated !== current) {
-              fs.writeFileSync(path, updated);
-              console.log('turnstile.js updated with ' + '${SITEKEY}');
-            } else {
-              console.log('turnstile.js already up to date');
-            }
-          "
-
-      - name: Sync the admin Access audience
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        working-directory: .
-        run: |
-          AUD=$(cd infra && tofu output -raw admin_access_aud)
-          node -e "
-            const fs = require('node:fs');
-            const path = 'wrangler.jsonc';
-            const current = fs.readFileSync(path, 'utf8');
-            const updated = current.replace(/(\"ACCESS_AUD\":\s*\")[^\"]*(\")/g, \`\$1${AUD}\$2\`);
-            if (updated !== current) {
-              fs.writeFileSync(path, updated);
-              console.log('wrangler.jsonc updated with the admin Access audience');
-            } else {
-              console.log('wrangler.jsonc already up to date');
-            }
-          "
-
       # Actions may not open PRs here (a repository setting kept off on purpose), so a person opens it.
       - name: Push generated config for a PR
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -137,7 +98,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add wrangler.jsonc infra/.terraform.lock.hcl client/turnstile.js
+          git add wrangler.jsonc infra/.terraform.lock.hcl
           if git diff --cached --quiet; then
             echo "Nothing to commit."
             exit 0
@@ -153,7 +114,7 @@ jobs:
           {
             echo "## Generated config changed"
             echo
-            echo "Generated config (D1 database id, Turnstile sitekey, admin Access audience, provider lockfile) changed in this apply."
+            echo "Generated config (D1 database id, provider lockfile) changed in this apply."
             echo
             echo "[Open the PR]($URL), label it \`release: patch\` (these files ship), and merge it. Merging cuts the release that carries the change."
           } >> "$GITHUB_STEP_SUMMARY"

@@ -1,6 +1,6 @@
 # Infrastructure
 
-OpenTofu-managed: the D1 database, DNS, the Turnstile widget, and
+OpenTofu-managed: the D1 database, DNS, and
 zone-level TLS/DNS settings, Cache Rules, and WAF custom and managed rules. Everything here is declarative,
 repeatable, and idempotent — re-running `tofu apply` with no
 changes is always a no-op.
@@ -139,7 +139,7 @@ version locally.
 The Infra workflow applies unattended, so it refuses any plan that deletes
 or replaces a resource. The PR check goes red, and so does the run on
 `main`, before anything is applied. On top of that, the D1 database, every
-DNS record and the Turnstile widget have `lifecycle { prevent_destroy =
+DNS record have `lifecycle { prevent_destroy =
 true }`, so OpenTofu itself refuses to plan their destruction at all.
 
 When a delete really is intended (say, a WAF rule being retired):
