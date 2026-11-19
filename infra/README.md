@@ -138,7 +138,7 @@ version locally.
 
 The Infra workflow applies unattended, so it refuses any plan that deletes
 or replaces a resource. The PR check goes red, and so does the run on
-`main`, before anything is applied. On top of that, the D1 database, every
+`main`, before anything is applied. On top of that, the D1 database and every
 DNS record have `lifecycle { prevent_destroy =
 true }`, so OpenTofu itself refuses to plan their destruction at all.
 

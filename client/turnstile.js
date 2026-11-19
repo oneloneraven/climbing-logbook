@@ -1,4 +1,4 @@
-// The register widget's sitekey, from the identity stack, coraxia (#1707).
+// The register widget lives in the identity stack, coraxia (#1707); REAL_SITEKEY_HOSTNAMES must match its domains there.
 const REAL_SITEKEY = "0x4AAAAAAEH3RghUN6KSc-uy";
 // Cloudflare's always-passes test key, for hosts the real widget isn't registered on.
 const TEST_SITEKEY = "1x00000000000000000000AA";
