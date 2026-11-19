@@ -1,4 +1,4 @@
-# The admin host (ADR-0034): Access in front of the whole hostname, letting in one email.
+# The admin host (ADR-0034): Access in front of the whole hostname, from the identity stack, coraxia.
 resource "cloudflare_dns_record" "app_admin_subdomain" {
   zone_id = data.cloudflare_zone.app.id
   name    = "admin.${var.app_zone_name}"
@@ -11,18 +11,6 @@ resource "cloudflare_dns_record" "app_admin_subdomain" {
   lifecycle {
     prevent_destroy = true
   }
-}
-
-resource "cloudflare_zero_trust_access_policy" "admin_email" {
-  account_id = var.cloudflare_account_id
-  name       = "Allow the logbook admin"
-  decision   = "allow"
-
-  include = [{
-    email = {
-      email = var.admin_email
-    }
-  }]
 }
 
 # The identity stack, coraxia, owns the application now (#1707).

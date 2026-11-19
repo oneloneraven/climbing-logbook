@@ -95,7 +95,7 @@ creates the bucket, and is safe to re-run.
 | `release.yml` | PR merged | Cuts the next `vX.Y.Z` tag from the label |
 | `deploy.yml` | `vX.Y.Z` tag, or manual | Logs the D1 restore point, applies migrations, then deploys beta; also production when the tag's diff touches `infra/` or `migrations/` |
 | `promote.yml` | manual | Deploys a tag to production (migrations first) |
-| `infra.yml` | PR or merge touching `infra/**` or the workflow itself, or manual | Plans to a file, refuses any delete or replacement, applies that exact plan on `main`, then syncs generated config |
+| `infra.yml` | PR or merge touching `infra/**` or the workflow itself, or manual | Plans to a file, refuses any delete or replacement (a manual run on `main` may make exactly the deletes it lists in `expected_deletes`), applies that exact plan on `main`, then syncs generated config |
 | `synthetic-check.yml` | after deploys, on a schedule, or manual | Logs in as the monitoring account and probes production |
 | `bootstrap-state.yml` | manual | Creates the state bucket |
 | `project-status-sync.yml` | branch or PR events | Moves the linked issue on the project board |
@@ -150,7 +150,6 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 | `TF_STATE_ACCESS_KEY_ID`, `TF_STATE_SECRET_ACCESS_KEY` | `infra` environment secrets | Read-write R2 credentials for the state backend (created under R2 → Manage R2 API Tokens) |
 | `CLOUDFLARE_ACCOUNT_ID` | Actions variable | Not confidential |
 | `SYNTHETIC_USER_EMAIL`, `SYNTHETIC_USER_PASSWORD` | Actions secrets | The synthetic check's account (`infra/README.md`) |
-| `ADMIN_EMAIL` | Actions secret | The one email the admin host's Access policy lets in (`infra/access.tf`) |
 | `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | Worker variables (`wrangler.jsonc`) | What the Worker checks the admin host's Access token against. The Access application lives in the identity stack, coraxia, whose `team_domain` and `app_aud` outputs give these values; empty, the admin host refuses everything |
 | `BETTER_AUTH_SECRET` | Worker secret, per environment | Session signing |
 | `EMAIL` | Worker binding (`send_email` in `wrangler.jsonc`) | Cloudflare Email Sending: verification, password-reset and account-notice email, sent from `myaccount@climbinglogbook.com`. A binding, so there is no key to hold or rotate. Every environment that sends declares it (bindings aren't inherited); `e2e` doesn't, since it never sends |

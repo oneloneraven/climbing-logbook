@@ -15,12 +15,6 @@ variable "d1_database_name" {
   default     = "climbing-logbook"
 }
 
-variable "admin_email" {
-  description = "The one email Access lets through to the admin host. Supplied by the ADMIN_EMAIL Actions secret, never committed."
-  type        = string
-  sensitive   = true
-}
-
 variable "betterstack_api_token" {
   description = "Better Stack Uptime team token. Supplied by the BETTERSTACK_API_TOKEN Actions secret, never committed."
   type        = string
