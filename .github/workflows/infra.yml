@@ -7,6 +7,11 @@ on:
     branches: [main]
     paths: ["infra/**", ".github/workflows/infra.yml"]
   workflow_dispatch:
+    inputs:
+      expected_deletes:
+        description: "Resource addresses this run may delete or replace, space-separated; the plan must delete exactly these (infra/README.md)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -31,7 +36,6 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ github.event_name == 'pull_request' && secrets.TF_STATE_READ_SECRET_ACCESS_KEY || secrets.TF_STATE_SECRET_ACCESS_KEY }}
       CLOUDFLARE_API_TOKEN: ${{ github.event_name == 'pull_request' && secrets.CLOUDFLARE_INFRA_PLAN_TOKEN || secrets.CLOUDFLARE_INFRA_APPLY_TOKEN }}
       TF_VAR_cloudflare_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-      TF_VAR_admin_email: ${{ secrets.ADMIN_EMAIL }}
       TF_VAR_betterstack_api_token: ${{ secrets.BETTERSTACK_API_TOKEN }}
       TF_VAR_discord_alerts_webhook: ${{ secrets.DISCORD_ALERTS_WEBHOOK }}
       TF_VAR_discord_monitoring_webhook: ${{ secrets.DISCORD_MONITORING_WEBHOOK }}
@@ -54,15 +58,19 @@ jobs:
       - name: Plan
         run: tofu plan -no-color -input=false -out=tfplan
 
-      - name: Refuse deletes and replacements
+      - name: Refuse deletes and replacements not listed
+        env:
+          EXPECTED_DELETES: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_deletes || '' }}
         run: |
-          DELETES=$(tofu show -json tfplan | jq -r '(.resource_changes // [])[] | select(.change.actions | index("delete")) | "\(.address) (\(.change.actions | join(", ")))"')
-          if [ -n "$DELETES" ]; then
-            echo "::error::This plan deletes or replaces resources. Unattended apply refuses to do that (#1075):"
-            echo "$DELETES"
+          PLANNED=$(tofu show -json tfplan | jq -r '(.resource_changes // [])[] | select(.change.actions | index("delete")) | .address' | sort -u)
+          EXPECTED=$(tr -s ' ,\t' '\n' <<<"$EXPECTED_DELETES" | sed '/^$/d' | sort -u)
+          echo "Planned deletes and replacements:"; echo "${PLANNED:-  (none)}"
+          echo "Expected (expected_deletes):"; echo "${EXPECTED:-  (none)}"
+          if [ "$PLANNED" != "$EXPECTED" ]; then
+            echo "::error::The plan's deletes and replacements don't match expected_deletes. Unattended runs refuse every delete; a deliberate one runs Infra by hand on main, listing exactly what it deletes (infra/README.md, #1075)."
             exit 1
           fi
-          echo "No deletes or replacements in this plan."
+          echo "Deletes match expected_deletes."
 
       - name: Apply (main only)
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'

@@ -26,8 +26,6 @@ The only thing *not* managed here, by design: the logbook's actual data
    - `TF_STATE_ACCESS_KEY_ID` / `TF_STATE_SECRET_ACCESS_KEY` (secrets) —
      from step 1
    - `CLOUDFLARE_ACCOUNT_ID` (variable, not secret — not confidential)
-   - `ADMIN_EMAIL` (secret) — the one email the admin host's Access policy
-     lets in
 
 3. **Run the "Bootstrap OpenTofu state bucket" workflow** manually
    (Actions tab → workflow_dispatch). Creates the R2 bucket OpenTofu's
@@ -145,13 +143,21 @@ true }`, so OpenTofu itself refuses to plan their destruction at all.
 When a delete really is intended (say, a WAF rule being retired):
 
 1. Merge the change with the check red only if you've read the plan and
-   the delete is the whole point. Otherwise fix the change.
-2. Run it locally (above) with `tofu plan -out=tfplan`, read the
-   plan, then `tofu apply tfplan`.
+   the delete is the whole point. Otherwise fix the change. The run on
+   `main` goes red too and applies nothing.
+2. Run Infra by hand on `main` (Actions → Infra → Run workflow), with
+   `expected_deletes` set to the exact addresses the plan deletes or
+   replaces, separated by spaces, such as
+   `cloudflare_zero_trust_access_policy.admin_email`. The run fails before
+   applying if the plan deletes anything not listed, or doesn't delete
+   something listed. The log shows both lists.
 3. For a `prevent_destroy` resource, removing the `lifecycle` block is its
    own reviewed change first. A deleted D1 database can't be restored
    (Time Travel only restores in place): export it first
    (`wrangler d1 export`).
+
+A local run (above) still works as a fallback: `tofu plan -out=tfplan`,
+read the plan, then `tofu apply tfplan`.
 
 ## Disaster recovery
 
