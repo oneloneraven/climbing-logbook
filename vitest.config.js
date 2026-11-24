@@ -33,6 +33,7 @@ const DOM_TESTS = [
   "test/client/ownership-guard.test.js",
   "test/client/apex-links.test.js",
   "test/client/turnstile.test.js",
+  "test/client/engage-submission.test.js",
   "test/client/failed-writes.test.js",
   "test/client/entries-db.test.js",
   "test/client/store.test.js",

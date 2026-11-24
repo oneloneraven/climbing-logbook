@@ -1,11 +1,12 @@
-// The register widget lives in the identity stack, coraxia (#1707); REAL_SITEKEY_HOSTNAMES must match its domains there.
-const REAL_SITEKEY = "0x4AAAAAAEH3RghUN6KSc-uy";
+// Both widgets live in the identity stack, coraxia (#1707); REAL_SITEKEY_HOSTNAMES must match their domains there.
+export const REGISTER_SITEKEY = "0x4AAAAAAEH3RghUN6KSc-uy";
+export const ENGAGE_SITEKEY = "0x4AAAAAAGA4Yit4Q7K_7Sl8";
 // Cloudflare's always-passes test key, for hosts the real widget isn't registered on.
 const TEST_SITEKEY = "1x00000000000000000000AA";
 const REAL_SITEKEY_HOSTNAMES = ["climbinglogbook.com", "beta.climbinglogbook.com", "my.climbinglogbook.com"];
 
-function turnstileSitekey(hostname) {
-  return REAL_SITEKEY_HOSTNAMES.includes(hostname) ? REAL_SITEKEY : TEST_SITEKEY;
+function turnstileSitekey(hostname, realSitekey) {
+  return REAL_SITEKEY_HOSTNAMES.includes(hostname) ? realSitekey : TEST_SITEKEY;
 }
 
 const NORMAL_WIDTH = 300;
@@ -15,12 +16,12 @@ const RESPONSE_WAIT_MS = 10_000;
 const waitingForLoad = [];
 
 // Hidden unless the check needs a click; api.js is async and may run before this module.
-export function renderTurnstile(selector) {
+export function renderTurnstile(selector, realSitekey = REGISTER_SITEKEY) {
   let widgetId;
   const render = () => {
     const container = document.querySelector(selector);
     widgetId = window.turnstile.render(container, {
-      sitekey: turnstileSitekey(window.location.hostname),
+      sitekey: turnstileSitekey(window.location.hostname, realSitekey),
       appearance: "interaction-only",
       size: container.clientWidth < NORMAL_WIDTH ? "compact" : "normal",
     });

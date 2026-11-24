@@ -10,7 +10,7 @@ The record UK GDPR Art. 30 requires. The small-organisation exemption doesn't ap
 
 | Processor | What for | Where | Transfer safeguard |
 |---|---|---|---|
-| Cloudflare | Hosting (Workers), the database (D1), backups (D1 Time Travel), logs, visit statistics, bot checks (Turnstile), firewall, sending account emails (Email Sending) | Global | UK Extension to the EU-US Data Privacy Framework (the UK-US data bridge); if that certification lapses, the EU SCCs with the UK Addendum ([Cloudflare DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) v6.4, §6.2(b), §6.4), part of the self-serve subscription agreement |
+| Cloudflare | Hosting (Workers), the database (D1), backups (D1 Time Travel), logs, visit statistics, bot checks (Turnstile), firewall, sending account emails (Email Sending); feedback and issue reports, through Engage, which runs there too | Global | UK Extension to the EU-US Data Privacy Framework (the UK-US data bridge); if that certification lapses, the EU SCCs with the UK Addendum ([Cloudflare DPA](https://www.cloudflare.com/cloudflare-customer-dpa/) v6.4, §6.2(b), §6.4), part of the self-serve subscription agreement |
 | Proton | The `hello@` and `support@` aliases and the mailbox they deliver to: mail people send for help (#1691) | Switzerland | UK adequacy regulations for Switzerland |
 | GitHub | Source code and issue tracking only; no user data | US | Not applicable |
 | Discord | Alert and support-notification channel; carries no personal data or submitted text (`server/lib/support-notify.js`) | US | Not applicable |
@@ -24,7 +24,7 @@ The record UK GDPR Art. 30 requires. The small-organisation exemption doesn't ap
 | Health information | Find patterns in the user's climbing performance | Explicit consent (Art. 9(2)(a)), the Health Data Agreement | Pain and injury details; later cycle phase and energy and mood (#1409, #1410) | Until consent is withdrawn (deleted at once) or the account is deleted | `server/lib/health-consent.js`, `shared/health-consent.js`, `consents` table |
 | Consent record | Show who agreed to what, and when | Legal obligation (Art. 7(1)) | User id, purpose, wording version, dates granted, superseded and withdrawn | With the account | `consents` table |
 | Public profiles | Share a logbook the user chose to make public | Contract | Climbs and places of a public logbook; never health information, Exertion or moves | While the logbook is public | `server/api/public-data.js`, tested in `test/authorization-matrix.test.js` |
-| Feedback and issue reports | Fix problems and answer people | Legitimate interests | Message, optional contact email, user id, the page it was sent from | **No limit set** | `feedback_submissions`, `issue_reports` |
+| Feedback and issue reports | Fix problems and answer people | Legitimate interests | Message, optional contact email, the page and part of the app it was sent from, the app version, the user id when signed in; for a report, the reported logbook, entry and error reference as typed | Sent to Engage, the owner's own feedback service, also on Cloudflare (#1709): 12 months after it's archived, or after its last activity if never archived. The app's old `feedback_submissions` and `issue_reports` tables hold only test data, and go in #1712 | Engage ([its record of processing](https://github.com/oneloneraven/engage/blob/main/docs/data-protection.md)) |
 | Moderation | Act on reports and abuse | Legitimate interests | Suspensions, bans (email or username), admin actions with the affected username and email | **No limit set**; the audit log keeps a deleted account's username and email | `account_suspensions`, `banned_identities`, `admin_audit_log` |
 | Invites | Run the closed beta | Legitimate interests | Invite code, optional pinned email, who used it | Until removed; references are cleared when an account is deleted | `beta_invites`, `server/lib/remove-account.js` |
 | Security and abuse logs | Keep the service working and secure | Legitimate interests | Request logs with user id, route and status; no passwords, tokens, notes or health information (allowlist) | Workers Logs retention (days) | `server/lib/log.js` |
@@ -38,7 +38,8 @@ The record UK GDPR Art. 30 requires. The small-organisation exemption doesn't ap
 
 ## Gaps to settle
 
-- **No retention limit on feedback, issue reports or the moderation audit log.** The audit log also keeps a deleted account's username and email. Each needs a period, and the cleanup cron needs to enforce it.
+- **No retention limit on the moderation audit log.** It also keeps a deleted account's username and email. It needs a period, and the cleanup cron needs to enforce it.
+- **Engage keeps a deleted account's user id on its feedback and reports** until account deletion clears it there (#1710).
 
 ## Security measures
 

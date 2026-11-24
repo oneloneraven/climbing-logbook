@@ -18,13 +18,13 @@ describe("the Worker-sent CSP (#1042)", () => {
     expect(first.headers.get(CSP_HEADER)).toContain("frame-ancestors 'none'");
   });
 
-  it("lets the pages read beta's release list, and nothing else off-site (#1506)", async () => {
+  it("lets the pages read beta's release list and post to Engage, and nothing else off-site (#1506, #1709)", async () => {
     const res = await exports.default.fetch("https://climbinglogbook.com/help/whats-new/");
     const connect = res.headers
       .get(CSP_HEADER)
       .split("; ")
       .find(d => d.startsWith("connect-src"));
-    expect(connect).toBe("connect-src 'self' https://beta.climbinglogbook.com");
+    expect(connect).toBe("connect-src 'self' https://beta.climbinglogbook.com https://engage-api.oneloneraven.com");
   });
 
   it("is on the error page", async () => {

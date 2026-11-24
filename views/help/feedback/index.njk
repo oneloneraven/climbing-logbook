@@ -36,6 +36,12 @@ eleventyNavigation:
     <option value="help">Help pages</option>
   </select>
 
+  {# A honeypot: people never see or reach it, so anything in it came from a bot. #}
+  <div class="sr-only" aria-hidden="true">
+    <label for="feedback-hpx">Leave this empty</label>
+    <input id="feedback-hpx" name="hpx" type="text" tabindex="-1" autocomplete="off">
+  </div>
+
   <div id="turnstile-widget" class="mb-4"></div>
 
   <p class="mb-4 error-message" id="feedback-error" role="alert" aria-live="assertive" tabindex="-1" hidden></p>

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { renderTurnstile } from "../../client/turnstile.js";
+import { ENGAGE_SITEKEY, REGISTER_SITEKEY, renderTurnstile } from "../../client/turnstile.js";
 
 function fakeTurnstile(token = "token") {
   return { render: vi.fn(() => "widget-1"), getResponse: vi.fn(() => token), reset: vi.fn() };
@@ -18,6 +18,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  window.happyDOM.setURL("http://localhost:3000/");
   vi.useRealTimers();
   delete window.turnstile;
   delete window.onTurnstileLoad;
@@ -36,6 +37,28 @@ describe("renderTurnstile", () => {
     });
     expect(widget.getResponse()).toBe("token");
     expect(window.turnstile.getResponse).toHaveBeenCalledWith("widget-1");
+  });
+
+  it("uses the register widget's sitekey on our own hosts by default, and the one it's given otherwise", () => {
+    window.happyDOM.setURL("https://beta.climbinglogbook.com/help/feedback/");
+    containerOfWidth(312);
+    window.turnstile = fakeTurnstile();
+    renderTurnstile("#turnstile-widget");
+    renderTurnstile("#turnstile-widget", ENGAGE_SITEKEY);
+
+    expect(window.turnstile.render.mock.calls.map(([, options]) => options.sitekey)).toEqual([
+      REGISTER_SITEKEY,
+      ENGAGE_SITEKEY,
+    ]);
+  });
+
+  it("uses the test sitekey on hosts the real widgets aren't registered on", () => {
+    window.happyDOM.setURL("https://climbing-logbook-preview.ravendarque.workers.dev/help/feedback/");
+    containerOfWidth(312);
+    window.turnstile = fakeTurnstile();
+    renderTurnstile("#turnstile-widget", ENGAGE_SITEKEY);
+
+    expect(window.turnstile.render.mock.calls[0][1].sitekey).toBe("1x00000000000000000000AA");
   });
 
   it("uses the compact size when the normal one wouldn't fit", () => {

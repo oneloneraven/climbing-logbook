@@ -41,6 +41,12 @@ eleventyNavigation:
     <option value="public_logbook">Someone's public logbook</option>
   </select>
 
+  {# A honeypot: people never see or reach it, so anything in it came from a bot. #}
+  <div class="sr-only" aria-hidden="true">
+    <label for="report-issue-hpx">Leave this empty</label>
+    <input id="report-issue-hpx" name="hpx" type="text" tabindex="-1" autocomplete="off">
+  </div>
+
   <div id="turnstile-widget" class="mb-4"></div>
 
   <p class="mb-4 error-message" id="report-issue-error" role="alert" aria-live="assertive" tabindex="-1" hidden></p>
