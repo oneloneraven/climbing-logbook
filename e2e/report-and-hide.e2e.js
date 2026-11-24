@@ -1,5 +1,4 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { d1Execute } from "../scripts/lib/dev-session.mjs";
 import { ENGAGE_SUBMISSIONS_URL } from "../client/engage-submission.js";
 import { clearCookies, recordFetches } from "./wdio-browser.js";
 import { mockEngage } from "./wdio-engage.js";
@@ -10,13 +9,14 @@ const ADMIN = "http://admin.localhost:8787";
 const contains = text => expect.stringContaining(text);
 const rowWith = text => $(`//tr[contains(normalize-space(.), ${JSON.stringify(text)})]`);
 
-// Reports now go to Engage; the admin pages still read the legacy table until they're removed.
-function seedLegacyReport({ id, message, username, entryId }) {
-  d1Execute(
-    `INSERT INTO issue_reports (id, message, section, reported_user_id, reported_entry_id, created_at)
-     VALUES ('${id}', '${message}', 'public_logbook', (SELECT id FROM "user" WHERE username = '${username}'), '${entryId}', datetime('now'))`,
-    { database: "climbing-logbook-preview", env: "preview" },
-  );
+// Reports now go to Engage; the admin pages still read the legacy table until #1712, so seed it through its endpoint.
+async function seedLegacyReport({ message, username, entryId }) {
+  const res = await fetch(new URL("/-/api/report-issue", await browser.getUrl()), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, turnstileToken: "e2e", reportedUsername: username, reportedEntryId: entryId }),
+  });
+  if (!res.ok) throw new Error(`seeding the legacy report: ${res.status} ${await res.text()}`);
 }
 
 describe("report and hide", () => {
@@ -61,7 +61,7 @@ describe("report and hide", () => {
     expect(sent.context).toEqual({ reportedUsername: owner.username, reportedEntryId: entryId });
     expect(sent).not.toHaveProperty("accountRef");
 
-    seedLegacyReport({ id: `e2e-report-${Date.now()}`, message, username: owner.username, entryId });
+    await seedLegacyReport({ message, username: owner.username, entryId });
 
     await browser.url(`${ADMIN}/reports`);
     await $("#submission-list").$(`a*=${climb}`).click();
