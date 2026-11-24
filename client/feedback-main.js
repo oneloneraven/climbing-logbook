@@ -76,6 +76,11 @@ form.addEventListener("submit", async event => {
         turnstileToken,
         hpx: document.getElementById("feedback-hpx").value,
         accountRef: await currentAccountRef(),
+        quote: {
+          consent: document.getElementById("feedback-quote-consent").checked,
+          credit: form.elements.namedItem("credit").value,
+          name: document.getElementById("feedback-name").value,
+        },
       }),
     );
 

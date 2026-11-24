@@ -29,6 +29,12 @@ function contextOrNothing(context) {
   return kept.length ? Object.fromEntries(kept) : undefined;
 }
 
+// The credit and name only mean something with consent, so without it neither is sent.
+function quoteOrNothing(quote) {
+  if (!quote?.consent) return {};
+  return { quoteConsent: true, credit: quote.credit, contactName: quote.name?.trim() || undefined };
+}
+
 export function engageSubmission({
   kind,
   message,
@@ -40,6 +46,7 @@ export function engageSubmission({
   hpx,
   accountRef,
   context,
+  quote,
 }) {
   return {
     product: "cl",
@@ -54,6 +61,7 @@ export function engageSubmission({
     hpx: hpx || undefined,
     accountRef: accountRef || undefined,
     context: contextOrNothing(context),
+    ...quoteOrNothing(quote),
   };
 }
 

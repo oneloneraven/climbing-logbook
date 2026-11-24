@@ -32,6 +32,28 @@ describe("feedback page", () => {
     });
   });
 
+  it("sends consent to quote, with the credit and name chosen", async () => {
+    await mockTurnstile();
+    await mockEngage();
+    const fetches = await recordFetches();
+    await browser.url("/help/feedback/");
+    await waitForTurnstile();
+
+    await $("#feedback-message").setValue("Best logbook I've used.");
+    await $("#feedback-quote-consent").click();
+    await $('input[name="credit"][value="initials"]').click();
+    await $("#feedback-name").setValue("Nix Climber");
+    const submitted = fetches.next(ENGAGE_SUBMISSIONS_URL, "POST");
+    await $("#feedback-submit-btn").click();
+
+    await expect($("#feedback-success")).toBeDisplayed();
+    expect(JSON.parse((await submitted).body)).toMatchObject({
+      quoteConsent: true,
+      credit: "initials",
+      contactName: "Nix Climber",
+    });
+  });
+
   it("shows an inline error, keeps what was typed, and re-enables the button when Engage refuses it", async () => {
     await mockTurnstile();
     await mockEngage({ status: 429, body: { error: "rate-limited" } });

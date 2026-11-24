@@ -70,6 +70,28 @@ describe("engageSubmission", () => {
     expect(body).not.toHaveProperty("context");
   });
 
+  it("sends consent to quote, with the credit and name, only when the box is ticked", () => {
+    const base = { kind: "feedback", message: "Love it.", turnstileToken: "token" };
+    const quoted = engageSubmission({ ...base, quote: { consent: true, credit: "name", name: "  Nix  " } });
+    expect(quoted).toMatchObject({ quoteConsent: true, credit: "name", contactName: "Nix" });
+
+    const declined = JSON.parse(
+      JSON.stringify(engageSubmission({ ...base, quote: { consent: false, credit: "name", name: "Nix" } })),
+    );
+    expect(declined).not.toHaveProperty("quoteConsent");
+    expect(declined).not.toHaveProperty("credit");
+    expect(declined).not.toHaveProperty("contactName");
+  });
+
+  it("sends no name when quoting is allowed but none was given", () => {
+    const body = engageSubmission({
+      kind: "feedback",
+      message: "x",
+      quote: { consent: true, credit: "anonymous", name: "" },
+    });
+    expect(body).toMatchObject({ quoteConsent: true, credit: "anonymous", contactName: undefined });
+  });
+
   it("passes on a filled honeypot", () => {
     expect(engageSubmission({ ...REPORT, hpx: "spam" }).hpx).toBe("spam");
   });

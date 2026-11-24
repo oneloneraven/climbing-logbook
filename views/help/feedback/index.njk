@@ -36,6 +36,31 @@ eleventyNavigation:
     <option value="help">Help pages</option>
   </select>
 
+  <fieldset class="min-w-0 border-0 p-0 mb-4" aria-describedby="feedback-quote-hint">
+    <legend class="block text-sm text-muted mb-1">Can we quote you? <span class="text-muted">(optional)</span></legend>
+    <div class="text-sm text-muted mb-2" id="feedback-quote-hint">We might share what you said on the site or our socials. We never show your email address.</div>
+    <label class="flex items-start gap-2 text-sm mb-2 cursor-pointer" for="feedback-quote-consent">
+      <input class="mt-0.5 size-4 shrink-0 accent-accent-strong" type="checkbox" id="feedback-quote-consent" name="quoteConsent" value="true">
+      <span>Yes, you can quote what I said</span>
+    </label>
+    <div class="flex flex-col gap-2 mb-3">
+      <label class="flex items-center gap-2 text-sm cursor-pointer">
+        <input class="size-4 shrink-0 accent-accent-strong" type="radio" name="credit" value="anonymous" checked>
+        <span>Don't show my name</span>
+      </label>
+      <label class="flex items-center gap-2 text-sm cursor-pointer">
+        <input class="size-4 shrink-0 accent-accent-strong" type="radio" name="credit" value="initials">
+        <span>Show my initials</span>
+      </label>
+      <label class="flex items-center gap-2 text-sm cursor-pointer">
+        <input class="size-4 shrink-0 accent-accent-strong" type="radio" name="credit" value="name">
+        <span>Show my name</span>
+      </label>
+    </div>
+    <label class="block text-sm text-muted mb-1" for="feedback-name">Your name <span class="text-muted">(optional)</span></label>
+    <input class="text-input w-full" type="text" id="feedback-name" name="contactName" maxlength="100" autocomplete="name">
+  </fieldset>
+
   {# A honeypot: people never see or reach it, so anything in it came from a bot. #}
   <div class="sr-only" aria-hidden="true">
     <label for="feedback-hpx">Leave this empty</label>
@@ -46,8 +71,6 @@ eleventyNavigation:
 
   <p class="mb-4 error-message" id="feedback-error" role="alert" aria-live="assertive" tabindex="-1" hidden></p>
 
-  {# A notice, not a checkbox: submitting is the consent. #}
-  <p class="text-sm text-muted mb-4">By submitting this, you understand we might share your feedback publicly but anonymously, on the site or our socials.</p>
 
   <button type="submit" class="btn btn-primary px-8 disabled:opacity-[.45] disabled:cursor-not-allowed" id="feedback-submit-btn">Send feedback</button>
 </form>
