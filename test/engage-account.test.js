@@ -30,7 +30,7 @@ describe("clearing a deleted account's reference in Engage (#1710)", () => {
   it("asks Engage to clear the account, with the shared secret", async () => {
     stubEngage(204);
     const log = fakeLog();
-    await clearEngageAccount(env, log, "user/1");
+    await clearEngageAccount(env, log, "user/1", 0);
     expect(calls).toEqual([
       { url: `${ENGAGE_ACCOUNTS_URL}user%2F1`, method: "DELETE", auth: "Bearer test-account-secret" },
     ]);
@@ -41,15 +41,31 @@ describe("clearing a deleted account's reference in Engage (#1710)", () => {
     delete env.ACCOUNT_SECRET_CL;
     stubEngage();
     const log = fakeLog();
-    await clearEngageAccount(env, log, "user-1");
+    await clearEngageAccount(env, log, "user-1", 0);
     expect(calls).toEqual([]);
     expect(log.warn).toHaveBeenCalledWith("engage.account.secret-missing");
+  });
+
+  it("doesn't retry a refusal, such as a wrong secret", async () => {
+    stubEngage(403);
+    const log = fakeLog();
+    await clearEngageAccount(env, log, "user-1", 0);
+    expect(calls).toHaveLength(1);
+    expect(log.warn.mock.calls).toEqual([["engage.account.failed", { status: 403 }]]);
+  });
+
+  it("retries once after a rate limit", async () => {
+    stubEngage(429, 204);
+    const log = fakeLog();
+    await clearEngageAccount(env, log, "user-1", 0);
+    expect(calls).toHaveLength(2);
+    expect(log.warn.mock.calls).toEqual([["engage.account.retry", { status: 429 }]]);
   });
 
   it("retries once after a failure", async () => {
     stubEngage(503, 204);
     const log = fakeLog();
-    await clearEngageAccount(env, log, "user-1");
+    await clearEngageAccount(env, log, "user-1", 0);
     expect(calls).toHaveLength(2);
     expect(log.warn.mock.calls).toEqual([["engage.account.retry", { status: 503 }]]);
   });
@@ -57,7 +73,7 @@ describe("clearing a deleted account's reference in Engage (#1710)", () => {
   it("gives up after the retry, logging the status and never the user id", async () => {
     stubEngage(new TypeError("network down"), 500);
     const log = fakeLog();
-    await clearEngageAccount(env, log, "user-1");
+    await clearEngageAccount(env, log, "user-1", 0);
     expect(calls).toHaveLength(2);
     expect(log.warn.mock.calls).toEqual([
       ["engage.account.retry", { err: expect.any(TypeError) }],
