@@ -3,7 +3,8 @@ import { createDisclosure } from "./modal-utils.js";
 import { FIELD_LIMITS } from "../shared/field-limits.js";
 import { showCharactersLeft } from "./characters-left.js";
 import { createThemeToggle } from "./theme-toggle.js";
-import { renderTurnstile } from "./turnstile.js";
+import { ENGAGE_SITEKEY, renderTurnstile } from "./turnstile.js";
+import { currentAccountRef, engageErrorMessage, engageSubmission, sendToEngage } from "./engage-submission.js";
 import { validAppVersion } from "../shared/app-version.js";
 import { preselectSection } from "./preselect-section.js";
 
@@ -30,13 +31,15 @@ messageEl.maxLength = FIELD_LIMITS.message;
 showCharactersLeft(messageEl, document.getElementById("report-issue-message-count"));
 document.getElementById("report-issue-email").maxLength = FIELD_LIMITS.contactEmail;
 
+const EMPTY_MESSAGE = 'Please fill in the "What happened?" field.';
+
 function showError(message) {
   errorEl.textContent = message;
   errorEl.hidden = false;
   errorEl.focus();
 }
 
-const turnstile = renderTurnstile("#turnstile-widget");
+const turnstile = renderTurnstile("#turnstile-widget", ENGAGE_SITEKEY);
 
 // undefined, not "", so JSON.stringify omits it and the server sees it as absent.
 const sourcePage = document.referrer || undefined;
@@ -75,7 +78,7 @@ form.addEventListener("submit", async event => {
 
   // Names the field: the error sits well below it.
   if (!messageEl.value.trim()) {
-    showError('Please fill in the "What happened?" field.');
+    showError(EMPTY_MESSAGE);
     submitBtn.disabled = false;
     return;
   }
@@ -88,21 +91,20 @@ form.addEventListener("submit", async event => {
   }
 
   try {
-    const res = await fetch("/-/api/report-issue", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const res = await sendToEngage(
+      engageSubmission({
+        kind: "issue",
         message: messageEl.value,
-        contactEmail: document.getElementById("report-issue-email").value || undefined,
-        section: document.getElementById("report-issue-section").value || undefined,
+        contactEmail: document.getElementById("report-issue-email").value,
+        section: document.getElementById("report-issue-section").value,
         sourcePage,
         appVersion,
         turnstileToken,
-        reportedUsername,
-        reportedEntryId,
-        errorRef,
+        hpx: document.getElementById("report-issue-hpx").value,
+        accountRef: await currentAccountRef(),
+        context: { reportedUsername, reportedEntryId, errorRef },
       }),
-    });
+    );
 
     if (res.ok) {
       form.hidden = true;
@@ -111,7 +113,13 @@ form.addEventListener("submit", async event => {
     }
 
     const data = await res.json().catch(() => null);
-    showError(data?.error || `Couldn't send your report (${res.status}).`);
+    showError(
+      engageErrorMessage(res.status, data, {
+        tooMany: "Too many reports from this connection. Please try again later.",
+        empty: EMPTY_MESSAGE,
+        fallback: `Couldn't send your report (${res.status}).`,
+      }),
+    );
   } catch {
     showError("Network error -- check your connection and try again.");
   } finally {

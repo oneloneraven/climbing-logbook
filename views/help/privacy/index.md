@@ -19,6 +19,7 @@ Climbing Logbook is an independent project run from the UK. Under data protectio
 - **Your account.** Your username, your email address and your password. We can't read your password, because it's hashed (scrambled in a way that can't be reversed). If you turn on [Two-Factor Authentication (2FA)](/help/two-factor-authentication/), we also keep its setup key and your backup codes, encrypted, until you turn it off or delete your account. If you add a [passkey](/help/passkeys/), we keep its public key, which is no use on its own, until you remove it or delete your account. Your fingerprint or face never leaves your device.
 - **Your logbook.** The climbs, places and settings you add.
 - **Health information**, only if you agree to the Health Data Agreement. See [Health information](#health-data).
+- **Your feedback and reports.** What you write, your email if you give it, the page and part of the app you sent it from, and which account sent it if you're logged in. If you let us quote your feedback, we also keep how you'd like to be credited, and your name if you give it.
 
 We use this to run the app for you, for the reasons below, and for nothing else.
 
@@ -30,11 +31,13 @@ We use this to run the app for you, for the reasons below, and for nothing else.
 - **To improve how we read hardest moves.** The hardest moves you write when opted in to the *Check our beta* channel are saved without your name or account, and deleted after 90 days.
 - **To see which pages get used,** through visit statistics that don't use cookies.
 - **To answer your feedback and reports,** and to act on reports about content.
+- **To quote your feedback,** only if you tick the box to say we can, credited the way you chose. You can ask us to stop at any time: [contact us](/help/report-an-issue/).
 
 ## How long we keep it
 
 - **Email links**, for checking your email address or resetting your password, are deleted within a day of expiring.
 - **Your account and logbook** stay until you delete your account in My Account, which removes them. Our backups drop them within 30 days.
+- **Your feedback and reports** are kept for 12 months after we've finished with them, or after the last message about them. A quote we're allowed to share stays until you ask us to stop.
 
 ## Who can see your logbook
 

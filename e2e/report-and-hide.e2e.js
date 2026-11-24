@@ -1,11 +1,23 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { clearCookies } from "./wdio-browser.js";
+import { ENGAGE_SUBMISSIONS_URL } from "../client/engage-submission.js";
+import { clearCookies, recordFetches } from "./wdio-browser.js";
+import { mockEngage } from "./wdio-engage.js";
 import { claimOwner, gotoSyncedLog } from "./wdio-owner.js";
 import { mockTurnstile, waitForTurnstile } from "./wdio-turnstile.js";
 
 const ADMIN = "http://admin.localhost:8787";
 const contains = text => expect.stringContaining(text);
 const rowWith = text => $(`//tr[contains(normalize-space(.), ${JSON.stringify(text)})]`);
+
+// Reports now go to Engage; the admin pages still read the legacy table until #1712, so seed it through its endpoint.
+async function seedLegacyReport({ message, username, entryId }) {
+  const res = await fetch(new URL("/-/api/report-issue", await browser.getUrl()), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, turnstileToken: "e2e", reportedUsername: username, reportedEntryId: entryId }),
+  });
+  if (!res.ok) throw new Error(`seeding the legacy report: ${res.status} ${await res.text()}`);
+}
 
 describe("report and hide", () => {
   it("a visitor reports a climb on a public logbook, the admin hides it, and only its owner still sees it", async () => {
@@ -30,16 +42,26 @@ describe("report and hide", () => {
     const reportHref = await climbLink.getAttribute("href");
     expect(reportHref).toContain(`logbook=${owner.username}&climb=`);
 
+    const entryId = new URL(reportHref).searchParams.get("climb");
     await mockTurnstile();
+    await mockEngage();
+    const fetches = await recordFetches();
     await browser.url(new URL(reportHref).pathname + new URL(reportHref).search);
     await expect($("#report-about")).toHaveTextContent(
       `You're reporting an entry in ${owner.username}'s public logbook.`,
     );
     await expect($("#report-issue-section")).toHaveValue("public_logbook");
     await waitForTurnstile();
-    await $("#report-issue-message").setValue(`Scam link in the notes (${climb})`);
+    const message = `Scam link in the notes (${climb})`;
+    await $("#report-issue-message").setValue(message);
+    const submitted = fetches.next(ENGAGE_SUBMISSIONS_URL, "POST");
     await $("#report-issue-submit-btn").click();
     await expect($("#report-issue-success")).toBeDisplayed();
+    const sent = JSON.parse((await submitted).body);
+    expect(sent.context).toEqual({ reportedUsername: owner.username, reportedEntryId: entryId });
+    expect(sent).not.toHaveProperty("accountRef");
+
+    await seedLegacyReport({ message, username: owner.username, entryId });
 
     await browser.url(`${ADMIN}/reports`);
     await $("#submission-list").$(`a*=${climb}`).click();
