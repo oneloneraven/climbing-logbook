@@ -7,6 +7,7 @@ import { createBetaGateAfterHook } from "./beta-gate.js";
 import { createAccountStatusHooks } from "./account-status.js";
 import { createEmailSender } from "./email.js";
 import { releaseInvites } from "./remove-account.js";
+import { clearEngageAccountLater } from "./engage-account.js";
 import { requireTermsAgreement, stampTermsAgreement } from "./terms.js";
 import { twoStepRecovery } from "./two-step-recovery.js";
 import { apexOrigin, isLocalHost, isRealDomain, ownedPageUrl } from "./hosts.js";
@@ -163,6 +164,7 @@ export function createAuth(env, hostname, log) {
           await refuseDemoDeletion(env, user.id);
           await env.LOGBOOK_DB.batch(releaseInvites(env, user.id));
         },
+        afterDelete: async user => clearEngageAccountLater(env, log, user.id),
       },
       additionalFields: {
         termsVersion: { type: "string", required: false, input: false },

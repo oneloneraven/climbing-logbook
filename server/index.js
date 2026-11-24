@@ -36,7 +36,7 @@ async function handleRequest(request, env, ctx, log) {
   const { hostname, pathname } = new URL(request.url);
   const method = request.method;
 
-  if (isAdminHost(hostname)) return handleAdminHost(request, env);
+  if (isAdminHost(hostname)) return handleAdminHost(request, env, log);
 
   // App hosts serve login on their own origin so an installed app keeps its cookies.
   if (pathname === "/-/login" && (method === "GET" || method === "HEAD")) {

@@ -1,4 +1,5 @@
 import { env, exports } from "cloudflare:workers";
+import { ENGAGE_ACCOUNTS_URL } from "../server/lib/engage-account.js";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   BASE_URL,
@@ -192,6 +193,18 @@ describe("deleting", () => {
     expect(report.user_id).toBeNull();
     expect(await auditActions()).toEqual([`delete ${user.username}`]);
     expect((await act(user.userId, "suspend")).status).toBe(404);
+  });
+
+  it.each(["delete", "ban"])("%s clears the account's reference in Engage (#1710)", async action => {
+    env.ACCOUNT_SECRET_CL = "test-account-secret";
+    const user = await newUser();
+    const engage = vi.fn(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", engage);
+
+    expect((await act(user.userId, action, { confirm: user.username })).status).toBe(204);
+    await vi.waitFor(() => expect(engage).toHaveBeenCalledTimes(1));
+    expect(String(engage.mock.calls[0][0])).toBe(`${ENGAGE_ACCOUNTS_URL}${user.userId}`);
+    delete env.ACCOUNT_SECRET_CL;
   });
 });
 

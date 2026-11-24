@@ -97,7 +97,7 @@ creates the bucket, and is safe to re-run.
 | `promote.yml` | manual | Deploys a tag to production (migrations first) |
 | `infra.yml` | PR or merge touching `infra/**` or the workflow itself, or manual | Plans to a file, refuses any delete or replacement (a manual run on `main` may make exactly the deletes it lists in `expected_deletes`), applies that exact plan on `main`, then syncs generated config |
 | `synthetic-check.yml` | after deploys, on a schedule, or manual | Logs in as the monitoring account and probes production |
-| `sync-worker-secrets.yml` | manual, on `main` | Sets `OWNER_EMAIL` on the production Worker and `TURNSTILE_SECRET_KEY` on production and beta, from the `production` environment's secrets |
+| `sync-worker-secrets.yml` | manual, on `main` | Sets `OWNER_EMAIL` on the production Worker, and `TURNSTILE_SECRET_KEY` and `ACCOUNT_SECRET_CL` on production and beta, from the `production` environment's secrets |
 | `bootstrap-state.yml` | manual | Creates the state bucket |
 | `project-status-sync.yml` | branch or PR events | Moves the linked issue on the project board |
 | `scorecard.yml` | weekly, merge, or a branch protection change | OpenSSF Scorecard; results go to the Security tab and the public Scorecard API |
@@ -157,8 +157,9 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 | `EMAIL` | Worker binding (`send_email` in `wrangler.jsonc`) | Cloudflare Email Sending: verification, password-reset and account-notice email, sent from `myaccount@climbinglogbook.com`. A binding, so there is no key to hold or rotate. Every environment that sends declares it (bindings aren't inherited); `e2e` doesn't, since it never sends |
 | `EMAIL_DELIVERY` | Worker variable (`wrangler.jsonc`) | `"off"` in `e2e` skips every email, since e2e registers and resets passwords by the dozen, and in `preview` and PR previews, where every Turnstile check passes; `"log"` in local dev prints each email's link to the terminal (only when `APP_ENV` is `development`). Any other value sends through the `EMAIL` binding: production and beta leave it unset, and unit tests set `"cloudflare"` |
 | `TURNSTILE_SECRET_KEY` | `production` environment secret, synced to the production and beta Workers | Turnstile verification, with the value from the register widget's Turnstile page in the dashboard (the widget lives in the identity stack, coraxia); preview and local dev use Cloudflare's public always-passes test secret |
+| `ACCOUNT_SECRET_CL` | `production` environment secret, synced to the production and beta Workers | Lets account deletion clear the account's reference on its feedback and reports in Engage (`server/lib/engage-account.js`, #1710), with the value Engage holds for the `cl` product; missing, the deletion still happens and the Worker logs `engage.account.secret-missing`. Local dev, previews and tests run without it |
 
-`OWNER_EMAIL` and `TURNSTILE_SECRET_KEY` reach the Workers one way: store
+`OWNER_EMAIL`, `TURNSTILE_SECRET_KEY` and `ACCOUNT_SECRET_CL` reach the Workers one way: store
 each as a secret of the `production` environment on GitHub
 (`gh secret set <name> --env production`), then run "Sync Worker secrets" on
 `main`. It pipes each value to `wrangler secret put` on stdin, fails when one

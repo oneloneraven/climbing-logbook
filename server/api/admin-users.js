@@ -1,6 +1,7 @@
 import { json, parseJsonBody } from "../lib/json.js";
 import { normaliseIdentity } from "../lib/account-status.js";
 import { releaseInvites } from "../lib/remove-account.js";
+import { clearEngageAccountLater } from "../lib/engage-account.js";
 import { attachChildRows } from "./entries.js";
 
 const LIST_LIMIT = 500;
@@ -99,7 +100,7 @@ const ACTIONS = {
 };
 const NEEDS_CONFIRMATION = new Set(["delete", "ban"]);
 
-export async function actOnUser(request, env, id, action) {
+export async function actOnUser(request, env, id, action, log) {
   if (!Object.hasOwn(ACTIONS, action)) return json({ error: "Not found" }, 404);
   const user = await findUser(env, id);
   if (!user) return json({ error: "Not found" }, 404);
@@ -109,7 +110,10 @@ export async function actOnUser(request, env, id, action) {
   }
 
   await ACTIONS[action](env, user);
-  if (action === "delete" || action === "ban") return new Response(null, { status: 204 });
+  if (action === "delete" || action === "ban") {
+    clearEngageAccountLater(env, log, user.id);
+    return new Response(null, { status: 204 });
+  }
   return json(toUser(await findUser(env, id)));
 }
 
