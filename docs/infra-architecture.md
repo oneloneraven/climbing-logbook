@@ -111,8 +111,8 @@ and `CLOUDFLARE_INFRA_APPLY_TOKEN` (OpenTofu apply and the state bootstrap).
 The deploy and apply tokens are secrets of the `production` and `infra`
 GitHub environments, which only `main` (and `v*` tags, for `production`)
 can use, so no PR job can deploy or change DNS. Each token expires after a
-year; `node scripts/create-cloudflare-ci-tokens.mjs` creates them again
-and revokes the ones it replaces.
+year; the bootstrap plugin's `secrets.mjs cloudflare-tokens --rotate`
+creates them again (Cloudflare token permissions, below).
 
 **Supply chain** (#1040). Every third-party action is pinned to a full
 commit SHA, with its tag as a trailing comment, and Dependabot keeps the
@@ -168,25 +168,29 @@ another. Local dev reads them from `.dev.vars` (gitignored).
 
 ### Cloudflare token permissions
 
-`node scripts/create-cloudflare-ci-tokens.mjs` creates all four as
-account-owned tokens, each expiring after a year, and revokes any it
-replaces. It needs a token with Account API Tokens: Edit.
+The bootstrap plugin's `node <project-bootstrap>/skills/bootstrap/scripts/secrets.mjs cloudflare-tokens . --rotate`
+creates all four as account-owned tokens, each expiring after a year, from
+the definitions in `.bootstrap/cloudflare/tokens.json`. It reads each new
+token back and checks its policies before storing it in Pass and setting the
+GitHub secret, and revokes the tokens it made last time. It asks for a
+bootstrap token with Account API Tokens Write, and deletes it at the end.
+Don't re-render `.bootstrap/` before running it: the plugin's template
+doesn't match this stack, so the committed file is the source.
 
-- **Preview:** Workers Scripts Write, D1 Write, Account Settings Read.
-- **Deploy:** the same, plus Workers Routes Write on the zone.
-- **Infra apply:** copied from the current "CI infra apply" token (the
-  first run copied the original "(classic)" token, without its Workers
-  grants, which OpenTofu doesn't use).
-  Account: Access: Apps Write, Access: Policies Write, Notifications Write, D1 Write,
-  Turnstile Sites Write, Email Routing Addresses Write, Account WAF,
-  Rulesets and Rule Lists Write, Workers R2 Storage Write, Zero Trust
-  Write. Zone `climbinglogbook.com`: DNS, Zone WAF, Zone Settings, Cache
-  Settings, Dynamic URL Redirects, Email Routing Rules and Bot Management
-  Write (the script adds this last one, which the original token lacked).
+- **Preview:** Individual Workers Editor on `climbing-logbook-preview`,
+  Account Settings Read, D1 Write.
+- **Deploy:** Individual Workers Editor on `climbing-logbook` and
+  `climbing-logbook-beta`, Account Settings Read, D1 Write, and Workers
+  Routes Write on the zone.
+- **Infra apply:** what `infra/` manages, and nothing more. Account: D1 and
+  Notifications Write. Zone `climbinglogbook.com`: DNS, Zone Settings, Zone
+  WAF, Cache Settings, Transform Rules, Dynamic URL Redirects and Bot
+  Management Write. Access, Turnstile and Zero Trust belong to the identity
+  stack, coraxia (#1707).
 - **Infra plan:** the read-only version of each apply permission.
 
-**Never add a per-Worker granular policy** (`Individual Workers Editor` and
-similar) by editing a token in place. Writes that included one failed or
+**Never edit a token's policies in place**, above all to add a per-Worker
+policy (`Individual Workers Editor` and similar): reissue it instead. Writes that included one failed or
 silently left the token with no policies at all, which took days to
 diagnose. Verify a token's real contents with `GET /accounts/{id}/tokens/{id}`,
 not the dashboard labels.

@@ -20,9 +20,11 @@ The only thing *not* managed here, by design: the logbook's actual data
 
 2. **Set repo secrets/variables** (Settings → Secrets and variables →
    Actions):
-   - The four Cloudflare tokens: run `node scripts/create-cloudflare-ci-tokens.mjs`,
-     which creates them and stores them as repo and environment secrets
-     (`docs/infra-architecture.md`, Cloudflare token permissions)
+   - The four Cloudflare tokens: run the bootstrap plugin's
+     `node <project-bootstrap>/skills/bootstrap/scripts/secrets.mjs cloudflare-tokens . --rotate`, which creates them from
+     `.bootstrap/cloudflare/tokens.json`, stores them in Pass and sets them as
+     repo and environment secrets (`docs/infra-architecture.md`, Cloudflare
+     token permissions)
    - `TF_STATE_ACCESS_KEY_ID` / `TF_STATE_SECRET_ACCESS_KEY` (secrets) —
      from step 1
    - `CLOUDFLARE_ACCOUNT_ID` (variable, not secret — not confidential)
@@ -101,10 +103,10 @@ dashboard or elsewhere, and why:
   `email.tf`.
 - **The Workers Issues alert.** The provider has no alert type for it yet
   (`workers_observability_real_time_issue`).
-- **Credentials:** the four CI API tokens
-  (`scripts/create-cloudflare-ci-tokens.mjs`), the R2 token for the state
-  bucket, and Worker secrets. Credentials are created by hand or by that
-  script, never stored in state.
+- **Credentials:** the four CI API tokens (the bootstrap plugin's
+  `secrets.mjs cloudflare-tokens`), the R2 token for the state bucket, and
+  Worker secrets. Credentials are created by hand or by that script, never
+  stored in state.
 - **Resend's domain verification** happens in Resend; only its DNS records
   live here.
 
