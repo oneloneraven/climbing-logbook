@@ -633,8 +633,9 @@ climbing-status-picker:has(input:focus-visible) .status-picker-frame {
 
 /* Haiku read as poems: italic, gold, under a large quote mark. */
 .haiku {
+  --haiku-mark-space: 1.9rem;
   position: relative;
-  padding-left: 1.9rem;
+  padding-left: var(--haiku-mark-space);
   font-style: italic;
   line-height: 1.7;
   color: var(--haiku-ink);
@@ -649,6 +650,13 @@ climbing-status-picker:has(input:focus-visible) .status-picker-frame {
   font-size: 2.8rem;
   line-height: 1;
   color: var(--color-accent);
+}
+
+/* Centred, the mark's space is matched on the right so the lines centre under what's above. */
+.haiku-centred {
+  width: fit-content;
+  margin-inline: auto;
+  padding-right: var(--haiku-mark-space);
 }
 
 /* The hardest-move read-back: each word tinted by what the beta interpreter read it as. */
