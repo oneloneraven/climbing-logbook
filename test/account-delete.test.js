@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { ENGAGE_ACCOUNTS_URL } from "../server/lib/engage-account.js";
 import { BASE_URL, createAuthedSession, jsonRequest, resetAuthTables, seedPlace } from "./support.js";
 
 const PASSWORD = "correct-horse-battery-staple";
@@ -37,6 +38,36 @@ const count = async (table, column, value) =>
   (await env.LOGBOOK_DB.prepare(`SELECT count(*) AS n FROM ${table} WHERE ${column} = ?`).bind(value).first()).n;
 
 describe("deleting your own account (#310)", () => {
+  afterEach(() => {
+    delete env.ACCOUNT_SECRET_CL;
+    vi.unstubAllGlobals();
+  });
+
+  it("clears the account's reference in Engage once the account is gone (#1710)", async () => {
+    env.ACCOUNT_SECRET_CL = "test-account-secret";
+    const { cookie, userId } = await createAuthedSession();
+    const engage = vi.fn(async () => new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", engage);
+
+    expect((await deleteAccount(cookie, { password: PASSWORD })).status).toBe(200);
+    await vi.waitFor(() => expect(engage).toHaveBeenCalledTimes(1));
+    const [url, init] = engage.mock.calls[0];
+    expect(String(url)).toBe(`${ENGAGE_ACCOUNTS_URL}${userId}`);
+    expect(init.method).toBe("DELETE");
+  });
+
+  it("still deletes the account when Engage is down (#1710)", async () => {
+    env.ACCOUNT_SECRET_CL = "test-account-secret";
+    const { cookie, userId } = await createAuthedSession();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 503 })),
+    );
+
+    expect((await deleteAccount(cookie, { password: PASSWORD })).status).toBe(200);
+    expect(await count('"user"', "id", userId)).toBe(0);
+  });
+
   it("deletes the account and everything in it, signs it out, and frees its invite", async () => {
     const { cookie, userId } = await ownerWithData();
     const res = await deleteAccount(cookie, { password: PASSWORD });

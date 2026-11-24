@@ -116,7 +116,7 @@ function safeDecode(value) {
   }
 }
 
-async function handleAdminApi(request, env, pathname) {
+async function handleAdminApi(request, env, pathname, log) {
   const method = request.method;
   if (pathname === "/-/api/admin/test/throw") throw new Error("Test error from the admin host (#1032)");
   if (pathname === "/-/api/admin/counts") return method === "GET" ? unreadCounts(env) : null;
@@ -130,7 +130,8 @@ async function handleAdminApi(request, env, pathname) {
   const logbook = pathname.match(/^\/-\/api\/admin\/users\/([^/]+)\/logbook$/);
   if (logbook) return method === "GET" ? viewLogbook(env, safeDecode(logbook[1])) : null;
   const userAction = pathname.match(/^\/-\/api\/admin\/users\/([^/]+)\/([a-z]+)$/);
-  if (userAction) return method === "POST" ? actOnUser(request, env, safeDecode(userAction[1]), userAction[2]) : null;
+  if (userAction)
+    return method === "POST" ? actOnUser(request, env, safeDecode(userAction[1]), userAction[2], log) : null;
   const entryAction = pathname.match(/^\/-\/api\/admin\/entries\/([^/]+)\/(hide|unhide)$/);
   if (entryAction)
     return method === "POST" ? setEntryHidden(env, safeDecode(entryAction[1]), entryAction[2] === "hide") : null;
@@ -147,7 +148,7 @@ async function handleAdminApi(request, env, pathname) {
   return null;
 }
 
-export async function handleAdminHost(request, env) {
+export async function handleAdminHost(request, env, log) {
   if (!(await verifyAccessRequest(request, env))) return new Response("Forbidden", { status: 403 });
 
   const { pathname } = new URL(request.url);
@@ -156,7 +157,7 @@ export async function handleAdminHost(request, env) {
   if (pathname === "/" && isRead) return Response.redirect(new URL("/reports", request.url).href, 302);
   if (PAGES.has(pathname) && isRead) return env.ASSETS.fetch(new Request(new URL("/admin/", request.url), request));
   if (pathname.startsWith("/-/api/admin/")) {
-    return (await handleAdminApi(request, env, pathname)) ?? json({ error: "Not found" }, 404);
+    return (await handleAdminApi(request, env, pathname, log)) ?? json({ error: "Not found" }, 404);
   }
   if (pathname.startsWith("/-/") && isRead) return env.ASSETS.fetch(request);
   return new Response("Not found", { status: 404 });
