@@ -145,12 +145,14 @@ export async function viewLogbook(env, id) {
 // Hiding takes a climb off its owner's public logbook; the sync cursor moves so the owner's devices learn of it.
 export async function setEntryHidden(env, entryId, hidden) {
   const entry = await env.LOGBOOK_DB.prepare(
-    `SELECT e.id, e.name, e.user_id, u.displayUsername AS username, u.email
-     FROM entries e JOIN "user" u ON u.id = e.user_id WHERE e.id = ? AND e.deleted_at IS NULL`,
+    `SELECT e.id, e.name, e.user_id, u.displayUsername AS username, u.email, st.is_demo
+     FROM entries e JOIN "user" u ON u.id = e.user_id LEFT JOIN settings st ON st.user_id = e.user_id
+     WHERE e.id = ? AND e.deleted_at IS NULL`,
   )
     .bind(entryId)
     .first();
   if (!entry) return json({ error: "Not found" }, 404);
+  if (entry.is_demo) return json({ error: "The demo accounts can't be changed here." }, 409);
 
   const owner = { id: entry.user_id, username: entry.username, email: entry.email };
   await env.LOGBOOK_DB.batch([

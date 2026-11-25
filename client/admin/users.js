@@ -22,7 +22,7 @@ const SPORT_STYLES = { lead: "Lead", top_rope: "Top rope" };
 const describeTag = tag =>
   [tag.side, tag.limb, tag.holdType, tag.movementStyle, tag.wallAngle, tag.difficulty].filter(Boolean).join(" ");
 
-function logbookItem(entry) {
+function logbookItem(entry, { canHide }) {
   const item = el("li", "flex flex-col gap-1 py-3 border-b border-border");
   const top = el("span", "flex flex-wrap items-baseline gap-x-2");
   const name = el("span", "text-sm font-bold break-words", entry.name);
@@ -52,6 +52,7 @@ function logbookItem(entry) {
   if (entry.notes) item.append(el("p", "text-sm whitespace-pre-wrap break-words", entry.notes));
   // Shown, not linked: an admin shouldn't follow a link someone else posted.
   if (entry.video) item.append(el("span", "text-xs text-muted break-all", entry.video));
+  if (!canHide) return item;
   const toggle = el("button", "btn self-start mt-1", entry.hidden ? "Unhide this entry" : "Hide this entry");
   toggle.type = "button";
   toggle.dataset.entryId = entry.id;
@@ -224,7 +225,7 @@ export function startUsers() {
       const { entries } = await api(`users/${encodeURIComponent(user.id)}/logbook`);
       if (selected()?.id !== user.id) return;
       logbookEntries = entries;
-      logbookList.replaceChildren(...entries.map(logbookItem));
+      logbookList.replaceChildren(...entries.map(entry => logbookItem(entry, { canHide: !user.isDemo })));
       logbookStatus.textContent = entries.length
         ? `${entries.length} ${entries.length === 1 ? "climb" : "climbs"}`
         : "No climbs yet.";
@@ -246,7 +247,7 @@ export function startUsers() {
       });
       const updated = { ...entry, hidden };
       logbookEntries = logbookEntries.map(candidate => (candidate.id === entry.id ? updated : candidate));
-      const item = logbookItem(updated);
+      const item = logbookItem(updated, { canHide: true });
       button.closest("li").replaceWith(item);
       item.querySelector("button[data-entry-id]").focus();
     } catch {

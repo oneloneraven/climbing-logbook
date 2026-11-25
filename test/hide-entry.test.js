@@ -89,6 +89,13 @@ describe("hiding a climb", () => {
     expect((await publicNames(owner.username)).toSorted()).toEqual(["Kept", "Reported"]);
   });
 
+  it("leaves a demo account's climbs alone (#1712)", async () => {
+    const owner = await logbookWithClimbs();
+    await env.LOGBOOK_DB.prepare(`UPDATE settings SET is_demo = 1 WHERE user_id = ?`).bind(owner.userId).run();
+    expect((await admin(`/-/api/admin/entries/${owner.reported}/hide`, { method: "POST" })).status).toBe(409);
+    expect((await publicNames(owner.username)).toSorted()).toEqual(["Kept", "Reported"]);
+  });
+
   it("knows only real climbs and its own two actions", async () => {
     expect((await admin("/-/api/admin/entries/nope/hide", { method: "POST" })).status).toBe(404);
     expect((await admin("/-/api/admin/entries/nope/delete", { method: "POST" })).status).toBe(404);

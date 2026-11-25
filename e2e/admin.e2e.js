@@ -69,6 +69,15 @@ describe("admin", () => {
     await expectEventually(labels, [{ internal: true, demo: 0 }]);
   });
 
+  it("a demo account's logbook offers no way to hide its climbs (#1712)", async () => {
+    await browser.url(`${ADMIN}/users`);
+    await (await findUser("advanceddemo")).click();
+    await $("#view-logbook").click();
+    await expect($("#logbook-status")).toHaveTextContent(expect.stringMatching(/\d+ climbs?/));
+    await expect($$("#logbook-list li")).not.toBeElementsArrayOfSize(0);
+    await expect($$("#logbook-list button")).toBeElementsArrayOfSize(0);
+  });
+
   it("a user is found, suspended, unsuspended and deleted, and each step is in the activity log", async () => {
     const owner = await claimOwner();
     await browser.setViewport({ width: 312, height: 680 });
