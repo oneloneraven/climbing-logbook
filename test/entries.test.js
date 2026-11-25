@@ -425,10 +425,11 @@ describe("handlePost", () => {
     expect(entry.id.length).toBeGreaterThan(0);
   });
 
-  it("rejects malformed JSON", async () => {
-    const res = await post("{not json");
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("Invalid JSON");
+  it("rejects malformed JSON, on create and on edit", async () => {
+    for (const res of [await post("{not json"), await put("{not json")]) {
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toBe("Invalid JSON");
+    }
   });
 
   it.each([

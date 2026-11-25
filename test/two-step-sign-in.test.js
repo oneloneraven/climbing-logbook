@@ -255,6 +255,38 @@ describe("recovering without the device (#1436)", () => {
     expect(await (await recovery("start", "made-up")).json()).toMatchObject({ state: "invalid" });
   });
 
+  it("says a finished recovery is done, and its link can't cancel it (#1731)", async () => {
+    await turnOn();
+    const { pending } = await signInWithPassword();
+    await authPost("/-/api/auth/two-factor/recovery/request", { Cookie: pending });
+    const token = tokenFrom(sentEmails().at(-1).html);
+    const { effectiveAt } = await (await recovery("start", token)).json();
+    await completeDueRecoveries(env, { sendTwoStepSwitchedOff: vi.fn() }, effectiveAt);
+    const sent = sentEmails().length;
+
+    expect(await (await recovery("status", token)).json()).toMatchObject({ state: "done" });
+    expect(await (await recovery("cancel", token)).json()).toEqual({ state: "done" });
+    expect(sentEmails()).toHaveLength(sent);
+  });
+
+  it.each([
+    ["no token", undefined],
+    ["an empty token", ""],
+    ["a token that isn't text", 42],
+  ])("treats a link with %s as invalid (#1731)", async (_label, token) => {
+    for (const action of ["status", "start", "cancel"]) {
+      expect(await (await recovery(action, token)).json(), action).toMatchObject({ state: "invalid" });
+    }
+  });
+
+  it("sends nothing when My Account cancels with no recovery pending (#1731)", async () => {
+    await turnOn();
+    const sent = sentEmails().length;
+    const res = await jsonRequest("POST", "/-/api/auth/two-factor/recovery/cancel-mine", {}, { Cookie: cookie });
+    expect(await res.json()).toEqual({ state: "cancelled" });
+    expect(sentEmails()).toHaveLength(sent);
+  });
+
   it("cleans up finished requests after 30 days", async () => {
     await turnOn();
     const { pending } = await signInWithPassword();
