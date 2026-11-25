@@ -89,6 +89,20 @@ describe("hiding a climb", () => {
     expect((await publicNames(owner.username)).toSorted()).toEqual(["Kept", "Reported"]);
   });
 
+  it("keeps it out of the public list for its location (#1731)", async () => {
+    const owner = await logbookWithClimbs();
+    const { location_id: locationId } = await env.LOGBOOK_DB.prepare(
+      `SELECT p.location_id FROM entries e JOIN places p ON p.id = e.place_id WHERE e.id = ?`,
+    )
+      .bind(owner.reported)
+      .first();
+    const byLocation = `entries?locationId=${locationId}`;
+    expect((await publicNames(owner.username, byLocation)).toSorted()).toEqual(["Kept", "Reported"]);
+
+    await admin(`/-/api/admin/entries/${owner.reported}/hide`, { method: "POST" });
+    expect(await publicNames(owner.username, byLocation)).toEqual(["Kept"]);
+  });
+
   it("leaves a demo account's climbs alone (#1712)", async () => {
     const owner = await logbookWithClimbs();
     await env.LOGBOOK_DB.prepare(`UPDATE settings SET is_demo = 1 WHERE user_id = ?`).bind(owner.userId).run();

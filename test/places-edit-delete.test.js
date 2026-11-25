@@ -63,6 +63,21 @@ describe("renaming (#159)", () => {
     expect((await as("PUT", "/-/api/locations", { id: theirs.id, name: "Mine now" })).status).toBe(404);
     expect((await as("PUT", "/-/api/places", { id: theirArea.id, area: "Mine now" })).status).toBe(404);
   });
+
+  it.each([
+    ["a body that isn't JSON", "{not json", "Invalid JSON"],
+    ["an empty body", "null", "area must be a string"],
+    ["a name that isn't text", { area: 7 }, "area must be a string"],
+    ["a name over 50 characters", { area: "x".repeat(51) }, "Area can be up to 50 characters."],
+  ])("refuses to rename an area to %s (#1731)", async (_label, body, error) => {
+    const font = await location("Fontainebleau");
+    const cuvier = await place(font.id, "Bas Cuvier");
+    const res = await as("PUT", "/-/api/places", typeof body === "string" ? body : { id: cuvier.id, ...body });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe(error);
+    const stored = await env.LOGBOOK_DB.prepare(`SELECT area FROM places WHERE id = ?`).bind(cuvier.id).first();
+    expect(stored.area).toBe("Bas Cuvier");
+  });
 });
 
 describe("deleting an area (#160)", () => {
