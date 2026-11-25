@@ -160,6 +160,7 @@ export function startUsers() {
     toggleSuspend.textContent = user.suspended ? "Unsuspend" : "Suspend";
     if (logbookUserId !== user.id) {
       logbookUserId = user.id;
+      logbookEntries = [];
       logbookList.replaceChildren();
       logbookStatus.textContent = "";
     }
@@ -236,6 +237,7 @@ export function startUsers() {
     const button = e.target.closest("button[data-entry-id]");
     if (!button) return;
     const entry = logbookEntries.find(candidate => candidate.id === button.dataset.entryId);
+    if (!entry) return;
     error.hidden = true;
     button.disabled = true;
     try {
@@ -250,6 +252,7 @@ export function startUsers() {
     } catch {
       button.disabled = false;
       showError(SAVE_ERROR);
+      error.scrollIntoView({ block: "nearest" });
     }
   });
 
