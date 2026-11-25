@@ -113,7 +113,7 @@ describe("the admin host's Access check", () => {
 
 describe("a usage service token (#1728)", () => {
   const ENGAGE = "engage-client.access";
-  const serviceToken = (clientId = ENGAGE) => signToken({ email: undefined, common_name: clientId });
+  const serviceToken = (clientId = ENGAGE) => signToken({ email: undefined, sub: "", common_name: clientId });
   beforeEach(() => {
     env.USAGE_SERVICE_TOKENS = ` other-client.access , ${ENGAGE} `;
   });
@@ -167,6 +167,11 @@ describe("a usage service token (#1728)", () => {
 
   it("doesn't let a person's token in by carrying a listed client id", async () => {
     const token = await signToken({ email: "someone@example.com", common_name: ENGAGE });
+    expect((await admin("/-/api/admin/usage", { token })).status).toBe(403);
+  });
+
+  it("needs a service token's empty subject, not just a listed common name", async () => {
+    const token = await signToken({ email: undefined, sub: "cert-subject", common_name: ENGAGE });
     expect((await admin("/-/api/admin/usage", { token })).status).toBe(403);
   });
 });

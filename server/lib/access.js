@@ -58,8 +58,9 @@ export async function verifyAccessJwt(token, { teamDomain, aud, fetchImpl = fetc
     if (typeof payload.exp !== "number" || payload.exp + CLOCK_SKEW_S < nowS) return null;
     if (typeof payload.nbf === "number" && payload.nbf - CLOCK_SKEW_S > nowS) return null;
     if (typeof payload.email === "string" && payload.email) return { email: payload.email };
-    // A service token's JWT has no email; its common_name is the token's client id.
-    if (typeof payload.common_name === "string" && payload.common_name) return { clientId: payload.common_name };
+    // Cloudflare marks a service token's JWT with an empty sub and puts its client id in common_name.
+    if (payload.sub === "" && typeof payload.common_name === "string" && payload.common_name)
+      return { clientId: payload.common_name };
     return null;
   } catch {
     return null;
