@@ -57,24 +57,37 @@ export async function verifyAccessJwt(token, { teamDomain, aud, fetchImpl = fetc
     if (payload.iss !== `https://${teamDomain}`) return null;
     if (typeof payload.exp !== "number" || payload.exp + CLOCK_SKEW_S < nowS) return null;
     if (typeof payload.nbf === "number" && payload.nbf - CLOCK_SKEW_S > nowS) return null;
-    return typeof payload.email === "string" && payload.email ? { email: payload.email } : null;
+    if (typeof payload.email === "string" && payload.email) return { email: payload.email };
+    // Cloudflare marks a service token's JWT with an empty sub and puts its client id in common_name.
+    if (payload.sub === "" && typeof payload.common_name === "string" && payload.common_name)
+      return { clientId: payload.common_name };
+    return null;
   } catch {
     return null;
   }
 }
 
-// Off only in e2e and local dev; anywhere else, nothing passes without the team, audience and owner configured.
-export async function verifyAccessRequest(request, env, options = {}) {
-  if (env.ADMIN_ACCESS_CHECK === "off" && SKIPPABLE_ENVIRONMENTS.includes(env.APP_ENV ?? "")) return true;
+const listed = value =>
+  (value ?? "")
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+
+// Off only in e2e and local dev; anywhere else each role needs the team, the audience and its own allowlist.
+/** @returns {Promise<"owner" | "usage" | null>} */
+export async function accessRole(request, env, options = {}) {
+  if (env.ADMIN_ACCESS_CHECK === "off" && SKIPPABLE_ENVIRONMENTS.includes(env.APP_ENV ?? "")) return "owner";
   const token = request.headers.get("Cf-Access-Jwt-Assertion");
-  const owner = env.OWNER_EMAIL?.trim().toLowerCase();
-  if (!token || !env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD || !owner) return false;
+  if (!token || !env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) return null;
   const identity = await verifyAccessJwt(token, {
     teamDomain: env.ACCESS_TEAM_DOMAIN,
     aud: env.ACCESS_AUD,
     ...options,
   });
-  return identity?.email.toLowerCase() === owner;
+  if (!identity) return null;
+  const owner = env.OWNER_EMAIL?.trim().toLowerCase();
+  if ("email" in identity) return owner && identity.email.toLowerCase() === owner ? "owner" : null;
+  return listed(env.USAGE_SERVICE_TOKENS).includes(identity.clientId) ? "usage" : null;
 }
 
 export function clearAccessKeyCache() {

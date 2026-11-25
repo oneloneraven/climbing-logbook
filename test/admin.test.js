@@ -111,6 +111,71 @@ describe("the admin host's Access check", () => {
   });
 });
 
+describe("a usage service token (#1728)", () => {
+  const ENGAGE = "engage-client.access";
+  const serviceToken = (clientId = ENGAGE) => signToken({ email: undefined, sub: "", common_name: clientId });
+  beforeEach(() => {
+    env.USAGE_SERVICE_TOKENS = ` other-client.access , ${ENGAGE} `;
+  });
+  afterEach(() => {
+    delete env.USAGE_SERVICE_TOKENS;
+  });
+
+  it("reads usage when it's on the list", async () => {
+    const res = await admin("/-/api/admin/usage", { token: await serviceToken() });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toHaveProperty("activeUsers");
+  });
+
+  it.each([
+    ["GET", "/-/api/admin/users"],
+    ["GET", "/-/api/admin/audit"],
+    ["GET", "/-/api/admin/invites"],
+    ["POST", "/-/api/admin/invites"],
+    ["POST", "/-/api/admin/usage"],
+    ["HEAD", "/-/api/admin/usage"],
+    ["GET", "/users"],
+    ["GET", "/"],
+  ])("is refused %s %s", async (method, path) => {
+    expect((await admin(path, { method, token: await serviceToken() })).status).toBe(403);
+  });
+
+  it("is refused everywhere when it isn't on the list", async () => {
+    expect((await admin("/-/api/admin/usage", { token: await serviceToken("stranger.access") })).status).toBe(403);
+  });
+
+  it.each([
+    ["isn't set", undefined],
+    ["is blank", " , "],
+  ])("is refused when the list %s", async (_label, list) => {
+    if (list === undefined) delete env.USAGE_SERVICE_TOKENS;
+    else env.USAGE_SERVICE_TOKENS = list;
+    expect((await admin("/-/api/admin/usage", { token: await serviceToken() })).status).toBe(403);
+  });
+
+  it("is refused when the audience isn't configured", async () => {
+    delete env.ACCESS_AUD;
+    expect((await admin("/-/api/admin/usage", { token: await serviceToken() })).status).toBe(403);
+  });
+
+  it("doesn't need the owner's email to be set, and doesn't change the owner's access", async () => {
+    expect((await adminJson("/-/api/admin/users")).status).toBe(200);
+    delete env.OWNER_EMAIL;
+    expect((await admin("/-/api/admin/usage", { token: await serviceToken() })).status).toBe(200);
+    expect((await adminJson("/-/api/admin/usage")).status).toBe(403);
+  });
+
+  it("doesn't let a person's token in by carrying a listed client id", async () => {
+    const token = await signToken({ email: "someone@example.com", common_name: ENGAGE });
+    expect((await admin("/-/api/admin/usage", { token })).status).toBe(403);
+  });
+
+  it("needs a service token's empty subject, not just a listed common name", async () => {
+    const token = await signToken({ email: undefined, sub: "cert-subject", common_name: ENGAGE });
+    expect((await admin("/-/api/admin/usage", { token })).status).toBe(403);
+  });
+});
+
 describe("the admin host's routes", () => {
   it("serves its one page for each tab, and assets under /-/", async () => {
     const assets = vi
