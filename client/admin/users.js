@@ -25,7 +25,9 @@ const describeTag = tag =>
 function logbookItem(entry) {
   const item = el("li", "flex flex-col gap-1 py-3 border-b border-border");
   const top = el("span", "flex flex-wrap items-baseline gap-x-2");
-  top.append(el("span", "text-sm font-bold break-words", entry.name), el("span", "text-sm", entry.grade));
+  const name = el("span", "text-sm font-bold break-words", entry.name);
+  name.id = `logbook-entry-${entry.id}`;
+  top.append(name, el("span", "text-sm", entry.grade));
   if (entry.hidden) top.append(el("span", "ml-auto text-xs font-semibold text-accent-ink", "Hidden"));
   const status = entry.status === "send" && entry.firstAttempt ? "Flash" : (STATUSES[entry.status] ?? entry.status);
   const place = [entry.area, entry.location, entry.country].filter(Boolean).join(", ");
@@ -48,8 +50,13 @@ function logbookItem(entry) {
   if (entry.painMoves?.length)
     item.append(el("span", "text-xs", `Pain or injury: ${entry.painMoves.map(describeTag).join("; ")}`));
   if (entry.notes) item.append(el("p", "text-sm whitespace-pre-wrap break-words", entry.notes));
-  // Shown, not linked, as in a report.
+  // Shown, not linked: an admin shouldn't follow a link someone else posted.
   if (entry.video) item.append(el("span", "text-xs text-muted break-all", entry.video));
+  const toggle = el("button", "btn self-start mt-1", entry.hidden ? "Unhide this entry" : "Hide this entry");
+  toggle.type = "button";
+  toggle.dataset.entryId = entry.id;
+  toggle.setAttribute("aria-describedby", name.id);
+  item.append(toggle);
   return item;
 }
 
@@ -87,6 +94,7 @@ export function startUsers() {
   let pendingAction = null;
   let searchTimer = 0;
   let logbookUserId = null;
+  let logbookEntries = [];
   search.value = query;
 
   function urlFor({ id = selectedId } = {}) {
@@ -214,12 +222,34 @@ export function startUsers() {
     try {
       const { entries } = await api(`users/${encodeURIComponent(user.id)}/logbook`);
       if (selected()?.id !== user.id) return;
+      logbookEntries = entries;
       logbookList.replaceChildren(...entries.map(logbookItem));
       logbookStatus.textContent = entries.length
         ? `${entries.length} ${entries.length === 1 ? "climb" : "climbs"}`
         : "No climbs yet.";
     } catch {
       logbookStatus.textContent = "Couldn't load this logbook. Check your connection and try again.";
+    }
+  });
+
+  logbookList.addEventListener("click", async e => {
+    const button = e.target.closest("button[data-entry-id]");
+    if (!button) return;
+    const entry = logbookEntries.find(candidate => candidate.id === button.dataset.entryId);
+    error.hidden = true;
+    button.disabled = true;
+    try {
+      const { hidden } = await api(`entries/${encodeURIComponent(entry.id)}/${entry.hidden ? "unhide" : "hide"}`, {
+        method: "POST",
+      });
+      const updated = { ...entry, hidden };
+      logbookEntries = logbookEntries.map(candidate => (candidate.id === entry.id ? updated : candidate));
+      const item = logbookItem(updated);
+      button.closest("li").replaceWith(item);
+      item.querySelector("button[data-entry-id]").focus();
+    } catch {
+      button.disabled = false;
+      showError(SAVE_ERROR);
     }
   });
 

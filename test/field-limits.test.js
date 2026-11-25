@@ -141,46 +141,6 @@ describe("locations and areas (#1044)", () => {
   });
 });
 
-describe("reports and feedback (#1044)", () => {
-  beforeEach(async () => {
-    await env.LOGBOOK_DB.prepare(`DELETE FROM issue_reports`).run();
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ success: true }), { status: 200 })),
-    );
-  });
-  const report = body =>
-    jsonRequest("POST", "/-/api/report-issue", { message: "It broke.", turnstileToken: "t", ...body });
-
-  it("takes a message of 5,000 characters and refuses one more", async () => {
-    expect((await report({ message: text(5000) })).status).toBe(201);
-    const over = await report({ message: text(5001) });
-    expect(over.status).toBe(400);
-    expect((await over.json()).error).toBe("Your message can be up to 5,000 characters.");
-  });
-
-  it("takes a blank or valid contact email, and refuses anything else", async () => {
-    expect((await report({ contactEmail: "" })).status).toBe(201);
-    expect((await report({ contactEmail: "me@example.com" })).status).toBe(201);
-    const bad = await report({ contactEmail: "not an email" });
-    expect((await bad.json()).error).toBe("Enter a valid email address, or leave it blank.");
-    const long = await report({ contactEmail: `${text(250)}@x.co` });
-    expect((await long.json()).error).toBe("The email address can be up to 254 characters.");
-  });
-
-  it("keeps a source page on our own site and drops any other", async () => {
-    await report({ message: "ours", sourcePage: "https://my.climbinglogbook.com/nix/log" });
-    await report({ message: "theirs", sourcePage: "https://www.google.com/" });
-    const { results } = await env.LOGBOOK_DB.prepare(
-      `SELECT message, source_page FROM issue_reports ORDER BY message`,
-    ).all();
-    expect(results).toEqual([
-      { message: "ours", source_page: "https://my.climbinglogbook.com/nix/log" },
-      { message: "theirs", source_page: null },
-    ]);
-  });
-});
-
 describe("request bodies (#1044)", () => {
   const oversized = "x".repeat(BODY_LIMITS.json + 1);
 

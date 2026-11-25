@@ -49,12 +49,3 @@ export function onPlainClick(container, selector, handler) {
     handler(link);
   });
 }
-
-export async function refreshCounts() {
-  try {
-    const counts = await api("counts");
-    for (const name of ["reports", "feedback"]) {
-      document.querySelector(`#tab-${name} [data-unread]`).textContent = counts[name] ? String(counts[name]) : "";
-    }
-  } catch {}
-}

@@ -1,111 +1,13 @@
-import { json, parseJsonBody } from "../lib/json.js";
+import { json } from "../lib/json.js";
 import { verifyAccessRequest } from "../lib/access.js";
 import { actOnUser, listAuditLog, listUsers, setEntryHidden, viewLogbook } from "./admin-users.js";
 import { handleUsage } from "./admin-usage.js";
 import { createInvite, listInvites } from "./admin-invites.js";
-import { environmentOf } from "../../shared/app-version.js";
 
-const TABLES = { reports: "issue_reports", feedback: "feedback_submissions" };
-const PAGES = new Set(["/reports", "/feedback", "/users", "/usage", "/invites", "/activity"]);
-const LIST_LIMIT = 500;
+const PAGES = new Set(["/users", "/usage", "/invites", "/activity"]);
 
 export function isAdminHost(hostname) {
   return hostname.startsWith("admin.");
-}
-
-function reportedFields(row) {
-  if (!row.reported_username) return {};
-  return {
-    reportedUsername: row.reported_username,
-    reportedEntry: row.reported_entry_id
-      ? {
-          id: row.reported_entry_id,
-          name: row.reported_entry_name,
-          notes: row.reported_entry_notes,
-          video: row.reported_entry_video,
-          hidden: !!row.reported_entry_hidden_at,
-        }
-      : null,
-  };
-}
-
-function toSubmission(row) {
-  return {
-    ...reportedFields(row),
-    id: row.id,
-    message: row.message,
-    contactEmail: row.contact_email,
-    sourcePage: row.source_page,
-    environment: environmentOf(row.source_page),
-    appVersion: row.app_version ?? null,
-    section: row.section,
-    errorRef: row.error_ref ?? null,
-    username: row.username,
-    createdAt: row.created_at,
-    readAt: row.read_at,
-    archivedAt: row.archived_at,
-  };
-}
-
-// A report about a public logbook carries that logbook's username and, if it's about one climb, the climb.
-const REPORTED_COLUMNS = `, ru.displayUsername AS reported_username, re.name AS reported_entry_name,
-  re.notes AS reported_entry_notes, re.video AS reported_entry_video, re.hidden_at AS reported_entry_hidden_at`;
-const REPORTED_JOINS = `LEFT JOIN "user" ru ON ru.id = s.reported_user_id
-  LEFT JOIN entries re ON re.id = s.reported_entry_id AND re.deleted_at IS NULL`;
-
-function selectSubmissions(table, where) {
-  const reported = table === TABLES.reports;
-  return `SELECT s.*, u.displayUsername AS username${reported ? REPORTED_COLUMNS : ""}
-    FROM ${table} s LEFT JOIN "user" u ON u.id = s.user_id ${reported ? REPORTED_JOINS : ""}
-    WHERE ${where}`;
-}
-
-async function listSubmissions(env, table, archived) {
-  const { results } = await env.LOGBOOK_DB.prepare(
-    `${selectSubmissions(table, `s.archived_at IS ${archived ? "NOT NULL" : "NULL"}`)}
-     ORDER BY s.created_at DESC, s.id DESC LIMIT ?`,
-  )
-    .bind(LIST_LIMIT)
-    .all();
-  return json({ submissions: results.map(toSubmission) }, 200, { "Cache-Control": "no-store" });
-}
-
-async function unreadCounts(env) {
-  const unread = table => `(SELECT count(*) FROM ${table} WHERE read_at IS NULL AND archived_at IS NULL)`;
-  const row = await env.LOGBOOK_DB.prepare(
-    `SELECT ${unread(TABLES.reports)} AS reports, ${unread(TABLES.feedback)} AS feedback`,
-  ).first();
-  return json({ reports: row.reports, feedback: row.feedback }, 200, { "Cache-Control": "no-store" });
-}
-
-async function updateSubmission(request, env, table, id) {
-  const parsed = await parseJsonBody(request);
-  if (!parsed.ok) return parsed.response;
-  const body = parsed.body;
-  if (typeof body !== "object" || body === null || Array.isArray(body)) return json({ error: "Invalid JSON" }, 400);
-
-  const sets = [];
-  for (const [field, column] of [
-    ["read", "read_at"],
-    ["archived", "archived_at"],
-  ]) {
-    if (!(field in body)) continue;
-    if (typeof body[field] !== "boolean") return json({ error: `${field} must be a boolean` }, 400);
-    sets.push(body[field] ? `${column} = COALESCE(${column}, datetime('now'))` : `${column} = NULL`);
-  }
-  if (!sets.length) return json({ error: "Nothing to change" }, 400);
-
-  const { meta } = await env.LOGBOOK_DB.prepare(`UPDATE ${table} SET ${sets.join(", ")} WHERE id = ?`)
-    .bind(id)
-    .run();
-  if (!meta.changes) return json({ error: "Not found" }, 404);
-  const row = await env.LOGBOOK_DB.prepare(selectSubmissions(table, "s.id = ?")).bind(id).first();
-  return json(toSubmission(row));
-}
-
-async function deleteSubmission(env, table, id) {
-  const { meta } = await env.LOGBOOK_DB.prepare(`DELETE FROM ${table} WHERE id = ?`).bind(id).run();
-  return meta.changes ? new Response(null, { status: 204 }) : json({ error: "Not found" }, 404);
 }
 
 function safeDecode(value) {
@@ -119,7 +21,6 @@ function safeDecode(value) {
 async function handleAdminApi(request, env, pathname, log) {
   const method = request.method;
   if (pathname === "/-/api/admin/test/throw") throw new Error("Test error from the admin host (#1032)");
-  if (pathname === "/-/api/admin/counts") return method === "GET" ? unreadCounts(env) : null;
   if (pathname === "/-/api/admin/users") return method === "GET" ? listUsers(request, env) : null;
   if (pathname === "/-/api/admin/audit") return method === "GET" ? listAuditLog(env) : null;
   if (pathname === "/-/api/admin/usage") return method === "GET" ? handleUsage(env) : null;
@@ -135,16 +36,6 @@ async function handleAdminApi(request, env, pathname, log) {
   const entryAction = pathname.match(/^\/-\/api\/admin\/entries\/([^/]+)\/(hide|unhide)$/);
   if (entryAction)
     return method === "POST" ? setEntryHidden(env, safeDecode(entryAction[1]), entryAction[2] === "hide") : null;
-
-  const match = pathname.match(/^\/-\/api\/admin\/(reports|feedback)(?:\/([^/]+))?$/);
-  if (!match) return null;
-  const [, kind, encodedId] = match;
-  const id = encodedId && safeDecode(encodedId);
-  const table = TABLES[kind];
-  if (!id && method === "GET")
-    return listSubmissions(env, table, new URL(request.url).searchParams.get("archived") === "1");
-  if (id && method === "PATCH") return updateSubmission(request, env, table, id);
-  if (id && method === "DELETE") return deleteSubmission(env, table, id);
   return null;
 }
 
@@ -154,7 +45,7 @@ export async function handleAdminHost(request, env, log) {
   const { pathname } = new URL(request.url);
   const isRead = request.method === "GET" || request.method === "HEAD";
 
-  if (pathname === "/" && isRead) return Response.redirect(new URL("/reports", request.url).href, 302);
+  if (pathname === "/" && isRead) return Response.redirect(new URL("/users", request.url).href, 302);
   if (PAGES.has(pathname) && isRead) return env.ASSETS.fetch(new Request(new URL("/admin/", request.url), request));
   if (pathname.startsWith("/-/api/admin/")) {
     return (await handleAdminApi(request, env, pathname, log)) ?? json({ error: "Not found" }, 404);

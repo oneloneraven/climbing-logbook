@@ -200,7 +200,6 @@ Everything else reaches `server/index.js`:
 | `/-/api/entries`, `/places`, `/locations`, `/settings`, `/entries/import`, `/performance/*`, `/map/counts` | any | session, every method | `RESOURCE_ROUTES` in `server/index.js` |
 | `/-/api/public/:username/*` | any | none; `logbook_public`, or a demo account, checked on every request. 60 a minute per connection. Responses are cached at the edge under the user's data version, so a change shows at once and nothing needs purging (`server/lib/public-cache.js`) | `server/api/public-data.js` |
 | `/-/api/auth/*` | any | Better Auth's own | `server/lib/auth.js` |
-| `/-/api/report-issue`, `/-/api/feedback` | any | none; Turnstile and a rate limit | `server/api/submissions.js` |
 | `/-/api/health`, `/-/api/health/ready` | any | none. Liveness touches nothing; readiness runs `SELECT 1` with a 2 s timeout, cached for 15 s per isolate, and answers 503 `{ ok: false, check: "d1" }` on failure | `server/api/health.js` |
 | `/-/csp-report` | POST | none; 10 a minute per IP (`CSP_REPORT_LIMITER`). Outside `/-/api/`, because the WAF blocks non-JSON posts there and browsers send `application/csp-report` | `server/api/csp-report.js`: logs `csp.violation` with only the directive, the blocked and source origins, and the page's route template |
 | `/-/manifest.json` and the touch icon | any | none | `server/api/app-identity.js` (beta has its own identity) |
@@ -373,7 +372,7 @@ Tables (see `migrations/` for columns and constraints):
 | `disciplines`, `statuses` | Lookup tables ([ADR-0009](adr/0009-normalized-d1-schema-with-lookup-tables.md)) |
 | `user`, `session`, `account`, `verification` | Better Auth's own |
 | `beta_invites` | Invite codes for the closed beta ([ADR-0014](adr/0014-closed-beta-invite-gate-togglable-not-removable.md)) |
-| `issue_reports`, `feedback_submissions` | The report and feedback forms |
+| `issue_reports`, `feedback_submissions` | Unused since #1712; dropped by its follow-up once that release is in production |
 
 - **IDs are minted by the client** (`crypto.randomUUID()`), so a queued
   offline write keeps its identity until it syncs; a repeated `POST` of
@@ -591,10 +590,9 @@ it for the isolate's lifetime.
   counted per Cloudflare location with no D1 writes: a brake, not an exact
   quota. Auth POSTs: 10 a minute per connection and path, and sign-in also 5
   a minute per target account (`server/lib/auth-rate-limit.js`). Imports: 2
-  a minute per account. Limits over hours (report and feedback, 5 an hour per
-  connection; emails, per address) use the Durable Object counter in
-  `server/lib/email-limit.js` instead, since the binding only counts per 10
-  or 60 seconds.
+  a minute per account. Limits over hours (emails, per address) use the
+  Durable Object counter in `server/lib/email-limit.js` instead, since the
+  binding only counts per 10 or 60 seconds.
   Better Auth's own limiter is off (#1292). A connection is its IPv4 address,
   or its IPv6 /64. Reads are never limited. Every hit is a 429 with
   `Retry-After`, logged as `rate_limit.hit`. It's all switched on by
@@ -641,7 +639,7 @@ test run or `html:build` while it's running can't replace its pages with
 production ones. Owner pages need the
 `my.` host: `http://my.localhost:5173/<username>/log`. `pnpm run seed`
 creates a dev user and data. There's no service worker and no minification
-in dev. The admin pages are at `http://admin.localhost:5173/reports` once
+in dev. The admin pages are at `http://admin.localhost:5173/users` once
 `.dev.vars` has `ADMIN_ACCESS_CHECK=off`, since nothing local stands in for
 Access.
 
