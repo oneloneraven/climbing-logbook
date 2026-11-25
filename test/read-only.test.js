@@ -16,7 +16,6 @@ describe("read-only mode (#1063)", () => {
       ["DELETE", "/-/api/entries?id=x"],
       ["PATCH", "/-/api/settings"],
       ["POST", "/-/api/auth/sign-in/email"],
-      ["POST", "/-/api/feedback"],
     ]) {
       const res = await fetchApp(path, { method, headers: { "Content-Type": "application/json" }, body: "{}" });
       expect(res.status, `${method} ${path}`).toBe(503);

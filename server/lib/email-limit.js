@@ -8,11 +8,11 @@ export const EMAIL_LIMITS = { perHour: 3, perDay: 10 };
 // One per counted thing, so a limit holds across every edge and isolate without a D1 write; renaming it needs a migration.
 export class RecipientEmailLimiter extends DurableObject {
   /** @returns {Promise<{ ok: true } | { ok: false, retryAfterMs: number }>} */
-  async take(now, limits = EMAIL_LIMITS) {
+  async take(now) {
     const recent = /** @type {number[]} */ ((await this.ctx.storage.get("times")) ?? []).filter(t => t > now - DAY_MS);
     const lastHour = recent.filter(t => t > now - HOUR_MS);
-    if (recent.length >= limits.perDay) return { ok: false, retryAfterMs: recent[0] + DAY_MS - now };
-    if (lastHour.length >= limits.perHour) return { ok: false, retryAfterMs: lastHour[0] + HOUR_MS - now };
+    if (recent.length >= EMAIL_LIMITS.perDay) return { ok: false, retryAfterMs: recent[0] + DAY_MS - now };
+    if (lastHour.length >= EMAIL_LIMITS.perHour) return { ok: false, retryAfterMs: lastHour[0] + HOUR_MS - now };
     await this.ctx.storage.put("times", [...recent, now]);
     await this.ctx.storage.setAlarm(now + DAY_MS);
     return { ok: true };
@@ -41,16 +41,6 @@ export async function emailLimitResponse(env, address) {
       ? "We've sent a lot of emails to this address today. Try again tomorrow."
       : "We've already sent several emails to this address. Wait an hour, then try again.";
   return json({ message, code: "EMAIL_RATE_LIMITED" }, 429, {
-    "Retry-After": String(Math.ceil(result.retryAfterMs / 1000)),
-  });
-}
-
-export async function hourlyLimitResponse(env, name, limits, { message, surface, log }) {
-  if (env.RATE_LIMITING_ENABLED !== "true") return null;
-  const result = await env.EMAIL_LIMITER.get(env.EMAIL_LIMITER.idFromName(name)).take(Date.now(), limits);
-  if (result.ok) return null;
-  log?.warn("rate_limit.hit", { reason: surface });
-  return json({ error: message, message, code: "RATE_LIMITED" }, 429, {
     "Retry-After": String(Math.ceil(result.retryAfterMs / 1000)),
   });
 }

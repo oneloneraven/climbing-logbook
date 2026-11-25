@@ -34,15 +34,3 @@ async function verifySiteverify(secret, token) {
   });
   return res.json();
 }
-
-// For the public forms. Fails closed like sign-up.
-export async function verifyTurnstile(env, token) {
-  if (typeof token !== "string" || !token) return false;
-  try {
-    const data =
-      DUMMY_SECRET_RESPONSES[env.TURNSTILE_SECRET_KEY] ?? (await verifySiteverify(env.TURNSTILE_SECRET_KEY, token));
-    return !!data.success;
-  } catch {
-    return false;
-  }
-}

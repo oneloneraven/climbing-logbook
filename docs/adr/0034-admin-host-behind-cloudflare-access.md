@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (#921, #927, #928, 2026-10-07).
+Accepted (#921, #927, #928, 2026-10-07). Report and feedback triage superseded by [ADR-0040](0040-feedback-triage-lives-in-engage.md).
 
 ## Context
 

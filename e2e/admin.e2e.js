@@ -1,22 +1,8 @@
 import { $, $$, browser, expect } from "@wdio/globals";
-import { d1Execute } from "../scripts/lib/dev-session.mjs";
-import { boundingBox, browserFetch, expectEventually, tap, waitForResource, waitForUrl } from "./wdio-browser.js";
+import { boundingBox, browserFetch, expectEventually, waitForUrl } from "./wdio-browser.js";
 import { claimOwner } from "./wdio-owner.js";
 
 const ADMIN = "http://admin.localhost:8787";
-
-function seed(table, rows) {
-  const values = rows
-    .map(({ id, message, section = null, contactEmail = null, sourcePage = null }) =>
-      [id, message, section, contactEmail, sourcePage].map(v => (v === null ? "NULL" : `'${v}'`)).join(", "),
-    )
-    .map(row => `(${row}, datetime('now'))`)
-    .join(", ");
-  d1Execute(`INSERT INTO ${table} (id, message, section, contact_email, source_page, created_at) VALUES ${values}`, {
-    database: "climbing-logbook-preview",
-    env: "preview",
-  });
-}
 
 async function findUser(username) {
   await $("#user-search").setValue(username);
@@ -24,9 +10,6 @@ async function findUser(username) {
   await expect($$("#user-list li")).toBeElementsArrayOfSize(1);
   return $("#user-list").$(`a*=${username}`);
 }
-
-const card = message => $("#submission-list").$(`a*=${message}`);
-const unreadCount = tab => $(`#tab-${tab} [data-unread]`);
 
 const activityFor = username =>
   browser.execute(
@@ -37,127 +20,30 @@ const activityFor = username =>
     username,
   );
 
-describe("admin on a phone", () => {
-  beforeEach(() => browser.setViewport({ width: 312, height: 680 }));
-
-  it("a report is read by opening it, then archived, restored and deleted", async () => {
-    const id = `e2e-admin-${Date.now()}`;
-    const message = `Duplicate entry after syncing ${id}`;
-    seed("issue_reports", [
-      { id, message, section: "logbook", contactEmail: "climber@example.com", sourcePage: "/ellie/log" },
-    ]);
-
-    await browser.url(`${ADMIN}/`);
-    await waitForUrl(url => url.href === `${ADMIN}/reports`);
-    await expect($("#tab-reports")).toHaveAttribute("aria-current", "page");
-    await expect(card(message)).toHaveTextContent(expect.stringContaining("Unread"));
-    const before = Number(await unreadCount("reports").getProperty("textContent"));
-
-    await tap(card(message));
-    await expect(browser).toHaveUrl(`${ADMIN}/reports?id=${id}`);
-    await expect($("#list-pane")).not.toBeDisplayed();
-    await expect($("#detail-message")).toHaveTextContent(message);
-    await expect($("#detail-fields")).toHaveTextContent(expect.stringContaining("Logbook"));
-    await expect($("#detail-fields")).toHaveTextContent(expect.stringContaining("/ellie/log"));
-    await expect($("#detail-fields")).toHaveTextContent(expect.stringContaining("Not signed in"));
-    await expect($("#detail-fields a")).toHaveAttribute("href", "mailto:climber@example.com");
-    await expect($("#toggle-read")).toHaveTextContent("Mark as unread");
-    await expect(unreadCount("reports")).toHaveTextContent(before - 1 ? String(before - 1) : "");
-
-    await tap($("#detail-back"));
-    await expect(card(message)).toBeDisplayed();
-    await expect(card(message)).not.toHaveTextContent(expect.stringContaining("Unread"));
-
-    await tap(card(message));
-    await tap($("#toggle-archived"));
-    await expect(browser).toHaveUrl(`${ADMIN}/reports`);
-    await expect(card(message)).not.toExist();
-
-    await tap($("#show-archived"));
-    await tap(card(message));
-    await expect($("#toggle-archived")).toHaveTextContent("Unarchive");
-    await tap($("#toggle-archived"));
-    await expect(card(message)).not.toExist();
-    await tap($("#show-active"));
-    await tap(card(message));
-
-    await tap($("#delete-btn"));
-    const dialog = $("#delete-dialog");
-    await expect(dialog).toHaveTextContent(expect.stringContaining("Delete this report?"));
-    await tap(dialog.$('role/button[name="Cancel"]'));
-    await expect($("#detail-message")).toHaveTextContent(message);
-
-    await tap($("#delete-btn"));
-    await tap(dialog.$('role/button[name="Delete"]'));
-    await expect(browser).toHaveUrl(`${ADMIN}/reports`);
-    await expect(card(message)).not.toExist();
-    await browser.refresh();
-    await waitForResource("/-/api/admin/reports");
-    await expect(card(message)).not.toExist();
-  });
-
-  it("Mark as unread goes back to the list with it unread again", async () => {
-    const id = `e2e-admin-unread-${Date.now()}`;
-    const message = `Please add trad ${id}`;
-    seed("feedback_submissions", [{ id, message }]);
-
-    await browser.url(`${ADMIN}/feedback?id=${id}`);
-    await expect($("#detail-message")).toHaveTextContent(message);
-    await expect($("#detail-fields")).toHaveTextContent(expect.stringContaining("Not set"));
-    await expect($("#detail-fields")).toHaveTextContent(expect.stringContaining("None given"));
-    await expect($("#toggle-read")).toHaveTextContent("Mark as unread");
-    await tap($("#toggle-read"));
-
-    await expect(browser).toHaveUrl(`${ADMIN}/feedback`);
-    await expect(card(message)).toHaveTextContent(expect.stringContaining("Unread"));
-  });
-});
-
 describe("admin", () => {
-  it("dismissing the delete question with Escape keeps the submission, even after an earlier delete", async () => {
-    const stamp = Date.now();
-    seed("issue_reports", [
-      { id: `e2e-admin-gone-${stamp}`, message: `Delete me ${stamp}` },
-      { id: `e2e-admin-kept-${stamp}`, message: `Keep me ${stamp}` },
-    ]);
+  it("opens on Users, with the list and the opened user side by side when wide (#1712)", async () => {
+    const owner = await claimOwner();
+    await browser.url(`${ADMIN}/`);
+    await waitForUrl(url => url.href === `${ADMIN}/users`);
+    await expect($("#tab-users")).toHaveAttribute("aria-current", "page");
+    const tabs = $('nav[aria-label="Admin"]');
+    await expect(tabs.$('role/link[name="Reports"]')).not.toExist();
+    await expect(tabs.$('role/link[name="Feedback"]')).not.toExist();
 
-    await browser.url(`${ADMIN}/reports?id=e2e-admin-gone-${stamp}`);
-    await $("#delete-btn").click();
-    await $("#delete-dialog").$('role/button[name="Delete"]').click();
-    await expect(card(`Delete me ${stamp}`)).not.toExist();
+    await (await findUser(owner.username)).click();
+    await expect($("#user-list-pane")).toBeDisplayed();
+    await expect($("#user-detail")).toBeDisplayed();
+    await expect($("#user-back")).not.toBeDisplayed();
 
-    await card(`Keep me ${stamp}`).click();
-    await $("#delete-btn").click();
-    await expect($("#delete-dialog")).toBeDisplayed();
-    // Escape keeps the old returnValue in some browsers, so the dialog must open without one.
-    expect(await browser.execute(() => document.getElementById("delete-dialog").returnValue)).toBe("");
-    await browser.keys("Escape");
-    await expect($("#delete-dialog")).not.toBeDisplayed();
-    await browser.refresh();
-    await expect($("#detail-message")).toHaveTextContent(`Keep me ${stamp}`);
-  });
-
-  it("wide: the list and the opened submission sit side by side", async () => {
-    const id = `e2e-admin-wide-${Date.now()}`;
-    const message = `Loving the gap report ${id}`;
-    seed("feedback_submissions", [{ id, message, section: "performance" }]);
-
-    await browser.url(`${ADMIN}/feedback`);
-    await card(message).click();
-    await expect($("#list-pane")).toBeDisplayed();
-    await expect($("#detail-pane")).toBeDisplayed();
-    await expect($("#detail-back")).not.toBeDisplayed();
-    await expect(card(message)).toHaveAttribute("aria-current", "true");
-
-    const list = await boundingBox($("#list-pane"));
-    const detail = await boundingBox($("#detail-pane"));
+    const list = await boundingBox($("#user-list-pane"));
+    const detail = await boundingBox($("#user-detail"));
     expect(detail.x).toBeGreaterThan(list.x + list.width);
   });
 
   it("the admin pages and API don't exist on the app's own hosts", async () => {
     for (const url of [
-      "http://my.localhost:8787/-/api/admin/reports",
-      "http://localhost:8787/-/api/admin/counts",
+      "http://my.localhost:8787/-/api/admin/users",
+      "http://localhost:8787/-/api/admin/audit",
       "http://localhost:8787/admin/",
       "http://my.localhost:8787/-/admin-app.js",
     ]) {
@@ -181,6 +67,15 @@ describe("admin", () => {
           }),
       );
     await expectEventually(labels, [{ internal: true, demo: 0 }]);
+  });
+
+  it("a demo account's logbook offers no way to hide its climbs (#1712)", async () => {
+    await browser.url(`${ADMIN}/users`);
+    await (await findUser("advanceddemo")).click();
+    await $("#view-logbook").click();
+    await expect($("#logbook-status")).toHaveTextContent(expect.stringMatching(/\d+ climbs?/));
+    await expect($$("#logbook-list li")).not.toBeElementsArrayOfSize(0);
+    await expect($$("#logbook-list button")).toBeElementsArrayOfSize(0);
   });
 
   it("a user is found, suspended, unsuspended and deleted, and each step is in the activity log", async () => {
@@ -257,7 +152,9 @@ describe("admin", () => {
     await expect(climb).toHaveTextContent(expect.stringContaining("Project"));
     await expect(climb).toHaveTextContent(expect.stringContaining("Just for me"));
     await expect(climb).toHaveTextContent(expect.stringContaining("Pain or injury: left hand crimp static overhang"));
-    await expect(climb.$$("button, input, a")).toBeElementsArrayOfSize(0);
+    await expect(climb.$$("input, a")).toBeElementsArrayOfSize(0);
+    await expect(climb.$$("button")).toBeElementsArrayOfSize(1);
+    await expect(climb.$('role/button[name="Hide this entry"]')).toBeDisplayed();
 
     await $("#toggle-suspend").click();
     await expect($("#user-fields")).toHaveTextContent(expect.stringContaining("Suspended"));

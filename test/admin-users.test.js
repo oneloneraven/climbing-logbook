@@ -80,7 +80,7 @@ afterAll(() => {
 
 beforeEach(async () => {
   await resetAuthTables();
-  for (const table of ["account_suspensions", "banned_identities", "admin_audit_log", "issue_reports"]) {
+  for (const table of ["account_suspensions", "banned_identities", "admin_audit_log"]) {
     await env.LOGBOOK_DB.prepare(`DELETE FROM ${table}`).run();
   }
 });
@@ -168,15 +168,12 @@ describe("deleting", () => {
     expect((await admin(`/-/api/admin/users?q=${user.username}`).then(r => r.json())).users).toHaveLength(1);
   });
 
-  it("removes the account and everything in it, keeps their reports, and logs it", async () => {
+  it("removes the account and everything in it, and logs it", async () => {
     const user = await newUser();
     await seedPlace(user.cookie);
     await env.LOGBOOK_DB.prepare(
       `INSERT INTO beta_invites (code, used_by, used_at) VALUES ('code-1', ?, datetime('now'))`,
     )
-      .bind(user.userId)
-      .run();
-    await env.LOGBOOK_DB.prepare(`INSERT INTO issue_reports (id, message, user_id) VALUES ('r1', 'Hello', ?)`)
       .bind(user.userId)
       .run();
 
@@ -189,8 +186,6 @@ describe("deleting", () => {
         .first();
       expect(row.n, table).toBe(0);
     }
-    const report = await env.LOGBOOK_DB.prepare(`SELECT user_id FROM issue_reports WHERE id = 'r1'`).first();
-    expect(report.user_id).toBeNull();
     expect(await auditActions()).toEqual([`delete ${user.username}`]);
     expect((await act(user.userId, "suspend")).status).toBe(404);
   });

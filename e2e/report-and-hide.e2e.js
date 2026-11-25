@@ -9,16 +9,6 @@ const ADMIN = "http://admin.localhost:8787";
 const contains = text => expect.stringContaining(text);
 const rowWith = text => $(`//tr[contains(normalize-space(.), ${JSON.stringify(text)})]`);
 
-// Reports now go to Engage; the admin pages still read the legacy table until #1712, so seed it through its endpoint.
-async function seedLegacyReport({ message, username, entryId }) {
-  const res = await fetch(new URL("/-/api/report-issue", await browser.getUrl()), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, turnstileToken: "e2e", reportedUsername: username, reportedEntryId: entryId }),
-  });
-  if (!res.ok) throw new Error(`seeding the legacy report: ${res.status} ${await res.text()}`);
-}
-
 describe("report and hide", () => {
   it("a visitor reports a climb on a public logbook, the admin hides it, and only its owner still sees it", async () => {
     const owner = await claimOwner();
@@ -61,18 +51,27 @@ describe("report and hide", () => {
     expect(sent.context).toEqual({ reportedUsername: owner.username, reportedEntryId: entryId });
     expect(sent).not.toHaveProperty("accountRef");
 
-    await seedLegacyReport({ message, username: owner.username, entryId });
-
-    await browser.url(`${ADMIN}/reports`);
-    await $("#submission-list").$(`a*=${climb}`).click();
-    await expect($("#detail-fields")).toHaveTextContent(contains(`${owner.username}'s public logbook`));
-    const reported = $("#reported-climb");
-    await expect(reported).toHaveTextContent(contains(climb));
+    await browser.url(`${ADMIN}/users`);
+    await $("#user-search").setValue(owner.username);
+    await expect($$("#user-list li")).toBeElementsArrayOfSize(1);
+    await $("#user-list").$(`a*=${owner.username}`).click();
+    await $("#view-logbook").click();
+    const reported = $("#logbook-list").$(`li*=${climb}`);
     await expect(reported).toHaveTextContent(contains("Cheap gear at scam.example"));
-    await expect(reported).toHaveTextContent(contains("Showing"));
-    await $("#toggle-hidden").click();
-    await expect(reported).toHaveTextContent(contains("Hidden"));
-    await expect($("#toggle-hidden")).toHaveTextContent("Unhide this entry");
+    await expect(reported).not.toHaveTextContent(contains("Hidden"));
+    const hide = reported.$('role/button[name="Hide this entry"]');
+    await expect(hide).toHaveAttribute("aria-describedby", expect.stringMatching(/^logbook-entry-/));
+    await hide.click();
+    const row = () => $("#logbook-list").$(`li*=${climb}`);
+    await expect(row()).toHaveTextContent(contains("Hidden"));
+    // A named role lookup from a list item that replaced another finds nothing, so this one starts from the list.
+    const unhide = $("#logbook-list").$('role/button[name="Unhide this entry"]');
+    await expect(unhide).toBeFocused();
+    await unhide.click();
+    await expect(row()).not.toHaveTextContent(contains("Hidden"));
+    await expect(row().$("button")).toHaveText("Hide this entry");
+    await row().$("button").click();
+    await expect(row()).toHaveTextContent(contains("Hidden"));
 
     const publicEntries = await (
       await fetch(owner.url("").replace(/\/[^/]+\/?$/, `/-/api/public/${owner.username}/entries`))

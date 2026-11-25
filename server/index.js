@@ -11,7 +11,6 @@ import { handlePublicProfile } from "./api/public-profile.js";
 import { handlePublicResource } from "./api/public-data.js";
 import { handleOwnedRoute } from "./api/owned-routes.js";
 import { matchOwnerRoute } from "../shared/owner-routes.js";
-import { handleFeedback, handleReportIssue } from "./api/submissions.js";
 import { createAuth } from "./lib/auth.js";
 import { limitAuthRequest } from "./lib/auth-rate-limit.js";
 import { limitWrite } from "./lib/rate-limits.js";
@@ -101,13 +100,6 @@ async function handleRequest(request, env, ctx, log) {
   }
   if (pathname.startsWith("/-/api/auth/")) {
     return createAuth(env, hostname, log).handler(request);
-  }
-
-  if (pathname === "/-/api/report-issue" && method === "POST") {
-    return handleReportIssue(request, env, ctx, log);
-  }
-  if (pathname === "/-/api/feedback" && method === "POST") {
-    return handleFeedback(request, env, ctx, log);
   }
 
   const publicDataMatch = pathname.match(PUBLIC_DATA_PATH);

@@ -1,24 +1,8 @@
 import { env, exports } from "cloudflare:workers";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createPublicSession, fetchJson, jsonRequest, resetAuthTables, seedPlace } from "./support.js";
 
 const admin = (path, init) => exports.default.fetch(`https://admin.example.com${path}`, init);
-
-function stubSiteverify() {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async input => {
-      const url = typeof input === "string" ? input : input.url;
-      if (url.startsWith("https://challenges.cloudflare.com/turnstile/")) return Response.json({ success: true });
-      throw new Error(`Unexpected fetch to ${url}`);
-    }),
-  );
-}
-
-function report(body) {
-  stubSiteverify();
-  return jsonRequest("POST", "/-/api/report-issue", { turnstileToken: "token", ...body });
-}
 
 async function logbookWithClimbs() {
   const { cookie, userId } = await createPublicSession();
@@ -51,53 +35,7 @@ afterAll(() => {
 });
 beforeEach(async () => {
   await resetAuthTables();
-  for (const table of ["issue_reports", "admin_audit_log"]) {
-    await env.LOGBOOK_DB.prepare(`DELETE FROM ${table}`).run();
-  }
-});
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
-
-describe("reporting a public logbook", () => {
-  it("records which logbook and climb a report is about, and shows them to the admin", async () => {
-    const owner = await logbookWithClimbs();
-    const res = await report({
-      message: "Scam link in the notes",
-      section: "public_logbook",
-      reportedUsername: owner.username.toUpperCase(),
-      reportedEntryId: owner.reported,
-    });
-    expect(res.status).toBe(201);
-
-    const { submissions } = await (await admin("/-/api/admin/reports")).json();
-    expect(submissions[0]).toMatchObject({
-      section: "public_logbook",
-      reportedUsername: owner.username,
-      reportedEntry: { id: owner.reported, name: "Reported", notes: "Reported notes", hidden: false },
-    });
-  });
-
-  it("drops what doesn't resolve, so a report can't probe for private logbooks or climbs", async () => {
-    const owner = await logbookWithClimbs();
-    await env.LOGBOOK_DB.prepare(`UPDATE settings SET logbook_public = 0 WHERE user_id = ?`).bind(owner.userId).run();
-    await report({ message: "Private", reportedUsername: owner.username, reportedEntryId: owner.reported });
-    await report({ message: "Nobody", reportedUsername: "nobody-here", reportedEntryId: "nope" });
-
-    const rows = await env.LOGBOOK_DB.prepare(`SELECT reported_user_id, reported_entry_id FROM issue_reports`).all();
-    expect(rows.results).toEqual([
-      { reported_user_id: null, reported_entry_id: null },
-      { reported_user_id: null, reported_entry_id: null },
-    ]);
-  });
-
-  it("keeps the logbook but drops a climb that isn't in it", async () => {
-    const owner = await logbookWithClimbs();
-    const other = await logbookWithClimbs();
-    await report({ message: "Mixed", reportedUsername: owner.username, reportedEntryId: other.reported });
-    const row = await env.LOGBOOK_DB.prepare(`SELECT reported_user_id, reported_entry_id FROM issue_reports`).first();
-    expect(row).toEqual({ reported_user_id: owner.userId, reported_entry_id: null });
-  });
+  await env.LOGBOOK_DB.prepare(`DELETE FROM admin_audit_log`).run();
 });
 
 describe("hiding a climb", () => {
@@ -148,6 +86,13 @@ describe("hiding a climb", () => {
     expect(await publicNames(owner.username)).toEqual(["Kept"]);
 
     await admin(`/-/api/admin/entries/${owner.reported}/unhide`, { method: "POST" });
+    expect((await publicNames(owner.username)).toSorted()).toEqual(["Kept", "Reported"]);
+  });
+
+  it("leaves a demo account's climbs alone (#1712)", async () => {
+    const owner = await logbookWithClimbs();
+    await env.LOGBOOK_DB.prepare(`UPDATE settings SET is_demo = 1 WHERE user_id = ?`).bind(owner.userId).run();
+    expect((await admin(`/-/api/admin/entries/${owner.reported}/hide`, { method: "POST" })).status).toBe(409);
     expect((await publicNames(owner.username)).toSorted()).toEqual(["Kept", "Reported"]);
   });
 
