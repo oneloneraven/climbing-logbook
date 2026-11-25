@@ -1,21 +1,21 @@
 diff --git a/dist/pool/index.mjs b/dist/pool/index.mjs
 --- a/dist/pool/index.mjs
 +++ b/dist/pool/index.mjs
-@@ -70775,9 +70775,17 @@
+@@ -15940,9 +15940,17 @@
  	}
  	if (inlined !== response || response === null || typeof response !== "object" || Array.isArray(response)) return inlined;
  	let hasCachedModules = false;
 +	// Local patch (climbing-logbook #1459): workerd rejects WebSocket messages over 32 MiB, so stop inlining
 +	// warm modules at a budget; the rest are fetched one at a time as usual.
 +	let remainingBudget = 24 * 1024 * 1024;
- 	const entries = Object.entries(response).flatMap(([specifier, module$1]) => {
+ 	const entries = Object.entries(response).flatMap(([specifier, module]) => {
  		try {
- 			const inlinedModule = inlineCachedModule(module$1, cacheContents);
+ 			const inlinedModule = inlineCachedModule(module, cacheContents);
 +			remainingBudget -= JSON.stringify(inlinedModule ?? null).length;
 +			if (remainingBudget < 0) {
 +				hasCachedModules = true;
 +				return [];
 +			}
- 			hasCachedModules ||= inlinedModule !== module$1;
+ 			hasCachedModules ||= inlinedModule !== module;
  			return [[specifier, inlinedModule]];
  		} catch {
