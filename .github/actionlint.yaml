@@ -1,0 +1,8 @@
+# Until an actionlint release knows GitHub's ubuntu-26.04 runners and the $/ same-repo uses: syntax (#1737).
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+paths:
+  .github/workflows/**/*.{yml,yaml}:
+    ignore:
+      - 'specifying action "\$/[^"]+" in invalid format because ref is missing'
