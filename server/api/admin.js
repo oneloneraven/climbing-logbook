@@ -1,5 +1,5 @@
 import { json } from "../lib/json.js";
-import { verifyAccessRequest } from "../lib/access.js";
+import { accessRole } from "../lib/access.js";
 import { actOnUser, listAuditLog, listUsers, setEntryHidden, viewLogbook } from "./admin-users.js";
 import { handleUsage } from "./admin-usage.js";
 import { createInvite, listInvites } from "./admin-invites.js";
@@ -40,9 +40,11 @@ async function handleAdminApi(request, env, pathname, log) {
 }
 
 export async function handleAdminHost(request, env, log) {
-  if (!(await verifyAccessRequest(request, env))) return new Response("Forbidden", { status: 403 });
-
+  const role = await accessRole(request, env);
   const { pathname } = new URL(request.url);
+  const readsUsage = pathname === "/-/api/admin/usage" && request.method === "GET";
+  if (!role || (role === "usage" && !readsUsage)) return new Response("Forbidden", { status: 403 });
+
   const isRead = request.method === "GET" || request.method === "HEAD";
 
   if (pathname === "/" && isRead) return Response.redirect(new URL("/users", request.url).href, 302);

@@ -78,3 +78,4 @@ GitHub, the same treatment every other doc in this repo already gets.
 | [0038](0038-webdriverio-for-end-to-end-tests.md) | WebdriverIO for end-to-end tests, in Chrome and Firefox | Accepted, amends 0033 |
 | [0039](0039-no-safari-e2e-until-it-supports-webdriver-bidi.md) | No Safari e2e until Safari supports WebDriver BiDi | Accepted |
 | [0040](0040-feedback-triage-lives-in-engage.md) | Feedback and issue reports are triaged in Engage, not on the admin host | Accepted, supersedes part of 0034 |
+| [0041](0041-service-tokens-read-admin-usage.md) | Named Access service tokens may read the admin usage figures, and nothing else | Accepted, amends 0034 |

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (#921, #927, #928, 2026-10-07). Report and feedback triage superseded by [ADR-0040](0040-feedback-triage-lives-in-engage.md).
+Accepted (#921, #927, #928, 2026-10-07). Report and feedback triage superseded by [ADR-0040](0040-feedback-triage-lives-in-engage.md). Amended by [ADR-0041](0041-service-tokens-read-admin-usage.md): named service tokens may read usage.
 
 ## Context
 
