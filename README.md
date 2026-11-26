@@ -30,7 +30,7 @@ the request origin, which breaks Better Auth.
 
 Emails aren't sent locally: verification, password reset and email-change
 links are printed in the `pnpm dev` terminal instead, so `.dev.vars` needs
-no Resend key.
+no email credentials.
 
 See `docs/app-architecture.md` for local auth setup — the `/-/api/`
 resource routes require a real Better Auth session, same as production.
