@@ -76,9 +76,8 @@ The zone is looked up by name (`var.app_zone_name`), not a hardcoded id.
 - **Email Sending onboarding** for `climbinglogbook.com` (#1702): Compute →
   Email Service → Email Sending → Onboard Domain. It adds the `cf-bounce`
   MX, SPF and DKIM records, leaves the apex MX (Proton) and root SPF alone,
-  and keeps the existing `_dmarc` record. The provider version pinned here has
-  no resource for it, so the records aren't in `email.tf` and a plan doesn't
-  touch them.
+  and keeps the existing `_dmarc` record. It isn't in OpenTofu yet, so the
+  records aren't in `email.tf` and a plan doesn't touch them.
 
 **State** lives in the R2 bucket `climbing-logbook-tfstate` through the
 S3-compatible backend, never in git (a `sensitive` value would still be
