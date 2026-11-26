@@ -95,10 +95,6 @@ async function snapshotA() {
     locations: await rows(`SELECT * FROM locations WHERE user_id = ? ORDER BY id`, a.userId),
     places: await rows(`SELECT * FROM places WHERE user_id = ? ORDER BY id`, a.userId),
     entries: await rows(`SELECT * FROM entries WHERE user_id = ? ORDER BY id`, a.userId),
-    moves: await rows(
-      `SELECT m.* FROM entry_moves m JOIN entries e ON e.id = m.entry_id WHERE e.user_id = ? ORDER BY m.id`,
-      a.userId,
-    ),
     usage: await rows(`SELECT * FROM account_usage WHERE user_id = ?`, a.userId),
     purgeFloors: await rows(`SELECT * FROM entry_purge_floors WHERE user_id = ?`, a.userId),
     invites: await rows(
@@ -333,7 +329,6 @@ describe("authorization matrix: reads don't depend on another user's data (#1070
     await env.LOGBOOK_DB.batch(
       [
         `DELETE FROM entry_pain_moves WHERE entry_id IN (SELECT id FROM entries WHERE user_id = ?)`,
-        `DELETE FROM entry_moves WHERE entry_id IN (SELECT id FROM entries WHERE user_id = ?)`,
         `DELETE FROM entries WHERE user_id = ?`,
         `DELETE FROM places WHERE user_id = ?`,
         `DELETE FROM locations WHERE user_id = ?`,

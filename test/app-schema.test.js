@@ -165,107 +165,6 @@ describe("settings", () => {
   });
 });
 
-describe("entry_moves (#36)", () => {
-  async function seedEntry(userId, placeId, id = "entry-1") {
-    await env.LOGBOOK_DB.prepare(
-      `INSERT INTO entries (id, user_id, place_id, name, grade, discipline_id, status_id)
-         VALUES (?, ?, ?, 'Test', '7A', 'boulder', 'send')`,
-    )
-      .bind(id, userId, placeId)
-      .run();
-    return id;
-  }
-
-  it("inserts a hardest-move row with all four dimensions", async () => {
-    const userId = await seedUser();
-    const locationId = await seedLocation(userId);
-    const placeId = await seedPlace(userId, locationId);
-    const entryId = await seedEntry(userId, placeId);
-
-    await env.LOGBOOK_DB.prepare(
-      `INSERT INTO entry_moves (id, entry_id, difficulty, limb, side, hold_type, movement_style, wall_angle)
-         VALUES ('move-1', ?, 'hardest', 'hand', 'left', 'crimp', 'lockoff', 'overhang')`,
-    )
-      .bind(entryId)
-      .run();
-
-    const move = await env.LOGBOOK_DB.prepare(`SELECT * FROM entry_moves WHERE id = 'move-1'`).first();
-    expect(move.difficulty).toBe("hardest");
-    expect(move.limb).toBe("hand");
-    expect(move.side).toBe("left");
-    expect(move.hold_type).toBe("crimp");
-    expect(move.movement_style).toBe("lockoff");
-    expect(move.wall_angle).toBe("overhang");
-  });
-
-  it("rejects an unknown difficulty", async () => {
-    const userId = await seedUser();
-    const locationId = await seedLocation(userId);
-    const placeId = await seedPlace(userId, locationId);
-    const entryId = await seedEntry(userId, placeId);
-
-    await expect(
-      env.LOGBOOK_DB.prepare(
-        `INSERT INTO entry_moves (id, entry_id, difficulty, limb, side, hold_type, movement_style, wall_angle)
-           VALUES ('move-1', ?, 'medium', 'hand', 'left', 'crimp', 'static', 'overhang')`,
-      )
-        .bind(entryId)
-        .run(),
-    ).rejects.toThrow(/CHECK/);
-  });
-
-  it("rejects lockoff for a non-hand limb", async () => {
-    const userId = await seedUser();
-    const locationId = await seedLocation(userId);
-    const placeId = await seedPlace(userId, locationId);
-    const entryId = await seedEntry(userId, placeId);
-
-    await expect(
-      env.LOGBOOK_DB.prepare(
-        `INSERT INTO entry_moves (id, entry_id, difficulty, limb, side, hold_type, movement_style, wall_angle)
-           VALUES ('move-1', ?, 'hardest', 'foot', 'right', 'toe-hook', 'lockoff', 'overhang')`,
-      )
-        .bind(entryId)
-        .run(),
-    ).rejects.toThrow(/CHECK/);
-  });
-
-  it("allows lockoff for hand but not for foot/knee, and static and dynamic for every limb", async () => {
-    const userId = await seedUser();
-    const locationId = await seedLocation(userId);
-    const placeId = await seedPlace(userId, locationId);
-    const entryId = await seedEntry(userId, placeId);
-
-    await env.LOGBOOK_DB.prepare(
-      `INSERT INTO entry_moves (id, entry_id, difficulty, limb, side, hold_type, movement_style, wall_angle)
-         VALUES ('move-1', ?, 'easiest', 'knee', 'right', 'kneebar', 'static', 'roof')`,
-    )
-      .bind(entryId)
-      .run();
-
-    const move = await env.LOGBOOK_DB.prepare(`SELECT movement_style FROM entry_moves WHERE id = 'move-1'`).first();
-    expect(move.movement_style).toBe("static");
-  });
-
-  it("cascades: deleting an entry deletes its entry_moves rows", async () => {
-    const userId = await seedUser();
-    const locationId = await seedLocation(userId);
-    const placeId = await seedPlace(userId, locationId);
-    const entryId = await seedEntry(userId, placeId);
-    await env.LOGBOOK_DB.prepare(
-      `INSERT INTO entry_moves (id, entry_id, difficulty, limb, side, hold_type, movement_style, wall_angle)
-         VALUES ('move-1', ?, 'hardest', 'hand', 'left', 'crimp', 'static', 'vert')`,
-    )
-      .bind(entryId)
-      .run();
-
-    await env.LOGBOOK_DB.prepare(`DELETE FROM entries WHERE id = ?`).bind(entryId).run();
-
-    const remaining = await env.LOGBOOK_DB.prepare(`SELECT id FROM entry_moves WHERE id = 'move-1'`).first();
-    expect(remaining).toBeNull();
-  });
-});
-
 describe("entries.attempts_to_send (#37)", () => {
   it("defaults to null and accepts a non-negative integer", async () => {
     const userId = await seedUser();
@@ -371,7 +270,7 @@ describe("entry_pain_moves (#572)", () => {
     expect(row.difficulty).toBeUndefined();
   });
 
-  it("rejects lockoff for a non-hand limb, same cross-column rule as entry_moves", async () => {
+  it("rejects lockoff for a non-hand limb", async () => {
     const userId = await seedUser();
     const locationId = await seedLocation(userId);
     const placeId = await seedPlace(userId, locationId);
