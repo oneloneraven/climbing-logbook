@@ -32,3 +32,9 @@ variable "discord_monitoring_webhook" {
   type        = string
   sensitive   = true
 }
+
+variable "engage_worker_name" {
+  description = "The Engage Worker that receives climbinglogbook.com mail (#1711)."
+  type        = string
+  default     = "engage-production"
+}
