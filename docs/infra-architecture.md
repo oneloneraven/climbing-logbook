@@ -33,108 +33,11 @@ configured in `wrangler.jsonc`. It routes by hostname inside
 
 ## What OpenTofu manages
 
-Everything provisionable, in `infra/`:
-
-| Resource | File |
-|---|---|
-| D1 database (`prevent_destroy`) | `infra/d1.tf` |
-| DNS records for the apex, `my.`, `beta.` and `www.`: proxied placeholders (192.0.2.1) so the hostnames reach the edge and the Worker routes can answer (`prevent_destroy`) | `infra/dns.tf`, `infra/tls-hardening.tf` |
-| Minimum TLS 1.2, HSTS, DNSSEC, and the redirect ruleset (`www` → apex, and apex-only pages from the app hosts → apex) | `infra/tls-hardening.tf` |
-| WAF custom rule blocking non-JSON `POST`s to `/-/api/` | `infra/waf.tf` |
-| Cache rules: bypass `/-/api/`, cache static assets | `infra/cache-rules.tf` |
-| CAA records: only Cloudflare's CAs may issue certificates for the zone (no reporting address: a published one gets scraped). A subdomain whose certificate comes from another CA needs that CA added to `cloudflare_cas`, unless it's a CNAME to the provider, whose own CAA records then apply (as with the Better Stack status page) | `infra/dns.tf` |
-| Email: Email Routing sends `hello@`, `support@` and Engage's `reply+…@` addresses to the Engage Worker and drops everything else, and adds the apex MX and SPF it needs (#1711); Resend's sending records on `send.` and its DKIM, now unused and waiting for removal (#1702); the `cf-bounce` MX, SPF and DKIM records that Cloudflare Email Sending adds when the domain is onboarded in the dashboard (not in OpenTofu: see below); the DMARC record (`p=reject`, reports to Cloudflare) | `infra/email.tf` |
-| Better Stack uptime monitors (home page, `my.` and `beta.` readiness, certificate and domain expiry), the status page at `status.`, its DNS record, and an incident webhook to Discord `#alerts` | `infra/uptime.tf` |
-| Cloudflare alert destinations for Discord `#alerts` and `#monitoring`, and the DDoS and certificate alerts to `#monitoring` | `infra/alerts.tf` |
-| Security headers on every proxied response: `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` and `Reporting-Endpoints`. The CSP comes from the Worker instead (`server/lib/csp.js`): Cloudflare only adds its nonce to the bot-detection script it injects when the origin sends the CSP | `infra/security-headers.tf` |
-
-`prevent_destroy` marks the resources that can't be lost even briefly: a D1 database can't be restored and a destroy-then-create of a DNS record takes its hostname offline for the gap. Nothing else stops an unattended apply doing any of these.
-
-The zone is looked up by name (`var.app_zone_name`), not a hardcoded id.
-
-**Not in OpenTofu:**
-- The logbook's data (D1 rows).
-- Worker runtime secrets (see below).
-- The state bucket: it must exist before OpenTofu can use it.
-- The preview database: created once by hand; disposable.
-- Bot and AI-crawler protection. It's set in the dashboard because the
-  provider can't express the three-tier AI crawler settings, and managing
-  only the old single field would reset the rest. Current settings:
-  - AI crawlers: Search allow, Agent block, Training block;
-  - AI Labyrinth on, Bot Fight Mode on, JS detections on;
-  - Cloudflare's managed `robots.txt` is on, but it isn't served in front of
-    a Worker, so crawlers get `static/robots.txt` (`ai-train=no`, AI
-    crawlers disallowed).
-- The **Worker errors** alert (`workers_observability_real_time_issue`) and its
-  Workers Issues automation. The Cloudflare provider doesn't support that
-  alert type yet (checked up to 5.27.0), so the automation was made in the
-  dashboard (Workers → climbing-logbook → Observability → Issues), posting to
-  the OpenTofu-managed `Discord #alerts` destination.
-- The `ravendarque.com/logbook` → `my.climbinglogbook.com/ravendarque`
-  redirect. It lives on the `ravendarque.com` zone, which this project's
-  token can't read, so it was removed from state and left running.
-- **Email Sending onboarding** for `climbinglogbook.com` (#1702): Compute →
-  Email Service → Email Sending → Onboard Domain. It adds the `cf-bounce`
-  MX, SPF and DKIM records, leaves the apex MX and root SPF alone,
-  and keeps the existing `_dmarc` record. It isn't in OpenTofu yet, so the
-  records aren't in `email.tf` and a plan doesn't touch them.
-
-**State** lives in the R2 bucket `climbing-logbook-tfstate` through the
-S3-compatible backend, never in git (a `sensitive` value would still be
-written to the state file in plain text). `scripts/bootstrap-state.mjs`
-creates the bucket, and is safe to re-run.
+This section is kept in the private vault.
 
 ## Workflows
 
-| Workflow | Trigger | What it does |
-|---|---|---|
-| `test.yml` | PR, unless it only touches `docs/`, `infra/` or root-level Markdown | Lint, typecheck and `pnpm test`, then a `CLOUDFLARE_ENV=preview` build, so every PR proves it builds. Once lint and typecheck pass, WebdriverIO in Chrome and Firefox against the production-style build, skipped when only Markdown help pages change too. A new push to the PR cancels the run in progress |
-| `preview.yml` | PR, unless it only touches `docs/`, `infra/`, `test/`, `e2e/` or root-level Markdown | Builds with `CLOUDFLARE_ENV=preview`, runs `wrangler preview --name pr-<n>` ([ADR-0036](adr/0036-pr-previews-via-cloudflare-previews.md)), and comments the URL. Closing the PR deletes its Preview. A second job, one run at a time across all PRs, applies migrations to the shared preview database and reseeds it only when the seed scripts, their data or `migrations/` have changed since the last seed |
-| `require-release-label.yml` | PR | Requires one `release:` label, and rejects `release: none` outside the never-reaches-users paths (`docs/versioning.md`) |
-| `release.yml` | PR merged | Cuts the next `vX.Y.Z` tag from the label |
-| `deploy.yml` | `vX.Y.Z` tag, or manual | Logs the D1 restore point, applies migrations, then deploys beta; also production when the tag's diff touches `infra/` or `migrations/` |
-| `promote.yml` | manual | Deploys a tag to production (migrations first) |
-| `infra.yml` | PR or merge touching `infra/**` or the workflow itself, or manual | Plans to a file, refuses any delete or replacement (a manual run on `main` may make exactly the deletes it lists in `expected_deletes`), applies that exact plan on `main`, then syncs generated config |
-| `synthetic-check.yml` | after deploys, on a schedule, or manual | Logs in as the monitoring account and probes production |
-| `sync-worker-secrets.yml` | manual, on `main` | Sets `OWNER_EMAIL` and `USAGE_SERVICE_TOKENS` on the production Worker, and `TURNSTILE_SECRET_KEY` and `ACCOUNT_SECRET_CL` on production and beta, from the `production` environment's secrets |
-| `bootstrap-state.yml` | manual | Creates the state bucket |
-| `project-status-sync.yml` | branch or PR events | Moves the linked issue on the project board |
-| `scorecard.yml` | weekly, merge, or a branch protection change | OpenSSF Scorecard; results go to the Security tab and the public Scorecard API |
-| `zizmor.yml` | PR or merge touching `.github/` | Static analysis of the workflows (template injection, over-broad permissions and so on); findings go to the Security tab |
-
-**Cloudflare tokens** (#1069). Each workflow gets the narrowest token:
-`CLOUDFLARE_PREVIEW_TOKEN` (previews: Workers Scripts and D1),
-`CLOUDFLARE_DEPLOY_TOKEN` (deploy and promote: the same plus Workers
-Routes), `CLOUDFLARE_INFRA_PLAN_TOKEN` (OpenTofu plan on PRs, read-only)
-and `CLOUDFLARE_INFRA_APPLY_TOKEN` (OpenTofu apply and the state bootstrap).
-The deploy and apply tokens are secrets of the `production` and `infra`
-GitHub environments, which only `main` (and `v*` tags, for `production`)
-can use, so no PR job can deploy or change DNS. Each token expires after a
-year; the bootstrap plugin's `secrets.mjs cloudflare-tokens --rotate`
-creates them again (Cloudflare token permissions, below).
-
-**Supply chain** (#1040). Every third-party action is pinned to a full
-commit SHA, with its tag as a trailing comment, and Dependabot keeps the
-pins current. Every workflow declares `permissions`, read-only unless a
-job needs more. New releases wait three days before they're used: pnpm's
-`minimumReleaseAge` (4320 minutes, in `pnpm-workspace.yaml`) fails an
-install that resolves anything younger, and Dependabot's `cooldown` stops
-it proposing such versions. Dependabot security updates ignore the
-cooldown; to take one sooner, add the package to
-`minimumReleaseAgeExclude` for that change.
-
-Releases are tag-gated, not merge-gated ([ADR-0008](adr/0008-tag-based-semantic-versioning.md),
-`docs/versioning.md`). `.github/actions/setup-node-pnpm/` is the shared
-Node and pnpm setup. A new workflow can only be dispatched once it's on
-`main`.
-
-**Generated config sync.** After apply, `infra.yml` writes OpenTofu's
-outputs into the repo: the D1 id into `wrangler.jsonc`. When anything changed, it pushes a
-`ci/sync-generated-config-<run>` branch and puts a link to open its PR in
-the run's summary and as a warning. Open the PR by hand, label it
-`release: patch` (the files ship), and merge it: merging cuts the release
-that carries the change. The repo doesn't let Actions open PRs, on purpose
-(#1272), and branch protection allows no direct pushes, even from the bot.
+This section is kept in the private vault.
 
 ## Secrets and variables
 

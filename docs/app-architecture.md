@@ -203,7 +203,7 @@ Everything else reaches `server/index.js`:
 | `/-/api/health`, `/-/api/health/ready` | any | none. Liveness touches nothing; readiness runs `SELECT 1` with a 2 s timeout, cached for 15 s per isolate, and answers 503 `{ ok: false, check: "d1" }` on failure | `server/api/health.js` |
 | `/-/csp-report` | POST | none; 10 a minute per IP (`CSP_REPORT_LIMITER`). Outside `/-/api/`, because the WAF blocks non-JSON posts there and browsers send `application/csp-report` | `server/api/csp-report.js`: logs `csp.violation` with only the directive, the blocked and source origins, and the page's route template |
 | `/-/manifest.json` and the touch icon | any | none | `server/api/app-identity.js` (beta has its own identity) |
-| everything | `admin.` | Cloudflare Access, and its token checked again in the Worker | `server/api/admin.js`; on every other host its paths 404 |
+| everything | `admin.` | (Kept in the private vault.) | (Kept in the private vault.) |
 
 No session is a 401, never an empty 200, so a page with a lapsed session
 keeps its cached data. Every handler scopes its queries to the session's
@@ -495,142 +495,7 @@ Tables (see `migrations/` for columns and constraints):
 
 ## Authentication
 
-- **Login** is a page, not a modal: the apex serves `/login/`, and app hosts
-  serve the same page at `/-/login/` so an installed app keeps its own
-  cookies. It posts to Better Auth's `sign-in/email`.
-- **Sign-up** (`/register/`) needs an invite code while the beta gate is on
-  (`server/lib/beta-gate.js`), is protected by Turnstile, and needs email
-  verification before the first login. It also needs `agreedTermsVersion` to
-  match `TERMS_VERSION` (`shared/terms.js`); the create hook records the
-  version and time on the user (`termsVersion`, `termsAgreedAt`). Changing
-  the terms means bumping that constant. A code is claimed before sign-up and
-  released afterwards unless a user was actually created (the create hook
-  sets `used_by`): an already-registered email gets a 200 and no account,
-  so the response alone can't say. Emails, including a code's pinned one,
-  are compared lowercased.
-- **Every route that sends email is limited per address**: sign-up, password
-  reset, the verification resend and change of email, at 3 an hour and 10 a
-  day (`server/lib/email-limit.js`). A Durable Object per hashed address
-  keeps the counts, so they hold across edges without a D1 write. Requests
-  count whether or not the address has an account, so hitting the limit, a
-  429 that says so plainly, reveals nothing about who's registered. Sign-up,
-  reset and resend also need Turnstile, checked in the Worker before Better
-  Auth (`server/lib/sign-up.js`, `server/lib/email-routes.js`); change of
-  email needs a session instead. Beta and production are separate Workers,
-  so each keeps its own counts.
-- **Session check.** `checkSession()` (`client/admin-auth.js`) reads the
-  last-known state from localStorage first and corrects it once
-  `/-/api/auth/get-session` answers; a network failure keeps the last-known
-  state, but a real "no session" logs the page out.
-- **Rate limiting** happens in the Worker before Better Auth, through the
-  Workers rate-limit bindings (`server/lib/auth-rate-limit.js`,
-  [ADR-0037](adr/0037-rate-limiting-through-the-workers-binding.md)): every
-  auth POST per connection and path, and sign-in per target account too, so
-  guesses spread across many IPs still slow down (#1049). Better Auth's own
-  limiter is off.
-- **Two-step sign-in** (#1436) is Better Auth's `twoFactor` plugin with
-  authenticator-app codes only, optional per account. Sign-in answers
-  `twoFactorRedirect` and the login page asks for a code or a backup code;
-  "don't ask again" trusts the device for 28 days (`TRUST_DEVICE_DAYS`).
-  The setup key and backup codes are encrypted with `BETTER_AUTH_SECRET`
-  (backup codes because `storeBackupCodes: "encrypted"`; the default is
-  plain). The secret rotates in versions (`BETTER_AUTH_SECRETS`,
-  `server/lib/auth-secrets.js`): the daily cron re-encrypts two-step data
-  under the newest version before an old one is retired (#1440). Recovery without the device is self-service and slow by design
-  (`server/lib/two-step-recovery.js`): after the password, a link to the
-  account's email starts a 7-day wait, cancellable from the email or My
-  account, and the daily cron switches it off when the wait ends. There's
-  no admin reset. The link opens `/login/?two-step-recovery=<token>`.
-- **Passkeys** (#1439) are Better Auth's passkey plugin, with no client
-  library: `client/passkeys.js` uses the browser's WebAuthn JSON helpers,
-  and the passkey options are hidden where they're missing. The relying party is
-  `climbinglogbook.com` (`passkeyRpId`), so one passkey works on the apex,
-  `my.` and `beta.`. A passkey sign-in skips the 2FA code, so the device check
-  (fingerprint, face or PIN) is required at registration and enforced on the
-  server at sign-in (`requireUserVerified`). The login page offers a button
-  and, where supported, autofill on the email field. Adding or removing a
-  passkey emails the owner.
-- **Already logged in:** the apex home and login page send a signed-in
-  visitor straight to their log (`client/session-redirect.js`).
-- **Suspended and banned accounts** are enforced in Better Auth's database
-  hooks (`server/lib/account-status.js`):
-  - A suspended account can't start a session. Suspending also ends the
-    sessions it has, and its public logbook 404s like a private one.
-  - A banned email gets sign-up's generic "check your email" reply, and no
-    account is created.
-  - A banned username reads as unavailable, at sign-up or on a change.
-  - The admin host's Users tab does the suspending, deleting and banning,
-    and records each action in `admin_audit_log` ([ADR-0034](adr/0034-admin-host-behind-cloudflare-access.md)).
-  - `/entries/<id>` on the admin host opens a climb's owner on the Users tab,
-    with their logbook loaded and the climb focused, so a report in Engage
-    links straight to it (#1743). An unknown or deleted climb opens the Users
-    tab with a message. Opening the link is a logbook view, recorded in Activity.
-
-### Better Auth configuration
-
-`server/lib/auth.js` builds one Better Auth instance per hostname and caches
-it for the isolate's lifetime.
-
-- **Trusted origins** are the CSRF boundary: a state-changing request from
-  any other origin is a 403. Everywhere they're the three HTTPS app
-  origins, since sign-in on the apex serves `my.` and `beta.`. Only a
-  request to a local host (`localhost`, `*.localhost`) also trusts the
-  local `http` origins (`trustedOriginsFor()`), so a page on a
-  developer's machine can't make credentialed calls to production.
-  `http://localhost:*` is listed explicitly because Better Auth's own
-  derivation from `allowedHosts` doesn't produce the `http` form of a
-  wildcard host.
-- **Allowed hosts** are the production and beta hosts, PR previews
-  (`*.ravendarque.workers.dev`), local dev, and `example.com` (the Vitest
-  base URL). Vite's dev server reads the same list, so a host missing here is
-  rejected before it reaches the Worker.
-- **Cookies** span `climbinglogbook.com` and its subdomains, because sign-in
-  happens on the apex. Everywhere else is one origin; a `Domain` that doesn't
-  match the host would be rejected by the browser.
-- **Rate limiting** runs in the Worker through Rate Limiting bindings
-  (`server/lib/rate-limits.js`, [ADR-0037](adr/0037-rate-limiting-through-the-workers-binding.md)),
-  counted per Cloudflare location with no D1 writes: a brake, not an exact
-  quota. Auth POSTs: 10 a minute per connection and path, and sign-in also 5
-  a minute per target account (`server/lib/auth-rate-limit.js`). Imports: 2
-  a minute per account. Limits over hours (emails, per address) use the
-  Durable Object counter in `server/lib/email-limit.js` instead, since the
-  binding only counts per 10 or 60 seconds.
-  Better Auth's own limiter is off (#1292). A connection is its IPv4 address,
-  or its IPv6 /64. Reads are never limited. Every hit is a 429 with
-  `Retry-After`, logged as `rate_limit.hit`. It's all switched on by
-  `RATE_LIMITING_ENABLED`, which only real deployments set: local dev and
-  tests have no `cf-connecting-ip`, so every request would share one bucket.
-- **Account limits** (`shared/account-limits.js`, published in the terms of
-  use): 20,000 climbs, 5,000 places and 2,000 locations per account, 10
-  imports a day, and 120 saves a minute. Stored rows are counted in
-  `account_usage`, which SQLite triggers keep exact, so a check reads one row.
-  Deleted climbs don't count: their sync tombstones are left out.
-  A create over a limit gets a 403 that the offline queue shows in its
-  "Couldn't save" banner, and an import that would cross one is refused whole.
-  Saves are limited per account by the `WRITE_RATE_LIMITER` binding; a 429
-  stays queued and retries.
-- **Content-Security-Policy** comes from the Worker, on every HTML response,
-  with a fresh nonce each time (`server/lib/csp.js`). Cloudflare puts that
-  nonce on the Bot Fight Mode script it injects, which it only does when the
-  origin sends the header, not when an edge rule adds it. So the static pages
-  (home, help, login, sign-up, password reset, launch) are `run_worker_first`
-  too, and served from assets by the Worker. Help search's `pagefind` files
-  aren't. Our own scripts are all files, so they never need the nonce. The
-  other security headers come from an edge rule (`infra/security-headers.tf`).
-- **Client IP** comes from `cf-connecting-ip`; Cloudflare never sends
-  `x-forwarded-for`, Better Auth's default. Proxy headers are not trusted
-  for host derivation, because the Worker sits directly behind the edge.
-- **Schema validation is off**: `migrations/` owns the schema, and the check
-  runs D1 queries each time an instance is built.
-- **Email** verification is required before first login and signs the user in
-  when they click the link. Changing email needs confirmation from the
-  current, verified address.
-- **Usernames** follow `shared/username-policy.js`: Instagram's charset
-  (lowercase letters, digits, `.` and `_`) and length (1–30), with the demo
-  accounts and reserved names and their lookalikes refused. No username
-  contains a hyphen, which is what keeps `/-/` and `/service-worker.js` from
-  colliding with a profile path (`test/username.test.js`).
-- **No social login**, deliberately (`docs/ui-stack-evaluation.md`).
+This section is kept in the private vault.
 
 ## Local development
 

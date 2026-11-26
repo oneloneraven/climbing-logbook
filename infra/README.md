@@ -10,110 +10,11 @@ The only thing *not* managed here, by design: the logbook's actual data
 
 ## One-time setup (per Cloudflare account)
 
-1. **Create an R2 API token** (Cloudflare dashboard → R2 → Manage R2 API
-   Tokens → Create API Token), permission "Object Read & Write", scoped to
-   this account. This is a *credential*, not infrastructure — same
-   category as the Cloudflare API tokens — so it's created once by
-   hand rather than scripted. Save the resulting Access Key ID and Secret
-   Access Key as repo secrets: `TF_STATE_ACCESS_KEY_ID`,
-   `TF_STATE_SECRET_ACCESS_KEY`.
-
-2. **Set repo secrets/variables** (Settings → Secrets and variables →
-   Actions):
-   - The four Cloudflare tokens: run the bootstrap plugin's
-     `node <project-bootstrap>/skills/bootstrap/scripts/secrets.mjs cloudflare-tokens . --rotate`, which creates them from
-     `.bootstrap/cloudflare/tokens.json`, stores them in Pass and sets them as
-     repo and environment secrets (`docs/infra-architecture.md`, Cloudflare
-     token permissions)
-   - `TF_STATE_ACCESS_KEY_ID` / `TF_STATE_SECRET_ACCESS_KEY` (secrets) —
-     from step 1
-   - `CLOUDFLARE_ACCOUNT_ID` (variable, not secret — not confidential)
-
-3. **Run the "Bootstrap OpenTofu state bucket" workflow** manually
-   (Actions tab → workflow_dispatch). Creates the R2 bucket OpenTofu's
-   state lives in. Idempotent — safe to re-run, including for full
-   disaster recovery.
-
-4. **Merge a PR touching `infra/**`** (or push to `main` directly) —
-   the "Infra" workflow runs `tofu apply` and keeps
-   `wrangler.jsonc`'s D1 database id in sync automatically.
-
-5. **Synthetic monitoring account** (#361) — a dedicated user the
-   "Synthetic production check" workflow signs in as after every deploy
-   and on a schedule, to catch session/cookie regressions a manual
-   glance wouldn't. Not scripted, and not something an assistant should
-   do on your behalf — creating an account and choosing its password are
-   both on the "always done by a human, in their own terminal/browser"
-   list, no exceptions for how low-risk it looks:
-   1. Make a beta invite code with `node scripts/mint-invite.mjs`, and
-      run the `wrangler` command it prints to store it.
-   2. Sign up for real at `climbinglogbook.com/register` with that code,
-      a dedicated email address, and a generated password — not an
-      address or password reused anywhere else.
-   3. Once logged in, turn **off** public visibility for this account
-      (it should never appear as a real public profile).
-   4. Set the two repo secrets the workflow reads (Settings → Secrets
-      and variables → Actions): `SYNTHETIC_USER_EMAIL`,
-      `SYNTHETIC_USER_PASSWORD` — same "set it yourself" reasoning as
-      every other credential in this file.
-   5. Mark it as internal, so the admin usage stats leave it out
-      (#1514). In your own terminal, with its username:
-
-      ```bash
-      pnpm exec wrangler d1 execute climbing-logbook --remote --command "INSERT INTO settings (user_id, is_internal) SELECT id, 1 FROM \"user\" WHERE username = '<monitor username, lowercase>' ON CONFLICT(user_id) DO UPDATE SET is_internal = 1"
-      ```
-
-6. **DNSSEC DS record at the domain registrar** (#527) — `infra/
-   tls-hardening.tf` enables DNSSEC on the zone
-   (`cloudflare_zone_dnssec.app`). It shows as `status: pending` at
-   Cloudflare until the parent TLD zone has the matching DS record, then
-   flips to `active` on its own.
-   - **`climbinglogbook.com` is registered through Cloudflare itself**
-     (Cloudflare Registrar, not just Cloudflare DNS) — confirmed with
-     Raven, 2026-08-25. When Cloudflare is both registrar and DNS
-     provider, it auto-publishes the DS record to the parent zone once
-     DNSSEC is enabled zone-side — **no manual step needed** in that
-     case, this OpenTofu apply is the whole story.
-   - The manual step below only applies if the domain is ever moved to
-     a third-party registrar (nameservers delegated to Cloudflare, but
-     registration held elsewhere) — Cloudflare/OpenTofu have no API
-     into a registrar they don't control:
-     1. Get the record: `cd infra && tofu output -raw
-        app_dnssec_ds_record` (needs the same credentials as "Local
-        runs" below).
-     2. Add it at that registrar's "DNSSEC"/"DS records" section under
-        the domain's DNS/nameserver settings. The output is a full DS
-        record line (`climbinglogbook.com. 3600 IN DS <key tag>
-        <algorithm> <digest type> <digest>`) — most registrars want the
-        four fields entered separately, not the raw line pasted in one
-        box.
+This section is kept in the private vault.
 
 ## Not in OpenTofu
 
-Everything in the zone's DNS is in `infra/` (#1336). These stay in the
-dashboard or elsewhere, and why:
-
-- **AI crawler settings `ai_training` (disallow), `ai_search` (disabled)
-  and `ai_user` (block)** (Security → Bots). The provider (5.21) has no
-  attributes for them. The rest of the bot settings, Bot Fight Mode
-  included, are in `bots.tf`: change them there, since the next apply
-  undoes a dashboard change.
-- **DMARC Management** (Email → DMARC Management). No provider resource.
-  The DMARC record itself, with its reports address, is in
-  `email.tf`.
-- **The Workers Issues alert.** The provider has no alert type for it yet
-  (`workers_observability_real_time_issue`).
-- **Credentials:** the four CI API tokens (the bootstrap plugin's
-  `secrets.mjs cloudflare-tokens`), the R2 token for the state bucket, and
-  Worker secrets. Credentials are created by hand or by that script, never
-  stored in state.
-- **Resend's domain verification** happens in Resend; only its DNS records
-  live here.
-
-Mail to `hello@`, `support@` and Engage's `reply+…@` addresses goes to the
-Engage Worker through Email Routing (#1711), and everything else is dropped:
-`email.tf`. Email Routing owns the apex MX and SPF records, so they aren't
-OpenTofu resources.
+This section is kept in the private vault.
 
 ## Local runs
 
@@ -136,30 +37,7 @@ version locally.
 
 ## Deleting or replacing a resource (#1075)
 
-The Infra workflow applies unattended, so it refuses any plan that deletes
-or replaces a resource. The PR check goes red, and so does the run on
-`main`, before anything is applied. On top of that, the D1 database and every
-DNS record have `lifecycle { prevent_destroy =
-true }`, so OpenTofu itself refuses to plan their destruction at all.
-
-When a delete really is intended (say, a WAF rule being retired):
-
-1. Merge the change with the check red only if you've read the plan and
-   the delete is the whole point. Otherwise fix the change. The run on
-   `main` goes red too and applies nothing.
-2. Run Infra by hand on `main` (Actions → Infra → Run workflow), with
-   `expected_deletes` set to the exact addresses the plan deletes or
-   replaces, separated by spaces, such as
-   `cloudflare_zero_trust_access_policy.admin_email`. The run fails before
-   applying if the plan deletes anything not listed, or doesn't delete
-   something listed. The log shows both lists.
-3. For a `prevent_destroy` resource, removing the `lifecycle` block is its
-   own reviewed change first. A deleted D1 database can't be restored
-   (Time Travel only restores in place): export it first
-   (`wrangler d1 export`).
-
-A local run (above) still works as a fallback: `tofu plan -out=tfplan`,
-read the plan, then `tofu apply tfplan`.
+This section is kept in the private vault.
 
 ## Disaster recovery
 
