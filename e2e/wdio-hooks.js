@@ -10,7 +10,7 @@ import {
 import { signInDevUser } from "./wdio-owner.js";
 
 const PAGE_REPLACED =
-  /navigation canceled by concurrent navigation|Cannot find context with specified id|does not belong to the document|belongs to different document/;
+  /navigation canceled by concurrent navigation|Inspected target navigated or closed|Cannot find context with specified id|does not belong to the document|belongs to different document/;
 
 // A mocha timeout doesn't say where a test stuck, so a failed test prints the last commands it sent.
 const recentCommands = [];
