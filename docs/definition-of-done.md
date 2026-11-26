@@ -12,7 +12,7 @@ PR ready. Each item points at the rule it comes from rather than restating it.
    should-fix finding is fixed. A finding is skipped only if it's wrong or
    out of scope, never because it's small.
 3. **Tested.** New or changed behaviour is covered at the right layer
-   ([ADR-0030](adr/0030-test-against-the-real-worker-mock-only-what-it-cant-produce.md)),
+   (ADR-0030 (in the vault)),
    and `pnpm test` passes. For e2e, run the areas the change touches
    (`pnpm e2e:area log tour`; the areas are in `e2e/areas.js`). Run the
    whole suite (`pnpm run test:e2e`) when the change reaches every page:
@@ -23,10 +23,10 @@ PR ready. Each item points at the rule it comes from rather than restating it.
    and dark themes, at desktop and phone widths
    ([coding-standards.md](coding-standards.md#verification)).
 5. **Screened.** Any new dependency or vendor has been checked and recorded
-   ([ADR-0005](adr/0005-screen-dependencies-against-bds-boycott-lists.md)).
+   (ADR-0005 (in the vault)).
 6. **No slower.** `e2e/log-page-boot-perf.e2e.js` still passes, and a change
    to the boot path has its local render time compared before and after. No
-   throttled-network timings ([ADR-0026](adr/0026-local-preview-cant-validate-network-performance.md)).
+   throttled-network timings (ADR-0026 (in the vault)).
 7. **Documented.** Docs and ADRs are updated where behaviour or a decision
    changed, and the diff adds no narrative comments
    ([coding-standards.md](coding-standards.md#comments-and-docs)).

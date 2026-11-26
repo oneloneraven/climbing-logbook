@@ -138,7 +138,7 @@ quietly reversed without someone re-deciding on purpose.
 
 ### Authentication
 
-See [ADR-0002](adr/0002-replace-cloudflare-access-with-better-auth.md) for
+See ADR-0002 (in the vault) for
 why Better Auth replaced Cloudflare Access as the mechanism itself.
 
 - **Better Auth sessions gate admin/write paths inside the Worker itself** — not a shared secret checked ad hoc, and not an edge-only gate.
@@ -255,7 +255,7 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
 
 ### Connectivity resilience
 
-See [ADR-0006](adr/0006-design-for-poor-connectivity-first.md) for the full
+See ADR-0006 (in the vault) for the full
 decision and why it's an ongoing constraint, not a single shipped feature.
 
 - **This app is built for bad connections, not despite them** — "signal at
@@ -271,7 +271,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
   (`client/store.js`) and offline queue (`client/offline-sync.js`) keep it
   working with no signal.
 - **Opening an owner page with no signal is the service worker's job**
-  ([ADR-0028](adr/0028-service-worker-owns-the-owner-app-shell.md)).
+  (ADR-0028 (in the vault)).
   `/service-worker.js`, built from `client/sw/`, is registered with scope
   `/` by owner pages only. At install it pre-caches every owner page's
   shell and assets for the build (resumable, reusing unchanged files), so
@@ -342,7 +342,7 @@ decision and why it's an ongoing constraint, not a single shipped feature.
 
 ### Verification
 
-See [ADR-0030](adr/0030-test-against-the-real-worker-mock-only-what-it-cant-produce.md)
+See ADR-0030 (in the vault)
 for the test layers: real-runtime Vitest, client unit tests, and WebdriverIO
 against the real Worker, with mocks only for states the backend can't
 produce.

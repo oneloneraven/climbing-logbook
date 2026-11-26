@@ -22,7 +22,7 @@ Read a doc when the work touches it, not up front.
 - No comments by default, and don't match the surrounding density; one line for a "why" the code can't express: [coding standards](docs/coding-standards.md).
 - Follow the [editorial guide](docs/editorial-guide.md) for all user-facing copy, and add settled terms to it.
 - Verify before claiming anything works; for user-facing changes, drive it in a browser: [workflow](docs/workflow.md#ways-of-working).
-- Keep the threat model current whenever a trust boundary moves. It and other security docs are in `oneloneraven-vault/climbing-logbook/`, which must be checked out beside this repository.
+- ADRs, specs, plans, runbooks, the threat model and architecture docs are written in `oneloneraven-vault/climbing-logbook/`, never here. Keep the threat model current whenever a trust boundary moves.
 - Raise security-sensitive issues in `oneloneraven-vault`, not here. Never copy vault content into this repository, its issues, PRs or commits.
 
 ## Working with Claude

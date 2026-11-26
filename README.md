@@ -47,9 +47,9 @@ Infra changes (`infra/**`) apply through their own workflow on merge; see
 - [`docs/coding-standards.md`](docs/coding-standards.md) — the review
   framework and project-specific standards this codebase (and its automated
   PR review) is held to
-- [`docs/app-architecture.md`](docs/app-architecture.md) — request routing,
+- `docs/app-architecture.md` (in the vault) — request routing,
   data model, auth flow, offline design
-- [`docs/infra-architecture.md`](docs/infra-architecture.md) — Cloudflare
+- `docs/infra-architecture.md` (in the vault) — Cloudflare
   Worker/routing setup, OpenTofu-managed resources, CI workflows, disaster
   recovery
 - [`docs/climbing-analytics-research.md`](docs/climbing-analytics-research.md) —
@@ -57,7 +57,7 @@ Infra changes (`infra/**`) apply through their own workflow on merge; see
   pyramid methodology, schema recommendations)
 - [`docs/versioning.md`](docs/versioning.md) — what counts as a version
   bump, and how to cut a release
-- [`infra/README.md`](infra/README.md) — one-time setup steps for
+- `infra/README.md` (in the vault) — one-time setup steps for
   provisioning this project's infrastructure from scratch
 
 ## Licence
