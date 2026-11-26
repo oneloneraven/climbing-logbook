@@ -182,8 +182,13 @@ doesn't match this stack, so the committed file is the source.
 - **Preview:** Individual Workers Editor on `climbing-logbook-preview`,
   Account Settings Read, D1 Write.
 - **Deploy:** Individual Workers Editor on `climbing-logbook` and
-  `climbing-logbook-beta`, Account Settings Read, D1 Write, and Workers
-  Routes Write on the zone.
+  `climbing-logbook-beta`, Account Settings Read, D1 Write, Workers Scripts
+  Read, and Workers Routes Write on the zone. Workers Scripts Read is
+  account-wide: it can read every Worker's code and settings, but not
+  secrets. Wrangler needs it to deploy a Worker whose last change didn't
+  come from Wrangler, such as a secret set through the API. Before
+  uploading, it reads the Worker's routes through an account endpoint that
+  the other permissions can't reach (cloudflare/workers-sdk#16390).
 - **Infra apply:** what `infra/` manages, and nothing more. Account: D1 and
   Notifications Write. Zone `climbinglogbook.com`: DNS, Zone Settings, Zone
   WAF, Cache Settings, Transform Rules, Dynamic URL Redirects and Bot
