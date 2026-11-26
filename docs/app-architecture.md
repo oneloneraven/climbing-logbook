@@ -372,7 +372,6 @@ Tables (see `migrations/` for columns and constraints):
 | `disciplines`, `statuses` | Lookup tables ([ADR-0009](adr/0009-normalized-d1-schema-with-lookup-tables.md)) |
 | `user`, `session`, `account`, `verification` | Better Auth's own |
 | `beta_invites` | Invite codes for the closed beta ([ADR-0014](adr/0014-closed-beta-invite-gate-togglable-not-removable.md)) |
-| `issue_reports`, `feedback_submissions` | Unused since #1712; dropped by its follow-up once that release is in production |
 
 - **IDs are minted by the client** (`crypto.randomUUID()`), so a queued
   offline write keeps its identity until it syncs; a repeated `POST` of
