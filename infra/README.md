@@ -110,10 +110,10 @@ dashboard or elsewhere, and why:
 - **Resend's domain verification** happens in Resend; only its DNS records
   live here.
 
-`hello@` and `support@` are Proton Pass custom-domain aliases (#1691). Their
-records (verification TXT, MX, root SPF, DKIM CNAMEs) are in `email.tf`. Adding
-another service that sends as the root domain means adding its `include:`
-to `cloudflare_dns_record.root_spf`, keeping to one SPF record.
+Mail to `hello@`, `support@` and Engage's `reply+…@` addresses goes to the
+Engage Worker through Email Routing (#1711), and everything else is dropped:
+`email.tf`. Email Routing owns the apex MX and SPF records, so they aren't
+OpenTofu resources.
 
 ## Local runs
 

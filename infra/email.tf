@@ -1,9 +1,35 @@
-# Email Routing was disabled in the dashboard: forget its zone settings rather than call disable again.
-removed {
-  from = cloudflare_email_routing_dns.app
-  lifecycle {
-    destroy = false
-  }
+# Enabling adds the apex MX and SPF, and disabling deletes them, even edited ones. No name: the API takes one as a subdomain.
+resource "cloudflare_email_routing_dns" "app" {
+  zone_id = data.cloudflare_zone.app.id
+}
+
+resource "cloudflare_email_routing_settings" "app" {
+  zone_id = data.cloudflare_zone.app.id
+  # So the reply@ rule also matches Engage's signed reply+…@ addresses.
+  support_subaddress = true
+
+  depends_on = [cloudflare_email_routing_dns.app]
+}
+
+resource "cloudflare_email_routing_rule" "engage" {
+  for_each = toset(["hello", "support", "reply"])
+  zone_id  = data.cloudflare_zone.app.id
+  name     = "${each.key}@ to Engage"
+  enabled  = true
+  matchers = [{ type = "literal", field = "to", value = "${each.key}@${var.app_zone_name}" }]
+  actions  = [{ type = "worker", value = [var.engage_worker_name] }]
+
+  depends_on = [cloudflare_email_routing_settings.app]
+}
+
+resource "cloudflare_email_routing_catch_all" "app" {
+  zone_id  = data.cloudflare_zone.app.id
+  name     = "Drop everything else"
+  enabled  = true
+  matchers = [{ type = "all" }]
+  actions  = [{ type = "drop" }]
+
+  depends_on = [cloudflare_email_routing_dns.app]
 }
 
 # Made in the dashboard when Resend was set up; reject once only Resend sends as the domain.
