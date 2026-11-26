@@ -21,6 +21,7 @@ const fetchJson = (path, init) => exports.default.fetch(`${API}${path}`, init);
 const jsonRequest = (method, path, body, headers) =>
   fetchJson(path, { method, headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) });
 
+const HARDEST_BETA = "Heel hook the lip, cross to the crimp";
 const PAIN = { limb: "hand", side: "left", holdType: "crimp", movementStyle: "static", wallAngle: "overhang" };
 
 let a;
@@ -49,7 +50,7 @@ beforeAll(async () => {
     grade: "6B",
     date: "2026-06-01",
     rpe: 70,
-    moves: [{ ...PAIN, difficulty: "hardest" }],
+    hardestBeta: `${HARDEST_BETA} ${MARK}`,
     painMoves: [PAIN],
   };
   const { entry } = await (
@@ -57,6 +58,10 @@ beforeAll(async () => {
   ).json();
   const { entry: gone } = await (await asA("POST", "/-/api/entries", { ...climb, name: `${MARK} Gone` })).json();
   await fetchJson(`/-/api/entries?id=${gone.id}`, { method: "DELETE", headers: { Cookie: a.cookie } });
+  const movements = await env.LOGBOOK_DB.prepare(`SELECT count(*) AS n FROM entry_movements WHERE entry_id = ?`)
+    .bind(entry.id)
+    .first("n");
+  expect(movements, "user A's climb really has movements to protect").toBeGreaterThan(0);
 
   const asB = (method, path, body) => jsonRequest(method, path, body, { Cookie: b.cookie });
   const { location: bLocation } = await (
@@ -104,6 +109,10 @@ async function snapshotA() {
     ),
     pain: await rows(
       `SELECT p.* FROM entry_pain_moves p JOIN entries e ON e.id = p.entry_id WHERE e.user_id = ? ORDER BY p.id`,
+      a.userId,
+    ),
+    movements: await rows(
+      `SELECT m.* FROM entry_movements m JOIN entries e ON e.id = m.entry_id WHERE e.user_id = ? ORDER BY m.id`,
       a.userId,
     ),
   });
@@ -309,7 +318,7 @@ describe("authorization matrix: reads don't depend on another user's data (#1070
         date: "2026-06-01",
         rpe: 90,
         attemptsToSend: firstAttempt ? 1 : 6,
-        moves: [{ ...PAIN, difficulty: "hardest" }],
+        hardestBeta: HARDEST_BETA,
         painMoves: [PAIN],
       });
       expect(created.status, "the other user's climb is really created").toBe(201);
@@ -329,6 +338,7 @@ describe("authorization matrix: reads don't depend on another user's data (#1070
     await env.LOGBOOK_DB.batch(
       [
         `DELETE FROM entry_pain_moves WHERE entry_id IN (SELECT id FROM entries WHERE user_id = ?)`,
+        `DELETE FROM entry_movements WHERE entry_id IN (SELECT id FROM entries WHERE user_id = ?)`,
         `DELETE FROM entries WHERE user_id = ?`,
         `DELETE FROM places WHERE user_id = ?`,
         `DELETE FROM locations WHERE user_id = ?`,
