@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       expected_deletes:
-        description: "Resource addresses this run may delete or replace, space-separated; the plan must delete exactly these (infra/README.md)"
+        description: "Resource addresses this run may delete or replace, space-separated; the plan must delete exactly these (infra/README.md in the vault)"
         type: string
         default: ""
 
@@ -54,7 +54,7 @@ jobs:
 
       - run: tofu validate
 
-      # Apply runs unattended, so it applies exactly the plan that was checked, and refuses any delete: infra/README.md.
+      # Apply runs unattended, so it applies exactly the plan that was checked, and refuses any delete: infra/README.md (in the vault).
       - name: Plan
         run: tofu plan -no-color -input=false -out=tfplan
 
@@ -67,7 +67,7 @@ jobs:
           echo "Planned deletes and replacements:"; echo "${PLANNED:-  (none)}"
           echo "Expected (expected_deletes):"; echo "${EXPECTED:-  (none)}"
           if [ "$PLANNED" != "$EXPECTED" ]; then
-            echo "::error::The plan's deletes and replacements don't match expected_deletes. Unattended runs refuse every delete; a deliberate one runs Infra by hand on main, listing exactly what it deletes (infra/README.md, #1075)."
+            echo "::error::The plan's deletes and replacements don't match expected_deletes. Unattended runs refuse every delete; a deliberate one runs Infra by hand on main, listing exactly what it deletes (infra/README.md in the vault, #1075)."
             exit 1
           fi
           echo "Deletes match expected_deletes."

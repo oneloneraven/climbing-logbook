@@ -14,7 +14,7 @@ import { apexOrigin, isLocalHost, isRealDomain, ownedPageUrl } from "./hosts.js"
 import { authSecretOptions } from "./auth-secrets.js";
 import { checkUsername, USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from "../../shared/username-policy.js";
 
-// Why the list depends on the host: docs/app-architecture.md, Better Auth configuration.
+// Why the list depends on the host: docs/app-architecture.md (in the vault), Better Auth configuration.
 const APP_ORIGINS = [
   "https://climbinglogbook.com",
   "https://my.climbinglogbook.com",

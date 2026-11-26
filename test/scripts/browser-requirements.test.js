@@ -9,7 +9,7 @@ describe("browser requirements (#1458)", () => {
   it("was worked out for the Vite and Tailwind majors in use", () => {
     expect(
       { vite: major("vite"), tailwindcss: major("tailwindcss") },
-      "A new major can raise the browser floor: check /help/browser-requirements/ against docs/app-architecture.md (Browser support), then update this",
+      "A new major can raise the browser floor: check /help/browser-requirements/ against docs/app-architecture.md in the vault (Browser support), then update this",
     ).toEqual({ vite: 8, tailwindcss: 4 });
   });
 });

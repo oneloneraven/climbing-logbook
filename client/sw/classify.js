@@ -3,7 +3,7 @@ import { matchOwnerRoute } from "../../shared/owner-routes.js";
 
 export const LAUNCH_PATH = "/-/launch/";
 
-// Each kind's caching strategy: docs/app-architecture.md, Offline and sync.
+// Each kind's caching strategy: docs/app-architecture.md (in the vault), Offline and sync.
 export function classifyRequest({ url, method, mode, workerOrigin }) {
   const u = new URL(url);
   if (method !== "GET" || u.origin !== workerOrigin) return { kind: "passthrough" };
