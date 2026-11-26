@@ -98,3 +98,11 @@ resource "cloudflare_dns_record" "resend_dkim" {
     prevent_destroy = true
   }
 }
+
+data "cloudflare_email_sending_subdomains" "lookup" {
+  zone_id = data.cloudflare_zone.app.id
+}
+
+output "email_sending_lookup" {
+  value = data.cloudflare_email_sending_subdomains.lookup.result
+}
