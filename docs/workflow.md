@@ -96,4 +96,4 @@ minute and 500 per hour.
   `overrides`. New releases are only usable after three days
   (`minimumReleaseAge`).
 - New dependencies and vendors are screened first
-  ([ADR-0005](adr/0005-screen-dependencies-against-bds-boycott-lists.md)).
+  (ADR-0005 (in the vault)).

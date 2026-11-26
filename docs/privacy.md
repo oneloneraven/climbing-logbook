@@ -2,7 +2,7 @@
 
 Rules for handling personal data while building this project. What is
 processed, why, and by whom is recorded in [data protection](data-protection.md);
-the assessment of the risks is in the [DPIA](dpia.md). This page does not
+the assessment of the risks is in the DPIA (in the vault). This page does not
 restate either.
 
 - **Collect the minimum.** Every piece of personal data has a stated purpose
@@ -21,4 +21,4 @@ restate either.
   nothing personal.
 - **A new processor** (any third party that receives personal data) is added
   to [data protection](data-protection.md) and the
-  [threat model](threat-model.md) in the same PR.
+  threat model (in the vault) in the same PR.

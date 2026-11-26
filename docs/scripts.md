@@ -20,7 +20,7 @@ Run after changing what they read; the output is committed.
 | `node scripts/generate-brand-lockup.mjs` | Writes `static/-/brand-lockup.svg` from Bebas Neue outlines, so the lockup never depends on the web font, and the generated block in `climbing-header.js`. Run after changing the text, font or geometry. |
 | `node scripts/generate-beta-icons.mjs` | Rasterises `static/-/beta/icon*.svg` to the committed PNGs. `CHROMIUM_PATH` overrides the browser. |
 | `node scripts/generate-countries.mjs > /tmp/countries.js` | Prints the `COUNTRIES` array for `shared/countries.js`, to paste in. Pins sit on geographic centres. |
-| `node scripts/generate-world-map.mjs` | Writes `static/-/world-map-{greenwich,americas,oceania}.json` ([Generated data](app-architecture.md#generated-data)). |
+| `node scripts/generate-world-map.mjs` | Writes `static/-/world-map-{greenwich,americas,oceania}.json` (Generated data (in the vault)). |
 
 ## The auth schema
 
@@ -39,6 +39,6 @@ pnpm remove @better-auth/cli better-sqlite3
 | `pnpm audit:usernames [--remote] [--env preview]` | Reports existing usernames the current policy would reject, skipping demo accounts; it never renames anyone. Run after a reserved or blocked list grows. Exits 1 on any failure. |
 | `node scripts/mint-invite.mjs [--email <address>]` | Prints a new beta invite code, the command that stores it, and the link to send. |
 | `node scripts/pull-beta-samples.mjs [file]` | Saves the beta samples outside any repo, replacing the last pull so they age out with the table. |
-| `node scripts/synthetic-check.mjs` | Signs in on the apex and checks the session cookie reaches `my.`, matching `Domain` as a browser does. Read-only. Needs `SYNTHETIC_USER_EMAIL` and `SYNTHETIC_USER_PASSWORD` ([infra/README.md](../infra/README.md)); `APEX_URL` and `APP_URL` override the hosts. Locally the cookie is host-only, so the check rightly refuses it. |
+| `node scripts/synthetic-check.mjs` | Signs in on the apex and checks the session cookie reaches `my.`, matching `Domain` as a browser does. Read-only. Needs `SYNTHETIC_USER_EMAIL` and `SYNTHETIC_USER_PASSWORD` (infra/README.md (in the vault)); `APEX_URL` and `APP_URL` override the hosts. Locally the cookie is host-only, so the check rightly refuses it. |
 | `node scripts/bootstrap-state.mjs` | Creates the OpenTofu state bucket if it's missing. Needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. |
 | `PREVIEW_DEV_EMAIL=… PREVIEW_DEV_PASSWORD=… PREVIEW_BETA_INVITE_CODE=… node scripts/seed-preview-data.mjs <preview-url>` | Rebuilds the shared preview database from `main`: drops every table, migrates and seeds. CI runs it; the account comes from repository secrets, as previews are public. |
