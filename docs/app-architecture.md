@@ -563,6 +563,10 @@ Tables (see `migrations/` for columns and constraints):
   - A banned username reads as unavailable, at sign-up or on a change.
   - The admin host's Users tab does the suspending, deleting and banning,
     and records each action in `admin_audit_log` ([ADR-0034](adr/0034-admin-host-behind-cloudflare-access.md)).
+  - `/entries/<id>` on the admin host opens a climb's owner on the Users tab,
+    with their logbook loaded and the climb focused, so a report in Engage
+    links straight to it (#1743). An unknown or deleted climb opens the Users
+    tab with a message. Opening the link is a logbook view, recorded in Activity.
 
 ### Better Auth configuration
 
