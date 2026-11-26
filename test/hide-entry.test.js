@@ -116,3 +116,37 @@ describe("hiding a climb", () => {
     expect((await admin("/-/api/admin/entries/nope/hide")).status).toBe(404);
   });
 });
+
+describe("opening a climb from a link (#1743)", () => {
+  const opens = async (id, init) => {
+    const res = await admin(`/entries/${id}`, { redirect: "manual", ...init });
+    expect(res.status).toBe(302);
+    return new URL(res.headers.get("Location"));
+  };
+
+  it("sends a live or hidden climb to its owner on the Users page", async () => {
+    const owner = await logbookWithClimbs();
+    const live = await opens(owner.kept);
+    expect(live.pathname).toBe("/users");
+    expect(Object.fromEntries(live.searchParams)).toEqual({ id: owner.userId, entry: owner.kept });
+
+    await admin(`/-/api/admin/entries/${owner.reported}/hide`, { method: "POST" });
+    const hidden = await opens(owner.reported, { method: "HEAD" });
+    expect(Object.fromEntries(hidden.searchParams)).toEqual({ id: owner.userId, entry: owner.reported });
+  });
+
+  it("sends an unknown or deleted climb to the Users page without an owner", async () => {
+    const owner = await logbookWithClimbs();
+    await jsonRequest("DELETE", `/-/api/entries?id=${owner.kept}`, undefined, { Cookie: owner.cookie });
+    for (const id of [owner.kept, "nope", "%E0%A4%A"]) {
+      const url = await opens(id);
+      expect(url.pathname).toBe("/users");
+      expect([...url.searchParams.keys()], id).toEqual(["entry"]);
+    }
+  });
+
+  it("is a page, not an action", async () => {
+    expect((await admin("/entries/nope", { method: "POST" })).status).toBe(404);
+    expect((await admin("/entries/nope/more")).status).toBe(404);
+  });
+});

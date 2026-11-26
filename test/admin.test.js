@@ -135,6 +135,7 @@ describe("a usage service token (#1728)", () => {
     ["POST", "/-/api/admin/usage"],
     ["HEAD", "/-/api/admin/usage"],
     ["GET", "/users"],
+    ["GET", "/entries/e1"],
     ["GET", "/"],
   ])("is refused %s %s", async (method, path) => {
     expect((await admin(path, { method, token: await serviceToken() })).status).toBe(403);

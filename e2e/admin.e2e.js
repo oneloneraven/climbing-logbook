@@ -172,6 +172,34 @@ describe("admin", () => {
     );
   });
 
+  it("a climb's link opens it on its owner's logbook, focused, one key from hiding or unhiding (#1743)", async () => {
+    const owner = await claimOwner();
+    const climb = `Linked climb ${Date.now()}`;
+    await owner.seed({ entries: [{ name: "Another climb" }, { id: "linked", name: climb }] });
+    const entryId = owner.ownId("linked");
+    const name = $(`#logbook-entry-${entryId}`);
+    const toggle = $(`button[aria-describedby="logbook-entry-${entryId}"]`);
+
+    await browser.url(`${ADMIN}/entries/${entryId}`);
+    await waitForUrl(url => url.pathname === "/users" && url.searchParams.get("entry") === entryId);
+    await expect($("#user-heading")).toHaveText(owner.username);
+    await expect(name).toHaveText(climb);
+    await expect(name).toBeFocused();
+    await browser.keys("Tab");
+    await expect(toggle).toBeFocused();
+    await expect(toggle).toHaveText("Hide this entry");
+    await browser.keys("Enter");
+    await expect(toggle).toHaveText("Unhide this entry");
+
+    await browser.url(`${ADMIN}/entries/${entryId}`);
+    await expect(name).toBeFocused();
+    await expect(toggle).toHaveText("Unhide this entry");
+
+    await browser.url(`${ADMIN}/entries/no-such-climb`);
+    await expect($("#user-notice")).toHaveText("That entry doesn't exist, or it's been deleted.");
+    await expect($("#user-detail")).not.toBeDisplayed();
+  });
+
   it("the usage tab shows the headline figures, the splits, and places by country that open to their locations", async () => {
     await browser.setViewport({ width: 312, height: 680 });
     await browser.url(`${ADMIN}/usage`);

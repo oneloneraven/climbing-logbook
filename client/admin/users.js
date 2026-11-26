@@ -1,6 +1,7 @@
 import { SAVE_ERROR, addField, api, cardClass, el, formatDate, onPlainClick } from "./shared.js";
 
 const SEARCH_DELAY_MS = 250;
+const MISSING_ENTRY = "That entry doesn't exist, or it's been deleted.";
 
 const CONFIRMATIONS = {
   delete: {
@@ -73,6 +74,7 @@ function summary(user) {
 export function startUsers() {
   const listPane = document.getElementById("user-list-pane");
   const listStatus = document.getElementById("user-status");
+  const notice = document.getElementById("user-notice");
   const list = document.getElementById("user-list");
   const search = document.getElementById("user-search");
   const detailPane = document.getElementById("user-detail");
@@ -91,6 +93,7 @@ export function startUsers() {
   const params = new URLSearchParams(location.search);
   let query = params.get("q") ?? "";
   let selectedId = params.get("id");
+  let linkedEntryId = params.get("entry");
   let users = [];
   let pendingAction = null;
   let searchTimer = 0;
@@ -173,6 +176,7 @@ export function startUsers() {
   }
 
   function navigate(url, { replace = false } = {}) {
+    notice.hidden = true;
     history[replace ? "replaceState" : "pushState"](null, "", url);
     selectedId = new URLSearchParams(location.search).get("id");
     render();
@@ -189,6 +193,23 @@ export function startUsers() {
       return;
     }
     render();
+    if (linkedEntryId) await openLinkedEntry();
+  }
+
+  async function openLinkedEntry() {
+    const entryId = linkedEntryId;
+    linkedEntryId = null;
+    const user = selected();
+    if (!user) {
+      notice.textContent = MISSING_ENTRY;
+      notice.hidden = false;
+      return;
+    }
+    if (!(await showLogbook(user))) return;
+    const name = document.getElementById(`logbook-entry-${entryId}`);
+    if (!name) return showError(MISSING_ENTRY);
+    name.tabIndex = -1;
+    name.focus();
   }
 
   function showError(message) {
@@ -216,22 +237,27 @@ export function startUsers() {
     }, SEARCH_DELAY_MS);
   });
 
-  viewLogbook.addEventListener("click", async () => {
-    const user = selected();
-    if (!user) return;
+  async function showLogbook(user) {
     logbookList.replaceChildren();
     logbookStatus.textContent = "Loading…";
     try {
       const { entries } = await api(`users/${encodeURIComponent(user.id)}/logbook`);
-      if (selected()?.id !== user.id) return;
+      if (selected()?.id !== user.id) return false;
       logbookEntries = entries;
       logbookList.replaceChildren(...entries.map(entry => logbookItem(entry, { canHide: !user.isDemo })));
       logbookStatus.textContent = entries.length
         ? `${entries.length} ${entries.length === 1 ? "climb" : "climbs"}`
         : "No climbs yet.";
+      return true;
     } catch {
       logbookStatus.textContent = "Couldn't load this logbook. Check your connection and try again.";
+      return false;
     }
+  }
+
+  viewLogbook.addEventListener("click", () => {
+    const user = selected();
+    if (user) showLogbook(user);
   });
 
   logbookList.addEventListener("click", async e => {

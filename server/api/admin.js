@@ -1,6 +1,6 @@
 import { json } from "../lib/json.js";
 import { accessRole } from "../lib/access.js";
-import { actOnUser, listAuditLog, listUsers, setEntryHidden, viewLogbook } from "./admin-users.js";
+import { actOnUser, entryOwner, listAuditLog, listUsers, setEntryHidden, viewLogbook } from "./admin-users.js";
 import { handleUsage } from "./admin-usage.js";
 import { createInvite, listInvites } from "./admin-invites.js";
 
@@ -39,6 +39,12 @@ async function handleAdminApi(request, env, pathname, log) {
   return null;
 }
 
+async function openEntry(request, env, entryId) {
+  const owner = await entryOwner(env, entryId);
+  const params = new URLSearchParams(owner ? { id: owner, entry: entryId } : { entry: entryId });
+  return Response.redirect(new URL(`/users?${params}`, request.url).href, 302);
+}
+
 export async function handleAdminHost(request, env, log) {
   const role = await accessRole(request, env);
   const { pathname } = new URL(request.url);
@@ -48,6 +54,8 @@ export async function handleAdminHost(request, env, log) {
   const isRead = request.method === "GET" || request.method === "HEAD";
 
   if (pathname === "/" && isRead) return Response.redirect(new URL("/users", request.url).href, 302);
+  const entryPage = pathname.match(/^\/entries\/([^/]+)$/);
+  if (entryPage && isRead) return openEntry(request, env, safeDecode(entryPage[1]));
   if (PAGES.has(pathname) && isRead) return env.ASSETS.fetch(new Request(new URL("/admin/", request.url), request));
   if (pathname.startsWith("/-/api/admin/")) {
     return (await handleAdminApi(request, env, pathname, log)) ?? json({ error: "Not found" }, 404);

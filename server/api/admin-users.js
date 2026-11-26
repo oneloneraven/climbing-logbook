@@ -142,6 +142,13 @@ export async function viewLogbook(env, id) {
   return json({ username: user.username, entries }, 200, { "Cache-Control": "no-store" });
 }
 
+export async function entryOwner(env, entryId) {
+  const entry = await env.LOGBOOK_DB.prepare(`SELECT user_id FROM entries WHERE id = ? AND deleted_at IS NULL`)
+    .bind(entryId)
+    .first();
+  return entry?.user_id ?? null;
+}
+
 // Hiding takes a climb off its owner's public logbook; the sync cursor moves so the owner's devices learn of it.
 export async function setEntryHidden(env, entryId, hidden) {
   const entry = await env.LOGBOOK_DB.prepare(
