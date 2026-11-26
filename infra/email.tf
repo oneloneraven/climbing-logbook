@@ -99,10 +99,15 @@ resource "cloudflare_dns_record" "resend_dkim" {
   }
 }
 
-data "cloudflare_email_sending_subdomains" "lookup" {
-  zone_id = data.cloudflare_zone.app.id
+# Onboarded in the dashboard (#1702), which added the cf-bounce MX, SPF and DKIM records. Preview stays off so message content isn't kept.
+import {
+  to = cloudflare_email_sending_subdomain.app
+  id = "${data.cloudflare_zone.app.id}/ef0eefd4682a486c8df42efd8409ace2"
 }
 
-output "email_sending_lookup" {
-  value = data.cloudflare_email_sending_subdomains.lookup.result
+resource "cloudflare_email_sending_subdomain" "app" {
+  zone_id                    = data.cloudflare_zone.app.id
+  name                       = var.app_zone_name
+  preview_enabled            = false
+  drop_suppressed_recipients = false
 }
