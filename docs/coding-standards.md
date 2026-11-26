@@ -163,8 +163,9 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
   already have it. The script only reports, so a person decides what
   happens to each account.
 
-- **Keep [threat-model.md](threat-model.md) current.** A change
-  that adds or moves a trust boundary updates it in the same PR: a new
+- **Keep the threat model current.** It's in the private vault
+  (`oneloneraven-vault/climbing-logbook/threat-model.md`). A change that
+  adds or moves a trust boundary updates it in a paired vault PR: a new
   host, an auth or session change, data exposed to anyone but its owner, a
   new processor, a new secret or CI permission, or an ADR touching any of
   these.

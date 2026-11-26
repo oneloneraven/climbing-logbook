@@ -39,7 +39,7 @@ GitHub, the same treatment every other doc in this repo already gets.
 | ADR | Title | Status |
 |---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions with ADRs | Accepted |
-| [0002](0002-replace-cloudflare-access-with-better-auth.md) | Replace Cloudflare Access with Better Auth | Accepted |
+| [0002](0002-replace-cloudflare-access-with-better-auth.md) | Replace Cloudflare Access with Better Auth (in the vault) | Accepted |
 | [0003](0003-web-components-for-shared-ui-and-route-split.md) | Native Web Components for shared UI + multi-page route split | Accepted |
 | [0004](0004-tailwind-for-styling-reject-radix.md) | Adopt Tailwind for styling, reject Radix, add Floating UI | Accepted |
 | [0005](0005-screen-dependencies-against-bds-boycott-lists.md) | Screen dependencies and vendors against BDS boycott lists | Accepted |
@@ -51,31 +51,31 @@ GitHub, the same treatment every other doc in this repo already gets.
 | [0011](0011-three-layer-test-pyramid.md) | Three-layer test pyramid: real Workers runtime, extracted-logic unit tests, Playwright E2E | Superseded by 0030 |
 | [0012](0012-client-modularization-factories-no-framework.md) | Client-side modularization: esbuild + ES modules + factories, no framework | Accepted, bundler choice superseded by 0021 |
 | [0013](0013-pr-previews-via-wrangler-versions-upload.md) | PR preview deployments via wrangler versions upload | Superseded by 0036 |
-| [0014](0014-closed-beta-invite-gate-togglable-not-removable.md) | Closed-beta invite gate, togglable off rather than removed | Accepted, partially superseded by 0016 |
+| [0014](0014-closed-beta-invite-gate-togglable-not-removable.md) | Closed-beta invite gate, togglable off rather than removed (in the vault) | Accepted, partially superseded by 0016 |
 | [0015](0015-web-analytics-eu-exclusion-not-consent-banner.md) | Cloudflare Web Analytics with EU exclusion, not a cookie consent banner | Accepted |
-| [0016](0016-beta-gate-request-level-wrapper-not-hook.md) | Beta invite claim/release runs as a request-level wrapper, not a Better Auth hook | Accepted |
+| [0016](0016-beta-gate-request-level-wrapper-not-hook.md) | Beta invite claim/release runs as a request-level wrapper, not a Better Auth hook (in the vault) | Accepted |
 | [0017](0017-connectivity-first-scoped-to-owner-write-path.md) | Connectivity-first resilience is scoped to the owner's write-path, not every page | Accepted |
 | [0018](0018-server-side-aggregation-for-derived-views.md) | Server-side aggregation for derived views, no client-side fallback | Superseded by 0031 |
 | [0019](0019-local-first-sync-chunked-initial-load-and-delta.md) | Local-first sync for /log: chunked initial load + delta sync, not click-driven pagination | Accepted |
-| [0020](0020-beta-environment-shared-data-tag-promotion.md) | Beta environment: shared production data, tag-cumulative promotion, opt-in gate | Accepted, access control superseded by 0029 |
+| [0020](0020-beta-environment-shared-data-tag-promotion.md) | Beta environment: shared production data, tag-cumulative promotion, opt-in gate (in the vault) | Accepted, access control superseded by 0029 |
 | [0021](0021-vite-for-production-build-client-and-worker.md) | Vite as the production build tool: client bundling, Worker build, and explicit environment selection | Accepted |
 | [0022](0022-eleventy-for-page-shell-templating.md) | 11ty (Eleventy) for page-shell templating | Accepted |
 | [0023](0023-instant-shell-decoupled-content-loading.md) | Instant shell, decoupled content loading, and a shell-level sync/offline indicator | Accepted |
 | [0024](0024-sync-status-timeout-on-the-fetch-not-the-animation.md) | Sync/offline status timeout belongs on the fetch, not on how long the animation runs | Accepted |
 | [0025](0025-static-asset-caching-hash-or-version-query.md) | Static asset caching: content hashes where the build provides them, versioned query strings where it doesn't | Accepted, build-wide `?v=` superseded by 0028 |
 | [0026](0026-local-preview-cant-validate-network-performance.md) | Local preview tooling can't validate real network performance — automated tests stop at cache correctness | Accepted |
-| [0027](0027-database-backed-rate-limiting-on-sign-in.md) | Database-backed rate limiting, not Better Auth's in-memory default | Superseded by the Rate Limiting binding (#1292) |
+| [0027](0027-database-backed-rate-limiting-on-sign-in.md) | Database-backed rate limiting, not Better Auth's in-memory default (in the vault) | Superseded by the Rate Limiting binding (#1292) |
 | [0028](0028-service-worker-owns-the-owner-app-shell.md) | The service worker owns the owner app's shell: offline cold launch, cache-first per build, never data | Accepted |
-| [0029](0029-beta-channel-enrollment-model.md) | Beta channel: two-state enrollment, checked on the page, one channel per origin | Accepted |
+| [0029](0029-beta-channel-enrollment-model.md) | Beta channel: two-state enrollment, checked on the page, one channel per origin (in the vault) | Accepted |
 | [0030](0030-test-against-the-real-worker-mock-only-what-it-cant-produce.md) | Test against the real Worker, mock only what it can't produce, measure coverage | Accepted |
 | [0031](0031-owner-reports-from-the-synced-store.md) | Owner reports and map counts are computed on the device, from the synced store | Accepted, supersedes 0018 |
 | [0032](0032-combined-view-on-the-owner-pages.md) | The combined view lives on the owner pages, not the public profile | Accepted |
 | [0033](0033-parallel-e2e-with-seeded-users.md) | Run the e2e suite in parallel, with users seeded straight into D1 | Accepted, amended by 0038 |
-| [0034](0034-admin-host-behind-cloudflare-access.md) | Admin pages live on their own host, behind Cloudflare Access | Accepted, feedback triage superseded by 0040 |
+| [0034](0034-admin-host-behind-cloudflare-access.md) | Admin pages live on their own host, behind Cloudflare Access (in the vault) | Accepted, feedback triage superseded by 0040 |
 | [0035](0035-capacity-and-operational-targets.md) | Capacity and operational targets: design for 50,000 users | Accepted |
 | [0036](0036-pr-previews-via-cloudflare-previews.md) | PR previews via Cloudflare Previews | Accepted |
-| [0037](0037-rate-limiting-through-the-workers-binding.md) | Rate limiting through the Workers Rate Limiting binding | Accepted |
+| [0037](0037-rate-limiting-through-the-workers-binding.md) | Rate limiting through the Workers Rate Limiting binding (in the vault) | Accepted |
 | [0038](0038-webdriverio-for-end-to-end-tests.md) | WebdriverIO for end-to-end tests, in Chrome and Firefox | Accepted, amends 0033 |
 | [0039](0039-no-safari-e2e-until-it-supports-webdriver-bidi.md) | No Safari e2e until Safari supports WebDriver BiDi | Accepted |
 | [0040](0040-feedback-triage-lives-in-engage.md) | Feedback and issue reports are triaged in Engage, not on the admin host | Accepted, supersedes part of 0034 |
-| [0041](0041-service-tokens-read-admin-usage.md) | Named Access service tokens may read the admin usage figures, and nothing else | Accepted, amends 0034 |
+| [0041](0041-service-tokens-read-admin-usage.md) | Named Access service tokens may read the admin usage figures, and nothing else (in the vault) | Accepted, amends 0034 |

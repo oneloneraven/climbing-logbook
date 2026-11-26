@@ -138,78 +138,11 @@ that carries the change. The repo doesn't let Actions open PRs, on purpose
 
 ## Secrets and variables
 
-| Name | Kind | Purpose |
-|---|---|---|
-| `CLOUDFLARE_PREVIEW_TOKEN`, `CLOUDFLARE_INFRA_PLAN_TOKEN` | Actions secrets | Previews; OpenTofu plan on PRs (permissions below) |
-| `CLOUDFLARE_DEPLOY_TOKEN` | `production` environment secret | Deploy and promote |
-| `CLOUDFLARE_INFRA_APPLY_TOKEN` | `infra` environment secret | OpenTofu apply and the state bootstrap |
-| `RELEASE_APP_CLIENT_ID` (variable), `RELEASE_APP_PRIVATE_KEY` (secret) | Actions variable and secret | The release GitHub App, which pushes the version tag that triggers a deploy (Contents and Workflows: write, this repo only) |
-| `PROJECT_STATUS_PAT` | Actions secret | Classic token with only the `project` scope, for the board sync; a GitHub App can't reach a board owned by a personal account |
-| `PROJECT_ID`, `PROJECT_STATUS_FIELD_ID`, `PROJECT_IN_PROGRESS_OPTION`, `PROJECT_IN_REVIEW_OPTION` | Actions variables | The board, its Status field and the two Status options the board sync sets; not confidential |
-| `TF_STATE_READ_ACCESS_KEY_ID`, `TF_STATE_READ_SECRET_ACCESS_KEY` | Actions secrets | Read-only R2 credentials for the state backend, used by PR plans |
-| `TF_STATE_ACCESS_KEY_ID`, `TF_STATE_SECRET_ACCESS_KEY` | `infra` environment secrets | Read-write R2 credentials for the state backend (created under R2 → Manage R2 API Tokens) |
-| `CLOUDFLARE_ACCOUNT_ID` | Actions variable | Not confidential |
-| `SYNTHETIC_USER_EMAIL`, `SYNTHETIC_USER_PASSWORD` | Actions secrets | The synthetic check's account (`infra/README.md`) |
-| `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | Worker variables (`wrangler.jsonc`) | What the Worker checks the admin host's Access token against. The Access application lives in the identity stack, coraxia, whose `team_domain` and `app_aud` outputs give these values; empty, the admin host refuses everything |
-| `OWNER_EMAIL` | `production` environment secret, synced to the production Worker | The one email the Worker lets into the admin host, on top of Access; missing or blank, the admin host refuses everyone |
-| `USAGE_SERVICE_TOKENS` | `production` environment secret, synced to the production Worker | Comma-separated client ids of the Access service tokens that may read `GET /-/api/admin/usage` and nothing else ([ADR-0041](adr/0041-service-tokens-read-admin-usage.md)); the tokens and their policy live in the identity stack, coraxia. Missing or blank, no service token gets in; synced empty, it's deleted from the Worker, which revokes every token |
-| `BETTER_AUTH_SECRET` | Worker secret, per environment | Session signing |
-| `EMAIL` | Worker binding (`send_email` in `wrangler.jsonc`) | Cloudflare Email Sending: verification, password-reset and account-notice email, sent from `myaccount@climbinglogbook.com`. A binding, so there is no key to hold or rotate. Every environment that sends declares it (bindings aren't inherited); `e2e` doesn't, since it never sends |
-| `EMAIL_DELIVERY` | Worker variable (`wrangler.jsonc`) | `"off"` in `e2e` skips every email, since e2e registers and resets passwords by the dozen, and in `preview` and PR previews, where every Turnstile check passes; `"log"` in local dev prints each email's link to the terminal (only when `APP_ENV` is `development`). Any other value sends through the `EMAIL` binding: production and beta leave it unset, and unit tests set `"cloudflare"` |
-| `TURNSTILE_SECRET_KEY` | `production` environment secret, synced to the production and beta Workers | Turnstile verification, with the value from the register widget's Turnstile page in the dashboard (the widget lives in the identity stack, coraxia); preview and local dev use Cloudflare's public always-passes test secret |
-| `ACCOUNT_SECRET_CL` | `production` environment secret, synced to the production and beta Workers | Lets account deletion clear the account's reference on its feedback and reports in Engage (`server/lib/engage-account.js`, #1710), with the value Engage holds for the `cl` product; missing, the deletion still happens and the Worker logs `engage.account.secret-missing`. Local dev, previews and tests run without it |
-
-`OWNER_EMAIL`, `USAGE_SERVICE_TOKENS`, `TURNSTILE_SECRET_KEY` and `ACCOUNT_SECRET_CL` reach the Workers one way: store
-each as a secret of the `production` environment on GitHub
-(`gh secret set <name> --env production`), then run "Sync Worker secrets" on
-`main`. It pipes each value to `wrangler secret put` on stdin, fails when one
-is empty, and never prints it. Other Worker secrets are set once by hand with
-`wrangler secret put <name> --env <env>`. Setting one environment never sets
-another. Local dev reads them from `.dev.vars` (gitignored).
-
-### Cloudflare token permissions
-
-The bootstrap plugin's `node <project-bootstrap>/skills/bootstrap/scripts/secrets.mjs cloudflare-tokens . --rotate`
-creates all four as account-owned tokens, each expiring after a year, from
-the definitions in `.bootstrap/cloudflare/tokens.json`. It reads each new
-token back and checks its policies before storing it in Pass and setting the
-GitHub secret, and revokes the tokens it made last time. It asks for a
-bootstrap token with Account API Tokens Write, and deletes it at the end.
-Don't re-render `.bootstrap/` before running it: the plugin's template
-doesn't match this stack, so the committed file is the source.
-
-- **Preview:** Individual Workers Editor on `climbing-logbook-preview`,
-  Account Settings Read, D1 Write.
-- **Deploy:** Individual Workers Editor on `climbing-logbook` and
-  `climbing-logbook-beta`, Account Settings Read, D1 Write, Workers Scripts
-  Read, and Workers Routes Write on the zone. Workers Scripts Read is
-  account-wide: it can read every Worker's code and settings, but not
-  secrets. Wrangler needs it to deploy a Worker whose last change didn't
-  come from Wrangler, such as a secret set through the API. Before
-  uploading, it reads the Worker's routes through an account endpoint that
-  the other permissions can't reach (cloudflare/workers-sdk#16390).
-- **Infra apply:** what `infra/` manages, and nothing more. Account: D1 and
-  Notifications Write. Zone `climbinglogbook.com`: DNS, Zone Settings, Zone
-  WAF, Cache Settings, Transform Rules, Dynamic URL Redirects and Bot
-  Management Write. Access, Turnstile and Zero Trust belong to the identity
-  stack, coraxia (#1707).
-- **Infra plan:** the read-only version of each apply permission.
-
-**Never edit a token's policies in place**, above all to add a per-Worker
-policy (`Individual Workers Editor` and similar): reissue it instead. Writes that included one failed or
-silently left the token with no policies at all, which took days to
-diagnose. Verify a token's real contents with `GET /accounts/{id}/tokens/{id}`,
-not the dashboard labels.
+This section is kept in the private vault.
 
 ## Beta invites
 
-While the beta gate is on (`BETA_GATE_ENABLED`,
-[ADR-0014](adr/0014-closed-beta-invite-gate-togglable-not-removable.md)),
-sign-up needs an unused code from `beta_invites`. Make codes on the admin
-host's Invites tab, or with `node scripts/mint-invite.mjs [--email <address>]`
-when there's no admin host yet: it prints a random 128-bit code, the
-`wrangler` command that stores it, and the link to send. Don't type codes by
-hand; a guessable code gets round the gate.
+This section is kept in the private vault.
 
 ## Disaster recovery
 
