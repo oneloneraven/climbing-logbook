@@ -1,78 +1,9 @@
-# hello@ is the contact address emails give; it's never published on the site.
-import {
-  to = cloudflare_dns_record.proton_verification
-  id = "${data.cloudflare_zone.app.id}/f777e54d1be62620b46ec8d26f914b66"
-}
-
-resource "cloudflare_dns_record" "proton_verification" {
-  zone_id = data.cloudflare_zone.app.id
-  name    = var.app_zone_name
-  type    = "TXT"
-  ttl     = 1
-  content = "\"pm-verification=gqsulojaiazjislcsxekrhbxtrroib\""
-}
-
 # Email Routing was disabled in the dashboard: forget its zone settings rather than call disable again.
 removed {
   from = cloudflare_email_routing_dns.app
   lifecycle {
     destroy = false
   }
-}
-
-# Moved, not replaced, so the plan updates each record in place and deletes nothing (#1075).
-moved {
-  from = cloudflare_dns_record.proton_mx["mail.protonmail.ch"]
-  to   = cloudflare_dns_record.proton_mx["mx1.alias.proton.me"]
-}
-
-moved {
-  from = cloudflare_dns_record.proton_mx["mailsec.protonmail.ch"]
-  to   = cloudflare_dns_record.proton_mx["mx2.alias.proton.me"]
-}
-
-moved {
-  from = cloudflare_dns_record.proton_dkim["protonmail"]
-  to   = cloudflare_dns_record.proton_dkim["dkim"]
-}
-
-moved {
-  from = cloudflare_dns_record.proton_dkim["protonmail2"]
-  to   = cloudflare_dns_record.proton_dkim["dkim02"]
-}
-
-moved {
-  from = cloudflare_dns_record.proton_dkim["protonmail3"]
-  to   = cloudflare_dns_record.proton_dkim["dkim03"]
-}
-
-# Only after Email Routing is off: disabling it deletes the root MX and SPF, even edited ones.
-resource "cloudflare_dns_record" "proton_mx" {
-  for_each = { "mx1.alias.proton.me" = 10, "mx2.alias.proton.me" = 20 }
-  zone_id  = data.cloudflare_zone.app.id
-  name     = var.app_zone_name
-  type     = "MX"
-  ttl      = 1
-  priority = each.value
-  content  = each.key
-}
-
-resource "cloudflare_dns_record" "root_spf" {
-  zone_id = data.cloudflare_zone.app.id
-  name    = var.app_zone_name
-  type    = "TXT"
-  ttl     = 1
-  content = "\"v=spf1 include:alias.proton.me ~all\""
-}
-
-resource "cloudflare_dns_record" "proton_dkim" {
-  for_each = toset(["dkim", "dkim02", "dkim03"])
-  zone_id  = data.cloudflare_zone.app.id
-  name     = "${each.key}._domainkey.${var.app_zone_name}"
-  type     = "CNAME"
-  ttl      = 1
-  proxied  = false
-  content  = "${each.key}._domainkey.alias.proton.me"
 }
 
 # Made in the dashboard when Resend was set up; reject once only Resend sends as the domain.
