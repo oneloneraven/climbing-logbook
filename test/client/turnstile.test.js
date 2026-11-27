@@ -34,9 +34,24 @@ describe("renderTurnstile", () => {
       sitekey: "1x00000000000000000000AA",
       appearance: "interaction-only",
       size: "normal",
+      "before-interactive-callback": expect.any(Function),
     });
     expect(widget.getResponse()).toBe("token");
     expect(window.turnstile.getResponse).toHaveBeenCalledWith("widget-1");
+  });
+
+  it("marks the container visible while the check needs a click, until it's reset", () => {
+    const container = containerOfWidth(312);
+    window.turnstile = fakeTurnstile();
+    const widget = renderTurnstile("#turnstile-widget");
+    expect(container.hasAttribute("data-visible")).toBe(false);
+
+    window.turnstile.render.mock.calls[0][1]["before-interactive-callback"]();
+    expect(container.hasAttribute("data-visible")).toBe(true);
+
+    widget.reset();
+    expect(container.hasAttribute("data-visible")).toBe(false);
+    expect(window.turnstile.reset).toHaveBeenCalledWith("widget-1");
   });
 
   it("uses the register widget's sitekey on our own hosts by default, and the one it's given otherwise", () => {

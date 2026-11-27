@@ -15,15 +15,17 @@ const RESPONSE_WAIT_MS = 10_000;
 // Every widget rendered before api.js loads, not just the last, renders when it does.
 const waitingForLoad = [];
 
-// Hidden unless the check needs a click; api.js is async and may run before this module.
+// Hidden unless the check needs a click, when the container gets data-visible for the page to style; api.js is async and may run before this module.
 export function renderTurnstile(selector, realSitekey = REGISTER_SITEKEY) {
   let widgetId;
+  let container;
   const render = () => {
-    const container = document.querySelector(selector);
+    container = document.querySelector(selector);
     widgetId = window.turnstile.render(container, {
       sitekey: turnstileSitekey(window.location.hostname, realSitekey),
       appearance: "interaction-only",
       size: container.clientWidth < NORMAL_WIDTH ? "compact" : "normal",
+      "before-interactive-callback": () => container.setAttribute("data-visible", ""),
     });
   };
   if (window.turnstile) render();
@@ -42,6 +44,9 @@ export function renderTurnstile(selector, realSitekey = REGISTER_SITEKEY) {
       while (!getResponse() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 200));
       return getResponse();
     },
-    reset: () => window.turnstile?.reset(widgetId),
+    reset: () => {
+      container?.removeAttribute("data-visible");
+      window.turnstile?.reset(widgetId);
+    },
   };
 }
