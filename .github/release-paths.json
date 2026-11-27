@@ -1,4 +1,4 @@
 {
-  "noneAllowed": ["docs/", ".github/", ".claude/", "test/", "e2e/", "scripts/seed-preview-data.mjs", "scripts/lib/dev-session.mjs", "scripts/lib/drop-order.mjs", "scripts/synthetic-check.mjs", ".gitignore", ".git-blame-ignore-revs", "biome.json", "vitest.config.js", "wdio.conf.js", "*.md", ".bootstrap/"],
+  "noneAllowed": ["docs/", ".github/", ".claude/", "test/", "e2e/", "scripts/seed-preview-data.mjs", "scripts/lib/dev-session.mjs", "scripts/lib/drop-order.mjs", "scripts/synthetic-check.mjs", ".gitignore", ".git-blame-ignore-revs", "biome.json", "vitest.config.js", "wdio.conf.js", "*.md", ".bootstrap/record.json"],
   "noneForbidden": ["infra/", "migrations/"]
 }
