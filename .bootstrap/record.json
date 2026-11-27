@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "modules": [
+    "core"
+  ],
+  "visibility": "public",
+  "flags": {},
+  "skipped": {},
+  "exceptions": []
+}
