@@ -3,7 +3,7 @@
 ## Deploys vs. releases — deploys are tag-gated
 
 A version tag **is** the release gate: `deploy.yml` triggers on a `vX.Y.Z`
-tag push, not on every merge to `main` (see `docs/infra-architecture.md`).
+tag push, not on every merge to `main` (see `docs/infra-architecture.md` in the vault).
 Merging to `main` integrates a change; nothing goes live until the next tag
 is cut.
 

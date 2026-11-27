@@ -17,8 +17,8 @@ spike. Should the project adopt a component/styling stack (Radix primitives
 + Tailwind was suggested as a starting candidate) before that work lands, or
 keep hand-rolling markup/CSS per component as it has so far?
 
-`docs/app-architecture.md`'s "no framework, no build step, no client-side
-bundler" line describes the current state of the app, not a fixed mandate —
+The "no framework, no build step, no client-side bundler" line in
+`docs/app-architecture.md` (in the vault) describes the current state of the app, not a fixed mandate —
 this spike is exactly the place to reconsider it if there's a good reason
 to. The two halves of "Radix + Tailwind" turn out to have very different
 costs, so they get separate answers below rather than an up-or-down vote on

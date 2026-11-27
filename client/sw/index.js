@@ -1,4 +1,4 @@
-// The owner app's shell only; data is never cached here (docs/app-architecture.md, Offline and sync).
+// The owner app's shell only; data is never cached here (docs/app-architecture.md in the vault, Offline and sync).
 import { classifyRequest, LAUNCH_PATH } from "./classify.js";
 import { cacheNameFor, cachesToDelete } from "./caches.js";
 import { isCacheableAsset, isCacheableShell, shellCacheKey } from "./responses.js";

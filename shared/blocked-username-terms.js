@@ -1,4 +1,4 @@
-// Scope and how to add a term: docs/app-architecture.md, Usernames. This is data, not copy.
+// Scope and how to add a term: docs/app-architecture.md (in the vault), Usernames. This is data, not copy.
 
 // From obscenity's englishDataset, whose allowlist keeps innocent words (grape, therapist) passing.
 export const OBSCENITY_PHRASES = [

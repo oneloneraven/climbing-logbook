@@ -48,7 +48,7 @@
     { "binding": "LOGBOOK_DB", "database_name": "climbing-logbook", "database_id": "8f094438-520c-4a67-a685-aee3db6198ad", "migrations_dir": "migrations" }
   ],
   // Named environments don't inherit vars, so each one repeats them. Rate limiting only on real
-  // deployments: elsewhere there's no client IP (docs/app-architecture.md, Better Auth configuration).
+  // deployments: elsewhere there's no client IP (docs/app-architecture.md in the vault, Better Auth configuration).
   // ACCESS_AUD is the admin Access application's audience tag, from the identity stack, coraxia (#1707).
   "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "vars": {
