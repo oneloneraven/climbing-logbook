@@ -20,6 +20,7 @@ beforeEach(() => {
 afterEach(() => {
   window.happyDOM.setURL("http://localhost:3000/");
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   delete window.turnstile;
   delete window.onTurnstileLoad;
   delete document.documentElement.dataset.theme;
@@ -112,7 +113,6 @@ describe("renderTurnstile", () => {
 
     expect(window.turnstile.render.mock.calls[0][1].size).toBe("flexible");
     expect(disconnect).toHaveBeenCalledOnce();
-    vi.unstubAllGlobals();
   });
 
   it("waits for api.js's onload callback when it hasn't run yet", () => {
