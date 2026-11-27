@@ -40,8 +40,8 @@ resource routes require a real Better Auth session, same as production.
 Merging to `main` doesn't deploy anything. A `vX.Y.Z` tag does: see
 `docs/versioning.md` for what counts as a release and how to cut one.
 Infra changes (`infra/**`) apply through their own workflow on merge; see
-`infra/README.md` and `docs/infra-architecture.md` (both in the vault)
-before touching them.
+`infra/README.md` (in the vault) and `docs/infra-architecture.md` (in the
+vault) before touching them.
 
 ## Documentation
 

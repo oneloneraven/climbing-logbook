@@ -27,6 +27,8 @@ const PATH_TOKEN = new RegExp(
 );
 const EXTENSION = /\.(?:js|mjs|cjs|json|jsonc|md|njk|html|css|sql|tf|yml|yaml|txt|svg|png)$/;
 const SCANNED = /\.(?:js|mjs|cjs|njk|md|yml|yaml|css|sql|tf|jsonc|html)$/;
+// A doc kept in the private vault is pointed to by its path, followed by "in the vault" (#1754).
+const VAULT_POINTER = /^`?\s+\(?in the\s+vault\b/;
 const EXEMPT = ["docs/adr/", "migrations/", "test/scripts/dead-path-references"];
 
 const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
@@ -61,8 +63,8 @@ function deadReferences() {
   for (const file of tracked) {
     if (!SCANNED.test(file) || EXEMPT.some(prefix => file.startsWith(prefix))) continue;
     const text = readFileSync(join(ROOT, file), "utf8");
-    for (const [, token] of text.matchAll(PATH_TOKEN)) {
-      if (/[*<>{}$]/.test(token)) continue;
+    for (const { index, 1: token } of text.matchAll(PATH_TOKEN)) {
+      if (/[*<>{}$]/.test(token) || VAULT_POINTER.test(text.slice(index + token.length))) continue;
       for (const path of splitJoined(token)) {
         if (!isLive(path)) dead.add(`${file}: ${path}`);
       }

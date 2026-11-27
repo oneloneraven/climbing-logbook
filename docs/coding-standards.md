@@ -234,7 +234,7 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
   would surprise a reader. Never what the code does, and never how it got
   here.
 - **Anything longer than a line goes in `docs/`.** Design and context
-  belong in `docs/app-architecture.md` (or its siblings, in the vault) or an ADR, and the
+  belong in `docs/app-architecture.md` in the vault (or its siblings) or an ADR, and the
   one-line comment can point there. History belongs in commits and PR
   descriptions.
 - **No sidecar notes files.** A second file that has to track the code
