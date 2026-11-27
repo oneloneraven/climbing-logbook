@@ -1,4 +1,4 @@
-// Design: docs/app-architecture.md, Generated data.
+// Design: docs/app-architecture.md (in the vault), Generated data.
 
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

@@ -1,4 +1,4 @@
-# Placeholder records so the hostnames resolve through Cloudflare, where the Worker Route answers: docs/infra-architecture.md.
+# Placeholder records so the hostnames resolve through Cloudflare, where the Worker Route answers: docs/infra-architecture.md (in the vault).
 data "cloudflare_zone" "app" {
   filter = {
     name = var.app_zone_name
