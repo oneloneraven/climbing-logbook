@@ -22,10 +22,12 @@ afterEach(() => {
   vi.useRealTimers();
   delete window.turnstile;
   delete window.onTurnstileLoad;
+  delete document.documentElement.dataset.theme;
 });
 
 describe("renderTurnstile", () => {
-  it("renders straight away when api.js has already run, hidden unless it needs a click", () => {
+  it("renders straight away when api.js has already run, hidden unless it needs a click, in the page's theme", () => {
+    document.documentElement.dataset.theme = "light";
     const container = containerOfWidth(312);
     window.turnstile = fakeTurnstile();
     const widget = renderTurnstile("#turnstile-widget");
@@ -33,7 +35,8 @@ describe("renderTurnstile", () => {
     expect(window.turnstile.render).toHaveBeenCalledWith(container, {
       sitekey: "1x00000000000000000000AA",
       appearance: "interaction-only",
-      size: "normal",
+      size: "flexible",
+      theme: "light",
       "before-interactive-callback": expect.any(Function),
     });
     expect(widget.getResponse()).toBe("token");
@@ -76,12 +79,40 @@ describe("renderTurnstile", () => {
     expect(window.turnstile.render.mock.calls[0][1].sitekey).toBe("1x00000000000000000000AA");
   });
 
-  it("uses the compact size when the normal one wouldn't fit", () => {
+  it("uses the compact size when the flexible one wouldn't fit", () => {
     containerOfWidth(262);
     window.turnstile = fakeTurnstile();
     renderTurnstile("#turnstile-widget");
 
     expect(window.turnstile.render.mock.calls[0][1].size).toBe("compact");
+  });
+
+  it("waits until a hidden container has a width before choosing its size", () => {
+    const container = document.createElement("div");
+    container.id = "turnstile-widget";
+    let width = 0;
+    Object.defineProperty(container, "clientWidth", { get: () => width });
+    document.body.append(container);
+    let onResize;
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      "ResizeObserver",
+      vi.fn(function (callback) {
+        onResize = callback;
+        this.observe = vi.fn();
+        this.disconnect = disconnect;
+      }),
+    );
+    window.turnstile = fakeTurnstile();
+    renderTurnstile("#turnstile-widget");
+    expect(window.turnstile.render).not.toHaveBeenCalled();
+
+    width = 310;
+    onResize();
+
+    expect(window.turnstile.render.mock.calls[0][1].size).toBe("flexible");
+    expect(disconnect).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
   });
 
   it("waits for api.js's onload callback when it hasn't run yet", () => {

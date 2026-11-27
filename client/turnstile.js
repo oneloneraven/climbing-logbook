@@ -9,7 +9,7 @@ function turnstileSitekey(hostname, realSitekey) {
   return REAL_SITEKEY_HOSTNAMES.includes(hostname) ? realSitekey : TEST_SITEKEY;
 }
 
-const NORMAL_WIDTH = 300;
+const FLEXIBLE_MIN_WIDTH = 300;
 const RESPONSE_WAIT_MS = 10_000;
 
 // Every widget rendered before api.js loads, not just the last, renders when it does.
@@ -19,14 +19,25 @@ const waitingForLoad = [];
 export function renderTurnstile(selector, realSitekey = REGISTER_SITEKEY) {
   let widgetId;
   let container;
-  const render = () => {
-    container = document.querySelector(selector);
+  const renderSized = () => {
     widgetId = window.turnstile.render(container, {
       sitekey: turnstileSitekey(window.location.hostname, realSitekey),
       appearance: "interaction-only",
-      size: container.clientWidth < NORMAL_WIDTH ? "compact" : "normal",
+      size: container.clientWidth < FLEXIBLE_MIN_WIDTH ? "compact" : "flexible",
+      theme: document.documentElement.dataset.theme,
       "before-interactive-callback": () => container.setAttribute("data-visible", ""),
     });
+  };
+  // A container that isn't laid out yet measures 0 and would get the compact size, so wait until it has a width.
+  const render = () => {
+    container = document.querySelector(selector);
+    if (container.clientWidth) return renderSized();
+    const observer = new ResizeObserver(() => {
+      if (!container.clientWidth) return;
+      observer.disconnect();
+      renderSized();
+    });
+    observer.observe(container);
   };
   if (window.turnstile) render();
   else {
