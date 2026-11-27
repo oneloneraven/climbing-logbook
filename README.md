@@ -32,7 +32,7 @@ Emails aren't sent locally: verification, password reset and email-change
 links are printed in the `pnpm dev` terminal instead, so `.dev.vars` needs
 no Resend key.
 
-See `docs/app-architecture.md` for local auth setup — the `/-/api/`
+See `docs/app-architecture.md` (in the vault) for local auth setup — the `/-/api/`
 resource routes require a real Better Auth session, same as production.
 
 ## Deploying
@@ -40,7 +40,8 @@ resource routes require a real Better Auth session, same as production.
 Merging to `main` doesn't deploy anything. A `vX.Y.Z` tag does: see
 `docs/versioning.md` for what counts as a release and how to cut one.
 Infra changes (`infra/**`) apply through their own workflow on merge; see
-`infra/README.md` and `docs/infra-architecture.md` before touching them.
+`infra/README.md` (in the vault) and `docs/infra-architecture.md` (in the
+vault) before touching them.
 
 ## Documentation
 

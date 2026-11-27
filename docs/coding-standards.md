@@ -119,7 +119,7 @@ quietly reversed without someone re-deciding on purpose.
   rulesets, zone settings, Turnstile, and anything else
   provisionable — declarative, repeatable, idempotent. The *only* thing
   that lives outside that: the logbook's actual data. See
-  `docs/infra-architecture.md`.
+  `docs/infra-architecture.md` (in the vault).
 - **Least-privilege token scoping**, split by resource type: most Workers/
   R2/D1 permissions are Account-scoped only (no zone option exists);
   Workers Routes and DNS are Zone-scoped. Scope each permission row to the
@@ -234,7 +234,7 @@ why Better Auth replaced Cloudflare Access as the mechanism itself.
   would surprise a reader. Never what the code does, and never how it got
   here.
 - **Anything longer than a line goes in `docs/`.** Design and context
-  belong in `docs/app-architecture.md` (or its siblings) or an ADR, and the
+  belong in `docs/app-architecture.md` in the vault (or its siblings) or an ADR, and the
   one-line comment can point there. History belongs in commits and PR
   descriptions.
 - **No sidecar notes files.** A second file that has to track the code

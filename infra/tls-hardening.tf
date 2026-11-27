@@ -22,14 +22,14 @@ resource "cloudflare_zone_setting" "app_hsts" {
   }
 }
 
-# The DS record is added at the registrar by hand: infra/README.md.
+# The DS record is added at the registrar by hand: infra/README.md (in the vault).
 resource "cloudflare_zone_dnssec" "app" {
   zone_id = data.cloudflare_zone.app.id
   status  = "active"
 }
 
 output "app_dnssec_ds_record" {
-  description = "DS record to add at the domain registrar once DNSSEC is active (#527) -- infra/README.md documents this as a one-time manual step."
+  description = "DS record to add at the domain registrar once DNSSEC is active (#527) -- infra/README.md (in the vault) documents this as a one-time manual step."
   value       = cloudflare_zone_dnssec.app.ds
 }
 
@@ -42,7 +42,7 @@ resource "cloudflare_dns_record" "app_www" {
   proxied = true
   comment = "#527 -- www redirects to the apex, doesn't serve traffic itself."
 
-  # prevent_destroy: docs/infra-architecture.md.
+  # prevent_destroy: docs/infra-architecture.md (in the vault).
   lifecycle {
     prevent_destroy = true
   }

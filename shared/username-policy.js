@@ -1,4 +1,4 @@
-// The rules are listed in docs/app-architecture.md, Usernames.
+// The rules are listed in docs/app-architecture.md (in the vault), Usernames.
 import { DataSet, RegExpMatcher, englishDataset, englishRecommendedTransformers, parseRawPattern } from "obscenity";
 import { ALLOWED_TERMS, EXTRA_PATTERNS, OBSCENITY_PHRASES, RAW_TERMS } from "./blocked-username-terms.js";
 import { DEMO_USERNAMES } from "./demo-personas.js";

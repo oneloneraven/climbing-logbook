@@ -1,6 +1,6 @@
 name: Synthetic production check
 
-# The e2e suite only sees PR previews (ADR-0011). Account set-up: infra/README.md, Synthetic monitoring account.
+# The e2e suite only sees PR previews (ADR-0011). Account set-up: infra/README.md (in the vault), Synthetic monitoring account.
 on:
   # Runs repo code from main and reads nothing from the triggering run.
   workflow_run: # zizmor: ignore[dangerous-triggers]

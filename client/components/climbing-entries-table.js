@@ -1,4 +1,4 @@
-// Behaviour and attributes: docs/app-architecture.md, Client modules.
+// Behaviour and attributes: docs/app-architecture.md (in the vault), Client modules.
 import { loadingSpinnerHtml } from "../loading-spinner.js";
 import { haikuHtml } from "../haiku.js";
 import { filteredEntries, groupByPlace } from "../entries.js";
