@@ -15,7 +15,7 @@
 </head>
 <body class="bg-background text-foreground font-sans min-h-screen flex items-center justify-center px-4">
   {% include "skip-link.njk" %}
-  <main class="focus:outline-none" id="main" tabindex="-1">
+  <main class="w-full focus:outline-none" id="main" tabindex="-1">
     {# display:none, not [hidden], so it doesn't depend on the stylesheet having loaded. #}
     <div class="flex flex-col items-center gap-6" id="page-content" style="display:none">
       <climbing-header variant="brand"></climbing-header>
