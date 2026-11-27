@@ -45,3 +45,16 @@ resource "cloudflare_dns_record" "dmarc" {
   ttl     = 1
   content = "\"v=DMARC1; p=reject; rua=mailto:bba2e499007448e7a1b0b7b949d184e9@dmarc-reports.cloudflare.net\""
 }
+
+# Onboarded in the dashboard (#1702), which added the cf-bounce MX, SPF and DKIM records. Preview stays off so message content isn't kept.
+import {
+  to = cloudflare_email_sending_subdomain.app
+  id = "${data.cloudflare_zone.app.id}/ef0eefd4682a486c8df42efd8409ace2"
+}
+
+resource "cloudflare_email_sending_subdomain" "app" {
+  zone_id                    = data.cloudflare_zone.app.id
+  name                       = var.app_zone_name
+  preview_enabled            = false
+  drop_suppressed_recipients = false
+}
